@@ -1,0 +1,85 @@
+body {
+  padding: 1em;
+  font: 400 normal 18pt sans-serif;
+  color: #333;
+  background-color: #f0fcff;
+}
+h1 {
+  font: 700 normal 1.5em serif;
+  font-variant: small-caps;
+  text-transform: capitalize;
+  letter-spacing: .03125em;
+  text-shadow: 2px 2px 4px #777;
+  color: darkblue;
+}
+section {
+  margin-top: 1em;
+}
+div {
+  margin-top: .25em;
+}
+div + div {
+  margin-top: 1.375em;
+}
+div > p {
+  width: 440px;
+  text-align:center;
+}
+div > p + p {
+  margin-top: .5em;
+}
+
+label {
+  display: inline-block;
+  padding-left: .125em;
+}
+input {
+  display: block;
+  margin: .125em;
+}
+label {
+  margin-top: .5em;
+}
+input[type="text"], textarea, p {
+  color: darkblue;
+  font: 400 100% 'Droid Sans Mono', 'Courier New', monospace;
+}
+textarea, input[type="text"] {
+  background-color: #ffffe0;
+  line-height: 160%;
+  padding: 2px 5px;
+  border: solid 1px #ccc;
+  border-radius: 5px;
+}
+textarea:focus, input[type="text"]:focus {
+  background-color: white;
+  border-color: #00ff00;
+}
+textarea:disabled, input[type="text"]:disabled {
+  background-color: #ddd;
+}
+
+input[type="button"] {
+  display: inline;
+  width: 94px;
+  font-size: 78%;
+  color: black;
+}
+input[type="button"]:hover {
+  color: red;
+}
+input[type="button"]:disabled {
+  color: #999;
+}
+
+input#code {
+  width: 200px;
+}
+input#name, input#spirit {
+  width: 440px;
+}
+
+#counter, #amount{
+  font-family: 'Droid Sans Mono', 'Courier New', monospace;
+  color: black;
+}

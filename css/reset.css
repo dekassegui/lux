@@ -1,0 +1,103 @@
+@charset "UTF-8";
+
+/* RESET */
+
+* {
+  margin: 0;
+  padding: 0;
+  outline: none;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+*:after, *:before {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+::-moz-focus-inner { border: 0; }
+
+:focus { outline: none; }
+
+a { text-decoration: none; }
+
+/* -- fontes disponibilizadas localmente
+@font-face {
+  font-family: Arizonia;
+  font-style: normal;
+  font-weight: 400;
+  src: local('Arizonia'), local('Arizonia-Regular'), url('font/Arizonia-Regular.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Droid Serif';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Droid Serif'), local('DroidSerif'), url('font/DroidSerif-Regular.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Droid Serif';
+  font-style: italic;
+  font-weight: 400;
+  src: local('Droid Serif Italic'), local('DroidSerif-Italic'), url('font/DroidSerif-Italic.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Droid Serif';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Droid Serif Bold'), local('DroidSerif-Bold'), url('font/DroidSerif-Bold.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Droid Serif';
+  font-style: italic;
+  font-weight: 700;
+  src: local('Droid Serif Bold Italic'), local('DroidSerif-BoldItalic'), url('font/DroidSerif-BoldItalic.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Open Sans Light'), local('OpenSans-Light'), url('font/OpenSans-Light.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 300;
+  src: local('Open Sans Light Italic'), local('OpenSans-LightItalic'), url('font/OpenSans-LightItalic.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Open Sans'), local('OpenSans'), url('font/OpenSans-Regular.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 400;
+  src: local('Open Sans Italic'), local('OpenSans-Italic'), url('font/OpenSans-Italic.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 600;
+  src: local('Open Sans Semibold'), local('OpenSans-Semibold'), url('font/OpenSans-Semibold.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 600;
+  src: local('Open Sans Semibold Italic'), local('OpenSans-SemiboldItalic'), url('font/OpenSans-SemiboldItalic.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Open Sans Bold'), local('OpenSans-Bold'), url('font/OpenSans-Bold.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 700;
+  src: local('Open Sans Bold Italic'), local('OpenSans-BoldItalic'), url('font/OpenSans-Bold.ttf') format('truetype');
+} -- */
