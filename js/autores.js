@@ -11,13 +11,13 @@ window.addEventListener('load',
 
     var counter  = $('counter');
 
-    var firstRec = $('firstRec'),
-        prevRec  = $('prevRec'),
-        nextRec  = $('nextRec'),
-        lastRec  = $('lastRec');
+    var firstBtn    = $('firstBtn'),
+        previousBtn = $('previousBtn'),
+        nextBtn     = $('nextBtn'),
+        lastBtn     = $('lastBtn');
 
-    var numRecs,                  // quantidade total de registros de autores
-        currentRec;               // número de ordem do registro visualizado
+    var numRecs,      // quantidade total de registros de autores
+        currentRec;   // número de ordem do registro visualizado
 
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
@@ -39,38 +39,107 @@ window.addEventListener('load',
           var values = this.responseText.split('|');
           for (var i=2; i>=0; --i) fields[i].value = values[i];
           // alterna habilitação dos botões de navegação
-          firstRec.disabled = prevRec.disabled = (currentRec == 1);
-          lastRec.disabled = nextRec.disabled = (currentRec == numRecs);
+          firstBtn.disabled = previousBtn.disabled = (currentRec == 1);
+          lastBtn.disabled = nextBtn.disabled = (currentRec == numRecs);
         }
       };
       xhr.open("GET", [uri, '?recnumber=', currentRec].join(''), true);
       xhr.send();
     }
 
-    firstRec.addEventListener('click',
+    firstBtn.addEventListener('click',
       function () {
         currentRec = 1;
         update();
       }, true);
 
-    prevRec.addEventListener('click',
+    previousBtn.addEventListener('click',
       function () {
         --currentRec;
         update();
       }, true);
 
-    nextRec.addEventListener('click',
+    nextBtn.addEventListener('click',
       function () {
         ++currentRec;
         update();
       }, true);
 
-    lastRec.addEventListener('click',
+    lastBtn.addEventListener('click',
       function () {
         currentRec = numRecs;
         update();
       }, true);
 
-    firstRec.click();
+    firstBtn.click();   // inicia a apresentação dos registros
+
+    var updateBtn = $('updateBtn'),
+        delBtn    = $('delBtn'),
+        searchBtn = $('searchBtn'),
+        newBtn    = $('newBtn'),
+        saveBtn   = $('saveBtn'),
+        cancelBtn = $('cancelBtn');
+
+    updateBtn.addEventListener('click',
+      function () {
+        xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+          if (this.readyState == 4 && this.status == 200) {
+            var text = this.responseText;
+            alert(text);
+          }
+        };
+        var par = [uri, "?recnumber=U", currentRec];
+        par.push('&code=', fields[0].value);
+        par.push('&nome=', fields[1].value);
+        par.push('&espirito=', fields[2].value);
+        xhr.open("GET", par.join(""), true);
+        xhr.send();
+      }, true);
+
+    delBtn.addEventListener('click',
+      function () {
+        xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+          if (this.readyState == 4 && this.status == 200) {
+            var text = this.responseText;
+            alert(text);
+          }
+        };
+        xhr.open("GET", [uri, "?recnumber=D", currentRec].join(""), true);
+        xhr.send();
+      }, true);
+
+    searchBtn.addEventListener('click',
+      function () {
+        //newPressed = !newPressed;
+        //newBtn.value = newPressed ? 'Novo' : 'Atualizar';
+      }, true);
+
+    newBtn.addEventListener('click',
+      function () {
+        //newPressed = !newPressed;
+        //newBtn.value = newPressed ? 'Novo' : 'Atualizar';
+      }, true);
+
+    saveBtn.addEventListener('click',
+      function () {
+        xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+          if (this.readyState == 4 && this.status == 200) {
+            var text = this.responseText;
+            alert(text);
+          }
+        };
+        xhr.open("GET", [uri, "?recnumber=S", currentRec].join(""), true);
+        xhr.send();
+      }, true);
+
+    cancelBtn.addEventListener('click',
+      function () {
+        //newPressed = !newPressed;
+        //newBtn.value = newPressed ? 'Novo' : 'Atualizar';
+      }, true);
+
   },
   true);

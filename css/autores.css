@@ -19,67 +19,66 @@ div {
   margin-top: .25em;
 }
 div + div {
-  margin-top: 1.375em;
+  margin-top: 1em;
 }
 div > p {
-  width: 440px;
-  text-align:center;
+  width: 450px; /* largura das linhas que contém botões */
+  overflow: auto;
 }
 div > p + p {
-  margin-top: .5em;
+  margin-top: .25em;
 }
-
+#counter, #amount {
+  font-family: 'Droid Sans Mono', 'Courier New', monospace;
+  color: black;
+}
 label {
   display: inline-block;
   padding-left: .125em;
+  margin-top: .5em;
 }
 input {
   display: block;
   margin: .125em;
 }
-label {
-  margin-top: .5em;
-}
-input[type="text"], textarea, p {
+input[type="text"], textarea, section > p:first-child {
   color: darkblue;
   font: 400 100% 'Droid Sans Mono', 'Courier New', monospace;
 }
-textarea, input[type="text"] {
+input[type="text"], textarea {
   background-color: #ffffe0;
   line-height: 160%;
   padding: 2px 5px;
   border: solid 1px #ccc;
   border-radius: 5px;
 }
-textarea:focus, input[type="text"]:focus {
+input[type="text"]:focus, textarea:focus {
   background-color: white;
   border-color: #00ff00;
 }
-textarea:disabled, input[type="text"]:disabled {
+input[type="text"]:disabled, textarea:disabled {
   background-color: #ddd;
 }
-
-input[type="button"] {
-  display: inline;
-  width: 94px;
-  font-size: 78%;
-  color: black;
-}
-input[type="button"]:hover {
-  color: red;
-}
-input[type="button"]:disabled {
-  color: #999;
-}
-
 input#code {
   width: 200px;
 }
 input#name, input#spirit {
   width: 440px;
 }
-
-#counter, #amount{
-  font-family: 'Droid Sans Mono', 'Courier New', monospace;
+input[type="button"] { /* botões de navegação */
+  display: inline;
+  float: left;
+  width: 107px;
+  font-size: 78%;
+  line-height: 160%;
   color: black;
+}
+div > p + p > input[type="button"] { /* botões do DB */
+  width: 144px;
+}
+input[type="button"]:hover {
+  color: red;
+}
+input[type="button"]:disabled {
+  color: #b9b9b9;
 }
