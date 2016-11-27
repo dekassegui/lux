@@ -62,7 +62,7 @@ input[type="text"]:disabled, textarea:disabled {
 input#code {
   width: 200px;
 }
-input#name, input#spirit {
+input#nome, input#espirito {
   width: 440px;
 }
 input[type="button"] { /* botões de navegação */
@@ -81,4 +81,12 @@ input[type="button"]:hover {
 }
 input[type="button"]:disabled {
   color: #b9b9b9;
+}
+#newBtn:disabled {
+  color: #f66;
+}
+section div:last-of-type {
+  position: absolute;
+  left: 500px;
+  top: 100px;
 }

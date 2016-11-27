@@ -3,48 +3,77 @@ function $(id) { return document.getElementById(id) }
 window.addEventListener('load',
   function () {
 
-    var uri = "http://localhost/lux/consulta.php";
+    var uri = "http://localhost/lux/autores.php";
 
-    var fields   = [$('code'),      // código
-                    $('name'),      // nome
-                    $('spirit')];   // espírito
+    var fields = [$('code'), $('nome'), $('espirito')];
 
-    var counter  = $('counter');
+    var counter  = $('counter'),
+        amount   = $('amount');
 
     var firstBtn    = $('firstBtn'),
         previousBtn = $('previousBtn'),
         nextBtn     = $('nextBtn'),
         lastBtn     = $('lastBtn');
 
-    var numRecs,      // quantidade total de registros de autores
-        currentRec;   // número de ordem do registro visualizado
+    var updateBtn = $('updateBtn'),
+        delBtn    = $('delBtn'),
+        searchBtn = $('searchBtn'),
+        newBtn    = $('newBtn'),
+        saveBtn   = $('saveBtn'),
+        cancelBtn = $('cancelBtn');
 
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() {
-      if (this.readyState == 4 && this.status == 200) {
-        // atualiza o display da quantidade de registros
-        $('amount').innerHTML = numRecs = parseInt(this.responseText);
-      }
-    };
-    xhr.open("GET", uri, true);
-    xhr.send();
+    var mural = $('mural');   // textarea para notificar usuário
+
+    var currentRec,   // número de ordem do registro corrente
+        numRecs,      // quantidade total de registros
+        xhr;          // ponteiro para instâncias de XMLHttpRequest
+
+    function print(text) {
+      var t = mural.value;
+      mural.value = (t.length == 0) ? text : [t, text].join("\n");
+    }
+
+    function toggleNavigationButtons() {
+      // alterna habilitação dos botões de navegação
+      firstBtn.disabled = previousBtn.disabled = (currentRec <= 1);
+      lastBtn.disabled = nextBtn.disabled = (currentRec >= numRecs);
+    }
+
+    function enableButtons() {
+      // habilita botões de navegação se possível
+      toggleNavigationButtons()
+      // habilita botões de comando
+      updateBtn.disabled = delBtn.disabled =
+        searchBtn.disabled = newBtn.disabled = false;
+      // desabilita botões de decisão
+      saveBtn.disabled = cancelBtn.disabled = true;
+    }
+
+    function whenTableIsEmpty() {
+      counter.innerHTML = 0;
+      newBtn.click();
+      cancelBtn.disabled = true;
+    }
 
     function update() {
-      xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-          // atualiza o display do número de registro corrente
-          counter.innerHTML = currentRec;
-          // atualiza o display dos valores dos campos do registro corrente
-          var values = this.responseText.split('|');
-          for (var i=2; i>=0; --i) fields[i].value = values[i];
-          // alterna habilitação dos botões de navegação
-          firstBtn.disabled = previousBtn.disabled = (currentRec == 1);
-          lastBtn.disabled = nextBtn.disabled = (currentRec == numRecs);
-        }
-      };
-      xhr.open("GET", [uri, '?recnumber=', currentRec].join(''), true);
-      xhr.send();
+      if (currentRec > 0) {
+        xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+          if (this.readyState == 4 && this.status == 200) {
+            // atualiza o display do número de ordem do registro corrente
+            counter.innerHTML = currentRec;
+            // atualiza o display dos valores dos campos do registro corrente
+            var values = this.responseText.replace(/NULL/g, '').split('|');
+            for (var i=2; i>=0; --i) fields[i].value = values[i];
+            // alterna habilitação dos botões de navegação
+            toggleNavigationButtons();
+          }
+        };
+        xhr.open("GET", [uri, '?action=GETREC&recnumber=', currentRec].join(''), true);
+        xhr.send();
+      } else {
+        whenTableIsEmpty();
+      }
     }
 
     firstBtn.addEventListener('click',
@@ -71,28 +100,17 @@ window.addEventListener('load',
         update();
       }, true);
 
-    firstBtn.click();   // inicia a apresentação dos registros
-
-    var updateBtn = $('updateBtn'),
-        delBtn    = $('delBtn'),
-        searchBtn = $('searchBtn'),
-        newBtn    = $('newBtn'),
-        saveBtn   = $('saveBtn'),
-        cancelBtn = $('cancelBtn');
-
     updateBtn.addEventListener('click',
       function () {
         xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function() {
+        xhr.onreadystatechange = function () {
           if (this.readyState == 4 && this.status == 200) {
-            var text = this.responseText;
-            alert(text);
+            print(this.responseText);
           }
         };
-        var par = [uri, "?recnumber=U", currentRec];
-        par.push('&code=', fields[0].value);
-        par.push('&nome=', fields[1].value);
-        par.push('&espirito=', fields[2].value);
+        var par = [uri, "?action=UPDATE&recnumber=", currentRec];
+        for (var i=0; i<3; ++i)
+          par.push('&', fields[i].id, '=', fields[i].value);
         xhr.open("GET", par.join(""), true);
         xhr.send();
       }, true);
@@ -100,46 +118,106 @@ window.addEventListener('load',
     delBtn.addEventListener('click',
       function () {
         xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function() {
+        xhr.onreadystatechange = function () {
           if (this.readyState == 4 && this.status == 200) {
             var text = this.responseText;
-            alert(text);
+            if (text == 'TRUE') {
+              amount.innerHTML = --numRecs;
+              if (currentRec > numRecs) --currentRec;
+              update();
+              print('Exclusão bem sucedida.');
+            } else {
+              print('Exclusão mal sucedida.');
+            }
           }
         };
-        xhr.open("GET", [uri, "?recnumber=D", currentRec].join(""), true);
+        xhr.open("GET", [uri, "?action=DELETE&recnumber=", currentRec].join(""), true);
         xhr.send();
       }, true);
 
     searchBtn.addEventListener('click',
       function () {
-        //newPressed = !newPressed;
-        //newBtn.value = newPressed ? 'Novo' : 'Atualizar';
+        xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+          if (this.readyState == 4 && this.status == 200) {
+            var text = this.responseText;
+            if (text.length > 0) {
+              print('Resultado da pesquisa:');
+              print(text);
+            } else {
+              print('Pesquisa mal sucedida.');
+            }
+          }
+        };
+        var par = [uri, "?action=SEARCH"];
+        for (var i=0; i<3; ++i)
+          par.push('&', fields[i].id, '=', fields[i].value);
+        xhr.open("GET", par.join(""), true);
+        xhr.send();
       }, true);
 
     newBtn.addEventListener('click',
       function () {
-        //newPressed = !newPressed;
-        //newBtn.value = newPressed ? 'Novo' : 'Atualizar';
+        // desabilita botões de navegação & comando
+        firstBtn.disabled = previousBtn.disabled = nextBtn.disabled = lastBtn.disabled = updateBtn.disabled = delBtn.disabled = searchBtn.disabled = newBtn.disabled = true;
+        // habilita botões de decisão
+        saveBtn.disabled = cancelBtn.disabled = false;
+        // limpa todos os campos do registro
+        for (var i=2; i>=0; --i) fields[i].value = '';
+        // entra em modo de edição dando o foco ao primeiro campo
+        fields[0].focus();
       }, true);
 
     saveBtn.addEventListener('click',
       function () {
         xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function() {
+        xhr.onreadystatechange = function () {
           if (this.readyState == 4 && this.status == 200) {
             var text = this.responseText;
-            alert(text);
+            if (text == 'TRUE') {
+              // atualiza o display do número de ordem do registro
+              // corrente e do display da quantidade de registros
+              amount.innerHTML = currentRec = ++numRecs;
+              counter.innerHTML = currentRec;
+              // habilita botões de navegação & comando
+              enableButtons();
+              print('Inserção bem sucedida.');
+            } else {
+              print('Inserção mal sucedida.');
+            }
           }
         };
-        xhr.open("GET", [uri, "?recnumber=S", currentRec].join(""), true);
+        var par = [uri, "?action=INSERT"];
+        for (var i=0; i<3; ++i)
+          par.push('&', fields[i].id, '=', fields[i].value);
+        xhr.open("GET", par.join(""), true);
         xhr.send();
       }, true);
 
     cancelBtn.addEventListener('click',
       function () {
-        //newPressed = !newPressed;
-        //newBtn.value = newPressed ? 'Novo' : 'Atualizar';
+        update();         // restaura os valores do display
+        enableButtons();  // alterna disponibilidade dos botões
       }, true);
 
+    /* INÍCIO DE EXECUÇÃO DO APLICATIVO */
+
+    xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        // inicia o display da quantidade total de registros
+        amount.innerHTML = numRecs = parseInt(this.responseText);
+        currentRec = (numRecs > 0) ? 1 : 0;
+        // inicia conforme status do DB
+        if (numRecs > 0) {
+          firstBtn.click();
+        } else {
+          whenTableIsEmpty();
+        }
+        mural.value = ['#Registro(s): ' + numRecs].join("");
+      }
+    };
+    xhr.open("GET", [uri, "?action=COUNT"].join(""), true);
+    xhr.send();
   },
   true);
