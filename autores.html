@@ -3,19 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <title>Lux - Autores Espíritas</title>
+<meta http-equiv="expires" content="0">
+<meta http-equiv="pragma" content="no-cache">
 <link href="css/reset.css" rel="stylesheet" type="text/css" media="screen">
 <link href="css/autores.css" rel="stylesheet" type="text/css" media="screen">
 <script type="text/javascript" src="js/autores.js"></script>
 </head>
 <body>
 
-  <h1>Lux - Autores Espíritas</h1>
+  <header>
+    <h1>Lux - Autores Espíritas</h1>
+  </header>
 
   <section>
 
-    <p>Registro: <span id="counter"></span> de <span id="amount"></span></p>
+    <p>Registro: <input type="text" id="counter" > de <input type="text" id="amount" readonly></p>
 
-    <div>
+    <div id="fields">
       <label for="code">Código:</label>
       <input type="text" id="code" name="code">
       <label for="name">Nome:</label>
@@ -24,7 +28,11 @@
       <input type="text" id="espirito" name="espirito">
     </div>
 
-    <div>
+    <div id="wall">
+      <textarea readonly cols="32" rows="6"></textarea>
+    </div>
+
+    <div id="nav">
       <p>
         <input type="button" id="firstBtn" value="<<">
         <input type="button" id="previousBtn" value="<">
@@ -43,10 +51,6 @@
       </p>
     </div>
 
-    <div>
-      <textarea id="mural" readonly>
-      </textarea>
-    </div>
   </section>
 
 </body>

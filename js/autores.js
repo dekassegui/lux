@@ -22,7 +22,7 @@ window.addEventListener('load',
         saveBtn   = $('saveBtn'),
         cancelBtn = $('cancelBtn');
 
-    var mural = $('mural');   // textarea para notificar usuário
+    var mural = $('wall').firstElementChild;   // textarea do usuário
 
     var currentRec,   // número de ordem do registro corrente
         numRecs,      // quantidade total de registros
@@ -50,7 +50,7 @@ window.addEventListener('load',
     }
 
     function whenTableIsEmpty() {
-      counter.innerHTML = 0;
+      counter.value = 0;
       newBtn.click();
       cancelBtn.disabled = true;
     }
@@ -61,7 +61,7 @@ window.addEventListener('load',
         xhr.onreadystatechange = function () {
           if (this.readyState == 4 && this.status == 200) {
             // atualiza o display do número de ordem do registro corrente
-            counter.innerHTML = currentRec;
+            counter.value = currentRec;
             // atualiza o display dos valores dos campos do registro corrente
             var values = this.responseText.replace(/NULL/g, '').split('|');
             for (var i=2; i>=0; --i) fields[i].value = values[i];
@@ -75,6 +75,34 @@ window.addEventListener('load',
         whenTableIsEmpty();
       }
     }
+
+    counter.addEventListener('keydown',
+      function (ev) {
+        if (numRecs > 0) {
+          ev = ev || event;
+          if (ev.keyCode == 13) {
+            if (counter.value.match(/^\s*\d+\s*$/)) {
+              var valor = parseInt(counter.value);
+              if (0 < valor && valor <= numRecs) {
+                currentRec = valor;
+                update();
+              } else {
+                print(['Número não pertence ao intervalo [1,', numRecs, '].'].join(""));
+              }
+            } else {
+              print('Valor digitado não é número.');
+            }
+          }
+        } else {
+          print('Tabela está vazia!');
+        }
+      }, true);
+
+    amount.addEventListener('focus',
+      function (ev) {
+        amount.blur();
+        // print('A quantidade de registros não pode ser editada.');
+      }, true);
 
     firstBtn.addEventListener('click',
       function () {
@@ -122,7 +150,7 @@ window.addEventListener('load',
           if (this.readyState == 4 && this.status == 200) {
             var text = this.responseText;
             if (text == 'TRUE') {
-              amount.innerHTML = --numRecs;
+              amount.value = --numRecs;
               if (currentRec > numRecs) --currentRec;
               update();
               print('Exclusão bem sucedida.');
@@ -177,8 +205,8 @@ window.addEventListener('load',
             if (text == 'TRUE') {
               // atualiza o display do número de ordem do registro
               // corrente e do display da quantidade de registros
-              amount.innerHTML = currentRec = ++numRecs;
-              counter.innerHTML = currentRec;
+              amount.value = currentRec = ++numRecs;
+              counter.value = currentRec;
               // habilita botões de navegação & comando
               enableButtons();
               print('Inserção bem sucedida.');
@@ -206,7 +234,7 @@ window.addEventListener('load',
     xhr.onreadystatechange = function () {
       if (this.readyState == 4 && this.status == 200) {
         // inicia o display da quantidade total de registros
-        amount.innerHTML = numRecs = parseInt(this.responseText);
+        amount.value = numRecs = parseInt(this.responseText);
         currentRec = (numRecs > 0) ? 1 : 0;
         // inicia conforme status do DB
         if (numRecs > 0) {
@@ -214,7 +242,7 @@ window.addEventListener('load',
         } else {
           whenTableIsEmpty();
         }
-        mural.value = ['#Registro(s): ' + numRecs].join("");
+        print(['#Registro(s): ' + numRecs].join(""));
       }
     };
     xhr.open("GET", [uri, "?action=COUNT"].join(""), true);

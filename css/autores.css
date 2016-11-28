@@ -16,10 +16,22 @@ section {
   margin-top: 1em;
 }
 div {
-  margin-top: .25em;
+  display: inline;
+  float: left;
+  width: 500px;
+  padding: 1px;
+  margin-top: .375em;
+  border: dotted 1px #dcdcdc;
+  background-color: bisque;
 }
-div + div {
-  margin-top: 1em;
+div#nav {
+  clear: left;
+  background-color: floralwhite;
+}
+div#wall {
+  position: relative;
+  margin-left: 5px;
+  background-color: aliceblue;
 }
 div > p {
   width: 450px; /* largura das linhas que contém botões */
@@ -29,7 +41,9 @@ div > p + p {
   margin-top: .25em;
 }
 #counter, #amount {
+  width: 75px;
   font-family: 'Droid Sans Mono', 'Courier New', monospace;
+  text-align: center;
   color: black;
 }
 label {
@@ -37,9 +51,9 @@ label {
   padding-left: .125em;
   margin-top: .5em;
 }
-input {
+div > input {
   display: block;
-  margin: .125em;
+  margin-top: .125em;
 }
 input[type="text"], textarea, section > p:first-child {
   color: darkblue;
@@ -76,17 +90,15 @@ input[type="button"] { /* botões de navegação */
 div > p + p > input[type="button"] { /* botões do DB */
   width: 144px;
 }
+div > p input:nth-child(n+2) { /* aplicado a partir do segundo input */
+  margin-left: 5px;
+}
 input[type="button"]:hover {
   color: red;
 }
 input[type="button"]:disabled {
   color: #b9b9b9;
 }
-#newBtn:disabled {
-  color: #f66;
-}
-section div:last-of-type {
-  position: absolute;
-  left: 500px;
-  top: 100px;
+input#newBtn:disabled {
+  color: darkorange;
 }

@@ -5,8 +5,8 @@
   /**
    * Testa se o argumento do tipo String contém apenas espaços em branco.
    *
-   * @param text String objeto da verificação.
-   * @return NULL se text contém apenas espaços em branco.
+   * @param $text String objeto da verificação.
+   * @return NULL se $text contém apenas espaços em branco.
   */
   function chk($text) {
     return trim($text) == '' ? 'NULL' : $text;
@@ -64,7 +64,9 @@
     case 'SEARCH':
       $sql = '';
       $needle = trim($_GET['code']);
-      if (strlen($needle) > 0) $sql .= 'code GLOB "'.$needle.'"';
+      if (strlen($needle) > 0) {
+        $sql .= 'code GLOB "'.$needle.'"';
+      }
       $needle = trim($_GET['nome']);
       if (strlen($needle) > 0) {
         if (strlen($sql) > 0) $sql .= ' OR ';
@@ -76,9 +78,9 @@
         $sql .= 'espirito GLOB "'.$needle.'"';
       }
       if (strlen($sql) == 0) {
-        echo 'Pesquisa requisitada é desnecessária.'.$_GET['nome'];
+        echo 'Pesquisa requisitada é desnecessária.';
       } else {
-        $result = $db->query('SELECT * FROM autores WHERE '.$sql);
+        $result = $db->query('SELECT rowid, * FROM autores WHERE '.$sql);
         $text = '';
         while ($row = $result->fetchArray(SQLITE3_NUM)) {
           $text .= join('|', $row)."\n";
