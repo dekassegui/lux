@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <title>Lux - Autores Espíritas</title>
-<meta http-equiv="expires" content="0">
-<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="expires" content="0"/>
+<meta http-equiv="pragma" content="no-cache"/>
 <link href="css/reset.css" rel="stylesheet" type="text/css" media="screen">
 <link href="css/autores.css" rel="stylesheet" type="text/css" media="screen">
 <script type="text/javascript" src="js/autores.js"></script>
@@ -16,23 +16,20 @@
   </header>
 
   <section>
+    <h2>Autores Espíritas</h2>
 
-    <p>Registro: <input type="text" id="counter" > de <input type="text" id="amount" readonly></p>
+    <p><label for="counter">Registro:</label> <input type="text" id="counter" name="counter" tabindex="1"> de <input type="text" id="amount" readonly></p>
 
     <div id="fields">
       <label for="code">Código:</label>
-      <input type="text" id="code" name="code">
-      <label for="name">Nome:</label>
-      <input type="text" id="nome" name="name">
+      <input type="text" id="code" name="code" tabindex="2">
+      <label for="nome">Nome:</label>
+      <input type="text" id="nome" name="nome" tabindex="3">
       <label for="espirito">Espírito:</label>
-      <input type="text" id="espirito" name="espirito">
+      <input type="text" id="espirito" name="espirito" tabindex="4">
     </div>
 
-    <div id="wall">
-      <textarea readonly cols="32" rows="6"></textarea>
-    </div>
-
-    <div id="nav">
+    <div id="cmd">
       <p>
         <input type="button" id="firstBtn" value="<<">
         <input type="button" id="previousBtn" value="<">
@@ -52,6 +49,14 @@
     </div>
 
   </section>
+
+  <aside>
+    <textarea id="mural" rows="11" readonly></textarea>
+  </aside>
+
+  <footer>
+    <p>Este software está sob Domínio Público.</p>
+  </footer>
 
 </body>
 </html>

@@ -22,7 +22,7 @@ window.addEventListener('load',
         saveBtn   = $('saveBtn'),
         cancelBtn = $('cancelBtn');
 
-    var mural = $('wall').firstElementChild;   // textarea do usuário
+    var mural = $('mural');  // área de notificação
 
     var currentRec,   // número de ordem do registro corrente
         numRecs,      // quantidade total de registros
@@ -63,16 +63,31 @@ window.addEventListener('load',
             // atualiza o display do número de ordem do registro corrente
             counter.value = currentRec;
             // atualiza o display dos valores dos campos do registro corrente
-            var values = this.responseText.replace(/NULL/g, '').split('|');
-            for (var i=2; i>=0; --i) fields[i].value = values[i];
+            setFieldValues(this.responseText.split('|'));
             // alterna habilitação dos botões de navegação
             toggleNavigationButtons();
           }
         };
-        xhr.open("GET", [uri, '?action=GETREC&recnumber=', currentRec].join(''), true);
+        xhr.open("GET", [uri, "?action=GETREC&recnumber=", currentRec].join(""), true);
         xhr.send();
       } else {
         whenTableIsEmpty();
+      }
+    }
+
+    function getFieldValues() {
+      var par = [];
+      for (var i=0; i<3; ++i)
+        par.push('&', fields[i].id, '=', fields[i].value);
+      return par.join("");
+    }
+
+    function setFieldValues(array) {
+      if (array === undefined) {
+        for (var i=0; i<3; ++i) fields[i].value = '';
+      } else {
+        for (var i=0; i<3; ++i)
+          fields[i].value = (array[i] == 'NULL') ? '' : array[i];
       }
     }
 
@@ -87,14 +102,14 @@ window.addEventListener('load',
                 currentRec = valor;
                 update();
               } else {
-                print(['Número não pertence ao intervalo [1,', numRecs, '].'].join(""));
+                print('Erro: Número de registro inválido.');
               }
             } else {
-              print('Valor digitado não é número.');
+              print('Erro: Valor digitado não é número.');
             }
           }
         } else {
-          print('Tabela está vazia!');
+          print('Erro: A tabela está vazia.');
         }
       }, true);
 
@@ -133,12 +148,16 @@ window.addEventListener('load',
         xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
           if (this.readyState == 4 && this.status == 200) {
-            print(this.responseText);
+            if (this.responseText == 'FALSE') {
+              print('Atualização mal sucedida.');
+            } else {
+              var n = parseInt(this.responseText);
+              if (n != currentRec) counter.value = currentRec = n;
+              print('Atualização bem sucedida.');
+            }
           }
         };
-        var par = [uri, "?action=UPDATE&recnumber=", currentRec];
-        for (var i=0; i<3; ++i)
-          par.push('&', fields[i].id, '=', fields[i].value);
+        var par = [uri, "?action=UPDATE&recnumber=", currentRec, getFieldValues()];
         xhr.open("GET", par.join(""), true);
         xhr.send();
       }, true);
@@ -148,8 +167,7 @@ window.addEventListener('load',
         xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
           if (this.readyState == 4 && this.status == 200) {
-            var text = this.responseText;
-            if (text == 'TRUE') {
+            if ((this.responseText == 'TRUE')) {
               amount.value = --numRecs;
               if (currentRec > numRecs) --currentRec;
               update();
@@ -168,18 +186,15 @@ window.addEventListener('load',
         xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
           if (this.readyState == 4 && this.status == 200) {
-            var text = this.responseText;
-            if (text.length > 0) {
+            if (this.responseText.length > 0) {
               print('Resultado da pesquisa:');
-              print(text);
+              print(this.responseText);
             } else {
               print('Pesquisa mal sucedida.');
             }
           }
         };
-        var par = [uri, "?action=SEARCH"];
-        for (var i=0; i<3; ++i)
-          par.push('&', fields[i].id, '=', fields[i].value);
+        var par = [uri, "?action=SEARCH", getFieldValues()];
         xhr.open("GET", par.join(""), true);
         xhr.send();
       }, true);
@@ -191,7 +206,7 @@ window.addEventListener('load',
         // habilita botões de decisão
         saveBtn.disabled = cancelBtn.disabled = false;
         // limpa todos os campos do registro
-        for (var i=2; i>=0; --i) fields[i].value = '';
+        setFieldValues();
         // entra em modo de edição dando o foco ao primeiro campo
         fields[0].focus();
       }, true);
@@ -201,23 +216,19 @@ window.addEventListener('load',
         xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
           if (this.readyState == 4 && this.status == 200) {
-            var text = this.responseText;
-            if (text == 'TRUE') {
-              // atualiza o display do número de ordem do registro
-              // corrente e do display da quantidade de registros
-              amount.value = currentRec = ++numRecs;
-              counter.value = currentRec;
+            if ((this.responseText == 'FALSE')) {
+              print('Inserção mal sucedida.');
+            } else {
+              // atualiza contadores
+              amount.value = ++numRecs;
+              counter.value = currentRec = parseInt(this.responseText);
               // habilita botões de navegação & comando
               enableButtons();
               print('Inserção bem sucedida.');
-            } else {
-              print('Inserção mal sucedida.');
             }
           }
         };
-        var par = [uri, "?action=INSERT"];
-        for (var i=0; i<3; ++i)
-          par.push('&', fields[i].id, '=', fields[i].value);
+        var par = [uri, "?action=INSERT", getFieldValues()];
         xhr.open("GET", par.join(""), true);
         xhr.send();
       }, true);
@@ -227,8 +238,6 @@ window.addEventListener('load',
         update();         // restaura os valores do display
         enableButtons();  // alterna disponibilidade dos botões
       }, true);
-
-    /* INÍCIO DE EXECUÇÃO DO APLICATIVO */
 
     xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
@@ -242,7 +251,8 @@ window.addEventListener('load',
         } else {
           whenTableIsEmpty();
         }
-        print(['#Registro(s): ' + numRecs].join(""));
+        // inicia o mural informando a data e hora do sistema
+        mural.value = new Date().toLocaleString();
       }
     };
     xhr.open("GET", [uri, "?action=COUNT"].join(""), true);

@@ -1,77 +1,101 @@
 body {
-  padding: 1em;
-  font: 400 normal 18pt sans-serif;
-  color: #333;
+  padding: 10px;
+  font: 400 normal 18pt "Open Sans", sans-serif;
+  color: #676767;
   background-color: #f0fcff;
 }
 h1 {
   font: 700 normal 1.5em serif;
   font-variant: small-caps;
-  text-transform: capitalize;
   letter-spacing: .03125em;
+  text-align: center;
+  text-transform: capitalize;
   text-shadow: 2px 2px 4px #777;
   color: darkblue;
 }
-section {
+h2 {
+  display: none;
+  visibility: hidden;
+}
+
+section, aside {
+  display: inline-block;
+  float: left;
   margin-top: 1em;
 }
-div {
-  display: inline;
-  float: left;
-  width: 500px;
-  padding: 1px;
-  margin-top: .375em;
-  border: dotted 1px #dcdcdc;
-  background-color: bisque;
+section {
+  width: 445px;
+  /* background-color: beige; */
 }
-div#nav {
+aside {
+  margin-left: 10px;
+  /* background-color: aliceblue; */
+}
+footer {
+  display: block;
   clear: left;
-  background-color: floralwhite;
 }
-div#wall {
-  position: relative;
-  margin-left: 5px;
-  background-color: aliceblue;
+footer p {
+  padding-top: 10px;
+  font-size: 40%;
+  text-align: center;
+  color: dimgray;
 }
-div > p {
-  width: 450px; /* largura das linhas que contém botões */
+
+div {
+  margin-top: .75em;
+  padding: 1px;
+}
+div#cmd p {
   overflow: auto;
 }
-div > p + p {
-  margin-top: .25em;
-}
-#counter, #amount {
-  width: 75px;
-  font-family: 'Droid Sans Mono', 'Courier New', monospace;
-  text-align: center;
-  color: black;
-}
-label {
-  display: inline-block;
-  padding-left: .125em;
-  margin-top: .5em;
-}
-div > input {
-  display: block;
+div#cmd * + p { /* se precedido por algum elemento */
   margin-top: .125em;
 }
-input[type="text"], textarea, section > p:first-child {
-  color: darkblue;
-  font: 400 100% 'Droid Sans Mono', 'Courier New', monospace;
+
+label {
+  display: inline-block;
+}
+* + label {
+  margin-top: .25em;
+}
+input[type="text"] {
+  text-overflow: ellipsis;
 }
 input[type="text"], textarea {
-  background-color: #ffffe0;
-  line-height: 160%;
   padding: 2px 5px;
+  font: 400 100% 'Droid Sans Mono', 'Courier New', monospace;
+  line-height: 160%;
+  color: darkblue;
+  background-color: #ffffe0;
   border: solid 1px #ccc;
   border-radius: 5px;
 }
-input[type="text"]:focus, textarea:focus {
-  background-color: white;
-  border-color: #00ff00;
+input#counter, textarea#mural {
+  color: black;
+  background-color: #fafafa;
 }
-input[type="text"]:disabled, textarea:disabled {
+input[type="text"]:focus, textarea:focus, input#counter:focus, textarea#mural:focus {
+  background-color: white;
+  border-color: #0f0;
+}
+input[type="text"]:disabled, textarea:disabled, input#counter:disabled, textarea#mural:disabled {
   background-color: #ddd;
+}
+input#counter {
+  width: 2.5em;
+  text-align: center;
+}
+input#amount {
+  width: 2.5em;
+  text-align: left;
+  color: black;
+  background-color: transparent;
+  border-color: transparent;
+}
+div#fields input {
+  display: block;
+  margin-top: .125em;
 }
 input#code {
   width: 200px;
@@ -79,19 +103,12 @@ input#code {
 input#nome, input#espirito {
   width: 440px;
 }
-input[type="button"] { /* botões de navegação */
+input[type="button"] {
   display: inline;
   float: left;
-  width: 107px;
   font-size: 78%;
   line-height: 160%;
   color: black;
-}
-div > p + p > input[type="button"] { /* botões do DB */
-  width: 144px;
-}
-div > p input:nth-child(n+2) { /* aplicado a partir do segundo input */
-  margin-left: 5px;
 }
 input[type="button"]:hover {
   color: red;
@@ -99,6 +116,32 @@ input[type="button"]:hover {
 input[type="button"]:disabled {
   color: #b9b9b9;
 }
-input#newBtn:disabled {
-  color: darkorange;
+div#cmd p input {
+  width: 107px;
+}
+div#cmd * + p input {
+  width: 144px;
+}
+div#cmd p * + input {
+  margin-left: 5px;
+}
+#newBtn:disabled {
+  color: #f60;
+}
+textarea#mural { /* assume a dimensão do parent element */
+  width: 100%;
+}
+
+/* ajustes para viewport */
+
+@media (width: 1024px) {
+  aside {
+    width: 530px;
+  }
+}
+
+@media (width: 1368px) {
+  aside {
+    width: 870px;
+  }
 }

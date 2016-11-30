@@ -6,13 +6,25 @@
    * Testa se o argumento do tipo String contém apenas espaços em branco.
    *
    * @param $text String objeto da verificação.
-   * @return NULL se $text contém apenas espaços em branco.
+   * @return NULL se $text contém apenas espaços em branco senão retorna a
+   *         retorna com haspas simples
   */
   function chk($text) {
-    return trim($text) == '' ? 'NULL' : $text;
+    return strlen(trim($text)) == 0 ? 'NULL' : "'".$text."'";
   }
 
   $db = new SQLite3(DB_FILENAME) or die('Unable to open database');
+
+  function sortDB($db) {
+    $db->exec('CREATE TEMP TABLE t AS SELECT * FROM autores ORDER BY nome, espirito');
+    $db->exec('PRAGMA foreign_keys = OFF');
+    $db->exec('DELETE FROM autores');
+    $db->exec('INSERT INTO autores SELECT * FROM t');
+    $db->exec('REINDEX autores_ndx');
+    $db->exec('PRAGMA foreign_keys = ON');
+    $db->exec('DROP TABLE t');
+    $db->exec('VACUUM');
+  }
 
   switch ($_GET['action']) {
 
@@ -27,27 +39,34 @@
       break;
 
     case 'UPDATE':
-      $sql = 'UPDATE autores SET code="'.$_GET['code']
-        .'", nome="'.$_GET['nome'].'", espirito="'.chk($_GET['espirito'])
-        .'" WHERE rowid == '.$_GET['recnumber'];
+      $code = chk($_GET['code']);
+      $nome = chk($_GET['nome']);
+      $espirito = chk($_GET['espirito']);
+      $sql = "UPDATE autores SET code=$code, nome=$nome, espirito=$espirito WHERE rowid == ".$_GET['recnumber'];
       $db->exec('PRAGMA foreign_keys = ON');
       $db->exec('PRAGMA recursive_triggers = ON');
       if ($db->exec($sql)) {
-        echo 'Atualização bem sucedida.';
+        sortDB($db);
+        $sql = "SELECT rowid FROM autores WHERE code == $code";
+        echo $db->querySingle($sql);
       } else {
-        echo 'Atualização mal sucedida.';
+        echo 'FALSE';
       }
       break;
 
     case 'INSERT':
-      $sql = 'INSERT INTO autores VALUES ("'.$_GET['code'].'", "'
-                .$_GET['nome'].'", "'.chk($_GET['espirito']).'")';
+      $code = chk($_GET['code']);
+      $nome = chk($_GET['nome']);
+      $espirito = chk($_GET['espirito']);
+      $sql = "INSERT INTO autores SELECT $code, $nome, $espirito";
       $db->exec('PRAGMA foreign_keys = ON');
       $db->exec('PRAGMA recursive_triggers = ON');
       if ($db->exec($sql)) {
-        echo 'TRUE';
+        sortDB($db);
+        $sql = "SELECT rowid FROM autores WHERE code == $code";
+        echo $db->querySingle($sql);
       } else {
-        echo 'Inserção mal sucedida.';
+        echo 'FALSE';
       }
       break;
 
@@ -55,9 +74,10 @@
       $sql = 'DELETE FROM autores WHERE rowid = '.$_GET['recnumber'];
       $db->exec('PRAGMA foreign_keys = ON');
       if ($db->exec($sql)) {
+        sortDB($db);
         echo 'TRUE';
       } else {
-        echo 'Exclusão mal sucedida.';
+        echo 'FALSE';
       }
       break;
 
@@ -77,16 +97,17 @@
         if (strlen($sql) > 0) $sql .= ' OR ';
         $sql .= 'espirito GLOB "'.$needle.'"';
       }
-      if (strlen($sql) == 0) {
-        echo 'Pesquisa requisitada é desnecessária.';
-      } else {
+      $text = '';
+      if (strlen($sql) > 0) {
         $result = $db->query('SELECT rowid, * FROM autores WHERE '.$sql);
-        $text = '';
-        while ($row = $result->fetchArray(SQLITE3_NUM)) {
-          $text .= join('|', $row)."\n";
+        if ($row = $result->fetchArray(SQLITE3_NUM)) {
+          $text = join('|', $row);
+          while ($row = $result->fetchArray(SQLITE3_NUM)) {
+            $text .= "\n".join('|', $row);
+          }
         }
-        echo $text;
       }
+      echo $text;
       break;
   }
 
