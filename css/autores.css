@@ -1,3 +1,12 @@
+html {
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  /* sempre apresentará a scrollbar vertical no Firefox */
+  overflow: -moz-scrollbars-vertical;
+  overflow-y: scroll;
+  overflow-x: auto;
+}
 body {
   padding: 10px;
   font: 400 normal 18pt "Open Sans", sans-serif;
@@ -25,11 +34,8 @@ section, aside {
 }
 section {
   width: 445px;
+  margin-right: 10px;
   /* background-color: beige; */
-}
-aside {
-  margin-left: 10px;
-  /* background-color: aliceblue; */
 }
 footer {
   display: block;
@@ -37,9 +43,9 @@ footer {
 }
 footer p {
   padding-top: 10px;
-  font-size: 40%;
+  font-size: 50%;
   text-align: center;
-  color: dimgray;
+  color: #555;
 }
 
 div {
@@ -130,18 +136,4 @@ div#cmd p * + input {
 }
 textarea#mural { /* assume a dimensão do parent element */
   width: 100%;
-}
-
-/* ajustes para viewport */
-
-@media (width: 1024px) {
-  aside {
-    width: 530px;
-  }
-}
-
-@media (width: 1368px) {
-  aside {
-    width: 870px;
-  }
 }
