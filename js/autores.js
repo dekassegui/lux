@@ -4,8 +4,8 @@
 
 window.onresize = window.onload = function () {
   var w = parseInt(document.body.clientWidth);
-  var m = parseInt($$('section').clientWidth);
-  $$('aside').style.width = [(w < 1000) ? w-20 : w-m-30, 'px'].join("");
+  $$('aside').style.width = [(w < 1000) ? w-20 :
+    w-parseInt($$('section').clientWidth)-30, 'px'].join("");
 }
 
 window.addEventListener('load',
@@ -44,28 +44,30 @@ window.addEventListener('load',
       mural.value = (t.length == 0) ? text : [t, text].join("\n");
     }
 
-    function toggleNavigationButtons() {
-      // alterna habilitação dos botões de navegação
-      firstBtn.disabled = previousBtn.disabled = (currentRec <= 1);
-      lastBtn.disabled = nextBtn.disabled = (currentRec >= numRecs);
-    }
-
-    function enableButtons() {
-      // habilita botões de navegação se possível
-      toggleNavigationButtons()
-      // habilita botões de comando
-      updateBtn.disabled = delBtn.disabled =
-        searchBtn.disabled = newBtn.disabled = false;
-      // desabilita botões de decisão
-      saveBtn.disabled = cancelBtn.disabled = true;
-      // habilita edição do display do registro corrente
-      self.counter.disabled = false;
+    function disableButtons() {
+      // desabilita botões de navegação & comando
+      firstBtn.disabled = previousBtn.disabled = nextBtn.disabled =
+        lastBtn.disabled = updateBtn.disabled = delBtn.disabled =
+        searchBtn.disabled = newBtn.disabled = true;
+      // habilita botões de decisão
+      saveBtn.disabled = cancelBtn.disabled = false;
+      // desabilita edição do display do registro corrente
+      self.counter.disabled = true;
     }
 
     function whenTableIsEmpty() {
       self.counter.value = 0;
       newBtn.click();
       cancelBtn.disabled = true;
+    }
+
+    function setFields(array) {
+      if (array === undefined) {
+        for (var i=0; i<3; ++i) fields[i].value = '';
+      } else {
+        for (var i=0; i<3; ++i)
+          fields[i].value = (array[i] == 'NULL') ? '' : array[i];
+      }
     }
 
     function update() {
@@ -76,47 +78,36 @@ window.addEventListener('load',
             // atualiza o display do número de ordem do registro corrente
             self.counter.value = currentRec;
             // atualiza o display dos valores dos campos do registro corrente
-            setFieldValues(this.responseText.split('|'));
-            // alterna habilitação dos botões de navegação
-            toggleNavigationButtons();
+            setFields(this.responseText.split('|'));
+            // habilita botões de navegação
+            firstBtn.disabled = previousBtn.disabled = (currentRec <= 1);
+            lastBtn.disabled = nextBtn.disabled = (currentRec >= numRecs);
           }
         };
-        xhr.open("GET", [self.uri, "?action=GETREC&recnumber=", currentRec].join(""), true);
+        xhr.open("GET", [self.uri, "?action=GETREC&recnumber=",
+                  currentRec].join(""), true);
         xhr.send();
       } else {
         whenTableIsEmpty();
       }
     }
 
-    function getFieldValues() {
-      var par = [];
-      for (var i=0; i<3; ++i)
-        par.push('&', fields[i].id, '=', fields[i].value);
-      return par.join("");
-    }
-
-    function setFieldValues(array) {
-      if (array === undefined) {
-        for (var i=0; i<3; ++i) fields[i].value = '';
-      } else {
-        for (var i=0; i<3; ++i)
-          fields[i].value = (array[i] == 'NULL') ? '' : array[i];
-      }
+    function setReadonly(boolValue) {
+      for (var i=0; i<3; ++i) fields[i].readOnly = boolValue;
     }
 
     this.counter.addEventListener('keydown',
       function (ev) {
         if (numRecs > 0) {
           ev = ev || event;
-          // cancela o evento se a tecla pressionada não tem código de
-          // digito entre 0 e 9 (inclusive as do Numpad), Enter, Tab,
-          // Del, Backspace, Left, Right, Home, End e Escape
+          // cancela o evento se a tecla pressionada não for digito entre
+          // 0 e 9 (inclusive as do Numpad), Enter, Tab, Del, Backspace,
+          // Left, Right, Home, End e Escape
           var c = ev.keyCode;
           if ((c < 48 || c > 57) && (c < 96 || c > 105)
-              // TODO: binary search
-              && ([8, 9, 13, 27, 35, 36, 37, 39, 46].indexOf(c) == -1)) {
+            && (binarySearch([8, 9, 13, 27, 35, 36, 37, 39, 46], c) == -1)) {
             ev.preventDefault();
-          } else if (c == 27) {
+          } else if (c == 27) { // Escape
             self.counter.value = currentRec;
             update();
           } else if (c == 13 || c == 9) { // Enter ou Tab
@@ -125,12 +116,12 @@ window.addEventListener('load',
               currentRec = valor;
               update();
             } else {
-              print('Erro: Número de registro inválido.');
+              print('> Erro: Número de registro inválido.');
               ev.preventDefault();
             }
           }
         } else {
-          print('Erro: A tabela está vazia.');
+          print('> Erro: A tabela está vazia.');
         }
       }, true);
 
@@ -142,8 +133,8 @@ window.addEventListener('load',
           currentRec = valor;
           update();
         } else {
-          print('Erro: Número de registro inválido.');
-          if (currentRec > 0 && currentRec <= numRecs) {
+          print('> Erro: Número de registro inválido.');
+          if (0 < currentRec && currentRec <= numRecs) {
             print('> Restaurando valor anterior.');
             self.counter.value = currentRec;
           } else {
@@ -185,102 +176,131 @@ window.addEventListener('load',
 
     updateBtn.addEventListener('click',
       function () {
-        xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function () {
-          if (this.readyState == 4 && this.status == 200) {
-            if (this.responseText == 'FALSE') {
-              print('Atualização mal sucedida.');
-            } else {
-              var n = parseInt(this.responseText);
-              if (n != currentRec) ev.target.value = currentRec = n;
-              print('Atualização bem sucedida.');
-            }
-          }
-        };
-        var par = [self.uri, "?action=UPDATE&recnumber=", currentRec, getFieldValues()];
-        xhr.open("GET", par.join(""), true);
-        xhr.send();
+        updateBtn.className = 'disabled';
+        disableButtons();
+        setReadonly(false);
+        fields[1].focus();
       }, true);
 
     delBtn.addEventListener('click',
       function () {
-        xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function () {
-          if (this.readyState == 4 && this.status == 200) {
-            if ((this.responseText == 'TRUE')) {
-              self.amount.value = --numRecs;
-              if (currentRec > numRecs) --currentRec;
-              self.counter.maxLength = self.amount.value.length;
-              update();
-              print('Exclusão bem sucedida.');
-            } else {
-              print('Exclusão mal sucedida.');
-            }
-          }
-        };
-        xhr.open("GET", [self.uri, "?action=DELETE&recnumber=", currentRec].join(""), true);
-        xhr.send();
+        delBtn.className = 'disabled';
+        saveBtn.value = 'Confirmar';
+        disableButtons();
       }, true);
 
     searchBtn.addEventListener('click',
       function () {
-        xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function () {
-          if (this.readyState == 4 && this.status == 200) {
-            if (this.responseText.length > 0) {
-              print('Resultado da pesquisa:');
-              print(this.responseText);
-            } else {
-              print('Pesquisa mal sucedida.');
-            }
-          }
-        };
-        var par = [self.uri, "?action=SEARCH", getFieldValues()];
-        xhr.open("GET", par.join(""), true);
-        xhr.send();
+        searchBtn.className = 'disabled';
+        saveBtn.value = 'Executar';
+        disableButtons();
+        setFields();
+        setReadonly(false);
+        fields[1].focus();
       }, true);
 
     newBtn.addEventListener('click',
       function () {
-        // desabilita botões de navegação & comando
-        firstBtn.disabled = previousBtn.disabled = nextBtn.disabled = lastBtn.disabled = updateBtn.disabled = delBtn.disabled = searchBtn.disabled = newBtn.disabled = true;
-        // habilita botões de decisão
-        saveBtn.disabled = cancelBtn.disabled = false;
-        // desabilita edição do display do registro corrente
-        self.counter.disabled = true;
-        // limpa todos os campos do registro
-        setFieldValues();
-        // entra em modo de edição dando o foco ao primeiro campo
+        newBtn.className = 'disabled';
+        disableButtons();
+        setFields();
+        setReadonly(false);
         fields[0].focus();
       }, true);
 
     saveBtn.addEventListener('click',
       function () {
+        var par = [self.uri];
+
+        function addFields() {
+          for (var i=0; i<3; ++i)
+            par.push('&', fields[i].id, '=', fields[i].value);
+        }
+
         xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function () {
-          if (this.readyState == 4 && this.status == 200) {
-            if ((this.responseText == 'FALSE')) {
-              print('Inserção mal sucedida.');
-            } else {
-              // atualiza contadores
-              self.amount.value = ++numRecs;
-              self.counter.value = currentRec = parseInt(this.responseText);
-              self.counter.maxLength = self.amount.value.length;
-              // habilita botões de navegação & comando
-              enableButtons();
-              print('Inserção bem sucedida.');
+        if (newBtn.className == 'disabled') {
+          xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+              if ((this.responseText == 'FALSE')) {
+                print('> Inserção mal sucedida.');
+              } else {
+                // atualiza contadores
+                self.amount.value = ++numRecs;
+                self.counter.value =
+                  currentRec = parseInt(this.responseText);
+                self.counter.maxLength = self.amount.value.length;
+                // habilita botões de navegação & comando
+                cancelBtn.click();
+                print('> Inserção bem sucedida.');
+              }
             }
-          }
-        };
-        var par = [self.uri, "?action=INSERT", getFieldValues()];
+          };
+          par.push('?action=INSERT');
+          addFields();
+        } else if (searchBtn.className == 'disabled') {
+          xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+              if (this.responseText.length > 0) {
+                print('> Resultado da pesquisa:');
+                print(this.responseText);
+              } else {
+                print('> Pesquisa mal sucedida.');
+              }
+            }
+          };
+          par.push('?action=SEARCH');
+          addFields();
+        } else if (updateBtn.className == 'disabled') {
+          xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+              if (this.responseText == 'FALSE') {
+                print('> Atualização mal sucedida.');
+              } else {
+                var n = parseInt(this.responseText);
+                if (n != currentRec) ev.target.value = currentRec = n;
+                print('> Atualização bem sucedida.');
+                cancelBtn.click();
+              }
+            }
+          };
+          par.push("?action=UPDATE&recnumber=", currentRec);
+          addFields();
+        } else if (delBtn.className == 'disabled') {
+          xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+              if ((this.responseText == 'TRUE')) {
+                self.amount.value = --numRecs;
+                if (currentRec > numRecs) --currentRec;
+                self.counter.maxLength = self.amount.value.length;
+                update();
+                print('> Exclusão bem sucedida.');
+                cancelBtn.click();
+              } else {
+                print('> Exclusão mal sucedida.');
+              }
+            }
+          };
+          par.push("?action=DELETE&recnumber=", currentRec);
+        }
         xhr.open("GET", par.join(""), true);
         xhr.send();
       }, true);
 
     cancelBtn.addEventListener('click',
       function () {
-        update();         // restaura os valores do display
-        enableButtons();  // alterna disponibilidade dos botões
+        update();
+        // habilita botões de comando
+        updateBtn.disabled = delBtn.disabled =
+          searchBtn.disabled = newBtn.disabled = false;
+        // desabilita botões de decisão
+        saveBtn.disabled = cancelBtn.disabled = true;
+        // habilita edição do display do registro corrente
+        self.counter.disabled = false;
+        // remove atributo de classe
+        newBtn.className = searchBtn.className = updateBtn.className =
+          delBtn.className = "";
+        saveBtn.value = 'Salvar';
+        setReadonly(true);
       }, true);
 
     xhr = new XMLHttpRequest();
@@ -297,10 +317,11 @@ window.addEventListener('load',
           whenTableIsEmpty();
         }
         // inicia o mural informando a data e hora do sistema
-        mural.value = new Date().toLocaleString();
+        mural.value = ['Iniciado em ', new Date().toLocaleString()].join("");
       }
     };
     xhr.open("GET", [self.uri, "?action=COUNT"].join(""), true);
     xhr.send();
+
   },
   true);

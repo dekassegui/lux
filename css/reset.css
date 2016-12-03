@@ -20,6 +20,16 @@
 
 :focus { outline: none; }
 
+html {
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  /* sempre apresentará a scrollbar vertical no Firefox */
+  overflow: -moz-scrollbars-vertical;
+  overflow-y: scroll;
+  overflow-x: auto;
+}
+
 a { text-decoration: none; }
 
 /* -- fontes disponibilizadas localmente

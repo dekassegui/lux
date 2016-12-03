@@ -1,13 +1,5 @@
-html {
-  -webkit-font-smoothing: antialiased;
-  -webkit-text-size-adjust: 100%;
-  -ms-text-size-adjust: 100%;
-  /* sempre apresentará a scrollbar vertical no Firefox */
-  overflow: -moz-scrollbars-vertical;
-  overflow-y: scroll;
-  overflow-x: auto;
-}
 body {
+  min-width: 455px;
   padding: 10px;
   font: 400 normal 18pt "Open Sans", sans-serif;
   color: #676767;
@@ -37,15 +29,28 @@ section {
   margin-right: 10px;
   /* background-color: beige; */
 }
+aside {
+  margin-bottom: 3em;
+}
 footer {
   display: block;
-  clear: left;
+  width: 100%;
+  height: 2em;
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  background-color: #cfd;
+  /* opacity: .5; */
+  box-shadow: 0 0 5px 5px rgba(0, 0, 0,.19);
 }
 footer p {
-  padding-top: 10px;
-  font-size: 50%;
+  margin-top: .875em;
   text-align: center;
-  color: #555;
+  font: 400 italic 45% serif;
+  line-height: 125%;
+  letter-spacing: .05em;
+  text-shadow: 1px 0 #bbb;
+  color: darkorchid;
 }
 
 div {
@@ -131,7 +136,7 @@ div#cmd * + p input {
 div#cmd p * + input {
   margin-left: 5px;
 }
-#newBtn:disabled {
+#newBtn.disabled, #searchBtn.disabled, #updateBtn.disabled, #delBtn.disabled {
   color: #f60;
 }
 textarea#mural { /* assume a dimensão do parent element */

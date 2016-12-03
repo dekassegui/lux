@@ -45,3 +45,19 @@ function asciiVowel(charCode) {
   if (code-217 >>> 0 <= 3) return 85; // U
   return charCode;
 }
+
+function binarySearch(array, key) {
+  var lo = 0, hi = array.length - 1, mid, element;
+  while (lo <= hi) {
+    mid = ((lo + hi) >> 1);
+    element = array[mid];
+    if (element < key) {
+      lo = mid + 1;
+    } else if (element > key) {
+      hi = mid - 1;
+    } else {
+      return mid;
+    }
+  }
+  return -1;
+}
