@@ -9,14 +9,19 @@ window.onresize = function () {
 }
 
 window.onload = function () {
-  window.onresize();
+
+  window.onresize();    // ajuste inicial
+
   // checa se o documento foi atualizado durante alguma operação
   if (!$('cancelBtn').disabled) {
+
     var uri = "http://localhost/lux/autores.php";
+
     // aproveita os valores remanescentes do índice do registro corrente
     // e da quantidade de registros no DB no momento da atualização
-    var indexRec = $('counter').value,
-        numRecs  = $('amount').value;
+    var indexRec = parseInt($('counter').value),
+        numRecs  = parseInt($('amount').value);
+
     // restaura os valores dos inputs consultando o DB por segurança
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
@@ -34,11 +39,16 @@ window.onload = function () {
     xhr.open("GET",
       [uri, "?action=GETREC&recnumber=", indexRec].join(""), true);
     xhr.send();
-    // habilita edição do índice do registro corrente
+
+    // habilita edição e declara a quantidade máxima de caracteres
+    // do input do índice do registro corrente
     $('counter').disabled = false;
+    $('counter').maxLength = $('amount').value.length;
+
     // habilita botões de navegação
     $('firstBtn').disabled = $('previousBtn').disabled = (indexRec <= 1);
     $('lastBtn').disabled = $('nextBtn').disabled = (indexRec >= numRecs);
+
     // habilita botões de comando e remove classe "disabled"
     ['updateBtn', 'delBtn', 'searchBtn', 'newBtn'].forEach(
       function (id) {
@@ -46,13 +56,17 @@ window.onload = function () {
         elm.disabled = false;
         elm.classList.remove('disabled');
       });
+
     // desabilita botões de decisão
-    $('saveBtn').disabled = $('cancelBtn').disabled = true;
+    ['saveBtn'), 'cancelBtn'].forEach(
+      function (id) { $(id).disabled = true; });
   }
 };
 
 window.addEventListener('load',
   function () {
+
+    window.onload = null;  // código não mais necessário
 
     var uri = "http://localhost/lux/autores.php";
 
@@ -255,7 +269,7 @@ window.addEventListener('load',
       function () {
         var par = [uri];
 
-        function addFields() {
+        function addFieldsIdsAndValues() {
           fields.forEach(
             function (input) { par.push('&', input.id, '=', input.value); });
         }
@@ -278,7 +292,7 @@ window.addEventListener('load',
             }
           };
           par.push('?action=INSERT');
-          addFields();
+          addFieldsIdsAndValues();
         } else if (searchBtn.classList.contains('disabled')) {
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
@@ -291,7 +305,7 @@ window.addEventListener('load',
             }
           };
           par.push('?action=SEARCH');
-          addFields();
+          addFieldsIdsAndValues();
         } else if (updateBtn.classList.contains('disabled')) {
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
@@ -299,18 +313,18 @@ window.addEventListener('load',
                 print('> Atualização mal sucedida.');
               } else {
                 var n = parseInt(this.responseText);
-                if (n != indexRec) ev.target.value = indexRec = n;
+                if (n != indexRec) indexRec = n;
                 print('> Atualização bem sucedida.');
                 cancelBtn.click();
               }
             }
           };
           par.push("?action=UPDATE&recnumber=", indexRec);
-          addFields();
+          addFieldsIdsAndValues();
         } else if (delBtn.classList.contains('disabled')) {
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
-              if ((this.responseText == 'TRUE')) {
+              if (this.responseText == 'TRUE') {
                 amount.value = --numRecs;
                 if (indexRec > numRecs) --indexRec;
                 counter.maxLength = amount.value.length;
@@ -346,30 +360,34 @@ window.addEventListener('load',
         setInputsReadonly(true);
       }, true);
 
-    xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function () {
-      if (this.readyState == 4 && this.status == 200) {
-        // inicia o input que exibe a quantidade de registros no DB
-        amount.value = numRecs = parseInt(this.responseText);
-        // declara a quantidade máxima de caracteres do input 'counter'
-        counter.maxLength = this.responseText.length;
-        // checa reutilização de valor do índice do registro corrente
-        if (counter.value.length > 0) {
-          indexRec = parseInt(counter.value);
-        } else {
+    // reutiliza valores se há vestígios de reload
+    if ((counter.value.length > 0) && (amount.value.length > 0)) {
+      // coleta os valores dos mostradores
+      indexRec = parseInt(counter.value);
+      numRecs = parseInt(amount.value);
+      mural.value = ['Reiniciado em ', new Date().toLocaleString()].join("");
+    } else {
+      xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          // inicia o input que exibe a quantidade de registros no DB
+          numRecs = parseInt(amount.value = this.responseText);
+          // declara a quantidade máxima de caracteres do input 'counter'
+          counter.maxLength = this.responseText.length;
           // ação inicial conforme quantidade de registros no DB
           if (numRecs > 0) {
             firstBtn.click();     // mostra o primeiro registro
           } else {
             whenTableIsEmpty();   // força inserção de registro
           }
+          // inicia o mural informando a data e hora do sistema
+          mural.value = ['Iniciado em ',
+            new Date().toLocaleString()].join("");
         }
-        // inicia o mural informando a data e hora do sistema
-        mural.value = ['Iniciado em ', new Date().toLocaleString()].join("");
-      }
-    };
-    xhr.open("GET", [uri, "?action=COUNT"].join(""), true);
-    xhr.send();
+      };
+      xhr.open("GET", [uri, "?action=COUNT"].join(""), true);
+      xhr.send();
+    }
 
   },
   true);
