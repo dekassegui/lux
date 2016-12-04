@@ -40,17 +40,16 @@ footer {
   bottom: 0px;
   left: 0px;
   background-color: #cfd;
-  /* opacity: .5; */
-  box-shadow: 0 0 5px 5px rgba(0, 0, 0,.19);
+  opacity: .85;
+  box-shadow: 0 0 4px 4px rgba(0, 0, 0,.2);
 }
 footer p {
   margin-top: .875em;
   text-align: center;
   font: 400 italic 45% serif;
-  line-height: 125%;
-  letter-spacing: .05em;
-  text-shadow: 1px 0 #bbb;
-  color: darkorchid;
+  line-height: 130%;
+  letter-spacing: .0375em;
+  color: darkblue;
 }
 
 div {
@@ -77,10 +76,13 @@ input[type="text"], textarea {
   padding: 2px 5px;
   font: 400 100% 'Droid Sans Mono', 'Courier New', monospace;
   line-height: 160%;
-  color: darkblue;
+  color: mediumblue;
   background-color: #ffffe0;
   border: solid 1px #ccc;
   border-radius: 5px;
+}
+#fields > input[readonly] {
+  color: darkblue;
 }
 input#counter, textarea#mural {
   color: black;

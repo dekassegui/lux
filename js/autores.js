@@ -1,23 +1,63 @@
 /**
- * Este script é parte do projeto LUX, código aberto em Domínio Público.
+ *  Este script é parte do projeto LUX.
 */
 
-window.onresize = window.onload = function () {
+window.onresize = function () {
   var w = parseInt(document.body.clientWidth);
   $$('aside').style.width = [(w < 1000) ? w-20 :
     w-parseInt($$('section').clientWidth)-30, 'px'].join("");
 }
 
+window.onload = function () {
+  window.onresize();
+  // checa se o documento foi atualizado durante alguma operação
+  if (!$('cancelBtn').disabled) {
+    var uri = "http://localhost/lux/autores.php";
+    // aproveita os valores remanescentes do índice do registro corrente
+    // e da quantidade de registros no DB no momento da atualização
+    var indexRec = $('counter').value,
+        numRecs  = $('amount').value;
+    // restaura os valores dos inputs consultando o DB por segurança
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        // atualiza os valores dos campos do registro corrente
+        var values = this.responseText.split('|');
+        $$('section > div#fields > input[type="text"]').forEach(
+            function (input, index) {
+              input.value = values[index];
+              input.readOnly = true;
+            }
+          );
+      }
+    };
+    xhr.open("GET",
+      [uri, "?action=GETREC&recnumber=", indexRec].join(""), true);
+    xhr.send();
+    // habilita edição do índice do registro corrente
+    $('counter').disabled = false;
+    // habilita botões de navegação
+    $('firstBtn').disabled = $('previousBtn').disabled = (indexRec <= 1);
+    $('lastBtn').disabled = $('nextBtn').disabled = (indexRec >= numRecs);
+    // habilita botões de comando e remove classe "disabled"
+    ['updateBtn', 'delBtn', 'searchBtn', 'newBtn'].forEach(
+      function (id) {
+        var elm = $(id);
+        elm.disabled = false;
+        elm.classList.remove('disabled');
+      });
+    // desabilita botões de decisão
+    $('saveBtn').disabled = $('cancelBtn').disabled = true;
+  }
+};
+
 window.addEventListener('load',
   function () {
 
-    var self = this;
+    var uri = "http://localhost/lux/autores.php";
 
-    this.uri = "http://localhost/lux/autores.php";
-
-    this.counter = $('counter');
-
-    this.amount = $('amount');
+    var counter = $('counter'),
+        amount  = $('amount');
 
     var fields = [$('code'), $('nome'), $('espirito')];
 
@@ -35,9 +75,9 @@ window.addEventListener('load',
 
     var mural = $('mural');  // área de notificação
 
-    var currentRec,   // número de ordem do registro corrente
-        numRecs,      // quantidade total de registros
-        xhr;          // ponteiro para instâncias de XMLHttpRequest
+    var indexRec,   // índice, ou número de ordem, do registro corrente
+        numRecs,    // quantidade de registros no DB
+        xhr;        // ponteiro para instâncias de XMLHttpRequest
 
     function print(text) {
       var t = mural.value;
@@ -46,57 +86,56 @@ window.addEventListener('load',
 
     function disableButtons() {
       // desabilita botões de navegação & comando
-      firstBtn.disabled = previousBtn.disabled = nextBtn.disabled =
-        lastBtn.disabled = updateBtn.disabled = delBtn.disabled =
-        searchBtn.disabled = newBtn.disabled = true;
+      [firstBtn, previousBtn, nextBtn, lastBtn, updateBtn, delBtn, searchBtn,
+        newBtn].forEach(function (elm) { elm.disabled = true; });
       // habilita botões de decisão
-      saveBtn.disabled = cancelBtn.disabled = false;
+      [saveBtn, cancelBtn].forEach(function (elm) { elm.disabled = false; });
       // desabilita edição do display do registro corrente
-      self.counter.disabled = true;
+      counter.disabled = true;
     }
 
     function whenTableIsEmpty() {
-      self.counter.value = 0;
+      counter.value = indexRec = 0;
       newBtn.click();
       cancelBtn.disabled = true;
     }
 
-    function setFields(array) {
-      if (array === undefined) {
-        for (var i=0; i<3; ++i) fields[i].value = '';
-      } else {
-        for (var i=0; i<3; ++i)
-          fields[i].value = (array[i] == 'NULL') ? '' : array[i];
-      }
+    function setInputsValues(array) {
+      var values = array;
+      if (array === undefined) values = Array(fields.length).fill('');
+      fields.forEach(
+        function (input, index) {
+          input.value = (values[index] == 'NULL') ? '' : values[index];
+        });
+    }
+
+    function setInputsReadonly(boolValue) {
+      fields.forEach(function (input) { input.readOnly = boolValue; });
     }
 
     function update() {
-      if (currentRec > 0) {
+      if (indexRec > 0) {
         xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
           if (this.readyState == 4 && this.status == 200) {
             // atualiza o display do número de ordem do registro corrente
-            self.counter.value = currentRec;
+            counter.value = indexRec;
             // atualiza o display dos valores dos campos do registro corrente
-            setFields(this.responseText.split('|'));
+            setInputsValues(this.responseText.split('|'));
             // habilita botões de navegação
-            firstBtn.disabled = previousBtn.disabled = (currentRec <= 1);
-            lastBtn.disabled = nextBtn.disabled = (currentRec >= numRecs);
+            firstBtn.disabled = previousBtn.disabled = (indexRec <= 1);
+            lastBtn.disabled = nextBtn.disabled = (indexRec >= numRecs);
           }
         };
-        xhr.open("GET", [self.uri, "?action=GETREC&recnumber=",
-                  currentRec].join(""), true);
+        xhr.open("GET", [uri, "?action=GETREC&recnumber=", indexRec]
+                          .join(""), true);
         xhr.send();
       } else {
         whenTableIsEmpty();
       }
     }
 
-    function setReadonly(boolValue) {
-      for (var i=0; i<3; ++i) fields[i].readOnly = boolValue;
-    }
-
-    this.counter.addEventListener('keydown',
+    counter.addEventListener('keydown',
       function (ev) {
         if (numRecs > 0) {
           ev = ev || event;
@@ -108,12 +147,12 @@ window.addEventListener('load',
             && (binarySearch([8, 9, 13, 27, 35, 36, 37, 39, 46], c) == -1)) {
             ev.preventDefault();
           } else if (c == 27) { // Escape
-            self.counter.value = currentRec;
+            counter.value = indexRec;
             update();
           } else if (c == 13 || c == 9) { // Enter ou Tab
             var valor = parseInt(ev.target.value);
             if (0 < valor && valor <= numRecs) {
-              currentRec = valor;
+              indexRec = valor;
               update();
             } else {
               print('> Erro: Número de registro inválido.');
@@ -125,110 +164,113 @@ window.addEventListener('load',
         }
       }, true);
 
-    this.counter.addEventListener('blur',
+    counter.addEventListener('blur',
       function (ev) {
-        ev = ev || event;
-        var valor = parseInt(ev.target.value);
-        if (0 < valor && valor <= numRecs) {
-          currentRec = valor;
+        ev = ev || event;                       // aborta edição pendente do
+        var valor = parseInt(ev.target.value);  // counter de registros e
+        if (0 < valor && valor <= numRecs) {    // toma a ação necessária
+          indexRec = valor;                     // para evitar valor ilegal
           update();
         } else {
           print('> Erro: Número de registro inválido.');
-          if (0 < currentRec && currentRec <= numRecs) {
+          if (0 < indexRec && indexRec <= numRecs) {
             print('> Restaurando valor anterior.');
-            self.counter.value = currentRec;
+            counter.value = indexRec;
           } else {
             print('> Reiniciando mostrador do registro corrente.');
-            self.counter.value = currentRec = 1;
+            counter.value = indexRec = 1;
           }
           update();
         }
       }, true);
 
-    this.amount.addEventListener('focus',
+    amount.addEventListener('focus',
       function (ev) {
         ev.target.blur();  // rejeita foco nesse campo
       }, true);
 
     firstBtn.addEventListener('click',
       function () {
-        currentRec = 1;
+        indexRec = 1;
         update();
       }, true);
 
     previousBtn.addEventListener('click',
       function () {
-        --currentRec;
-        update();
+        if (indexRec-1 > 0) { // evita o boogie do botão pressionado, cuja
+          --indexRec;         // habilitação sai da sincronia com o número
+          update();           // do registro devido a latência do servidor
+        }                     // e do DB para atender requisições
       }, true);
 
     nextBtn.addEventListener('click',
       function () {
-        ++currentRec;
-        update();
+        if (indexRec+1 <= numRecs) {
+          ++indexRec;
+          update();
+        }
       }, true);
 
     lastBtn.addEventListener('click',
       function () {
-        currentRec = numRecs;
+        indexRec = numRecs;
         update();
       }, true);
 
     updateBtn.addEventListener('click',
       function () {
-        updateBtn.className = 'disabled';
+        updateBtn.classList.add('disabled');
         disableButtons();
-        setReadonly(false);
+        setInputsReadonly(false);
         fields[1].focus();
       }, true);
 
     delBtn.addEventListener('click',
       function () {
-        delBtn.className = 'disabled';
+        delBtn.classList.add('disabled');
         saveBtn.value = 'Confirmar';
         disableButtons();
       }, true);
 
     searchBtn.addEventListener('click',
       function () {
-        searchBtn.className = 'disabled';
+        searchBtn.classList.add('disabled');
         saveBtn.value = 'Executar';
         disableButtons();
-        setFields();
-        setReadonly(false);
+        setInputsValues();
+        setInputsReadonly(false);
         fields[1].focus();
       }, true);
 
     newBtn.addEventListener('click',
       function () {
-        newBtn.className = 'disabled';
+        newBtn.classList.add('disabled');
         disableButtons();
-        setFields();
-        setReadonly(false);
+        setInputsValues();
+        setInputsReadonly(false);
         fields[0].focus();
       }, true);
 
     saveBtn.addEventListener('click',
       function () {
-        var par = [self.uri];
+        var par = [uri];
 
         function addFields() {
-          for (var i=0; i<3; ++i)
-            par.push('&', fields[i].id, '=', fields[i].value);
+          fields.forEach(
+            function (input) { par.push('&', input.id, '=', input.value); });
         }
 
         xhr = new XMLHttpRequest();
-        if (newBtn.className == 'disabled') {
+        if (newBtn.classList.contains('disabled')) {
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if ((this.responseText == 'FALSE')) {
                 print('> Inserção mal sucedida.');
               } else {
                 // atualiza contadores
-                self.amount.value = ++numRecs;
-                self.counter.value =
-                  currentRec = parseInt(this.responseText);
-                self.counter.maxLength = self.amount.value.length;
+                amount.value = ++numRecs;
+                counter.value = indexRec = parseInt(this.responseText);
+                counter.maxLength = amount.value.length;
                 // habilita botões de navegação & comando
                 cancelBtn.click();
                 print('> Inserção bem sucedida.');
@@ -237,7 +279,7 @@ window.addEventListener('load',
           };
           par.push('?action=INSERT');
           addFields();
-        } else if (searchBtn.className == 'disabled') {
+        } else if (searchBtn.classList.contains('disabled')) {
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText.length > 0) {
@@ -250,28 +292,28 @@ window.addEventListener('load',
           };
           par.push('?action=SEARCH');
           addFields();
-        } else if (updateBtn.className == 'disabled') {
+        } else if (updateBtn.classList.contains('disabled')) {
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText == 'FALSE') {
                 print('> Atualização mal sucedida.');
               } else {
                 var n = parseInt(this.responseText);
-                if (n != currentRec) ev.target.value = currentRec = n;
+                if (n != indexRec) ev.target.value = indexRec = n;
                 print('> Atualização bem sucedida.');
                 cancelBtn.click();
               }
             }
           };
-          par.push("?action=UPDATE&recnumber=", currentRec);
+          par.push("?action=UPDATE&recnumber=", indexRec);
           addFields();
-        } else if (delBtn.className == 'disabled') {
+        } else if (delBtn.classList.contains('disabled')) {
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if ((this.responseText == 'TRUE')) {
-                self.amount.value = --numRecs;
-                if (currentRec > numRecs) --currentRec;
-                self.counter.maxLength = self.amount.value.length;
+                amount.value = --numRecs;
+                if (indexRec > numRecs) --indexRec;
+                counter.maxLength = amount.value.length;
                 update();
                 print('> Exclusão bem sucedida.');
                 cancelBtn.click();
@@ -280,7 +322,7 @@ window.addEventListener('load',
               }
             }
           };
-          par.push("?action=DELETE&recnumber=", currentRec);
+          par.push("?action=DELETE&recnumber=", indexRec);
         }
         xhr.open("GET", par.join(""), true);
         xhr.send();
@@ -289,38 +331,44 @@ window.addEventListener('load',
     cancelBtn.addEventListener('click',
       function () {
         update();
-        // habilita botões de comando
-        updateBtn.disabled = delBtn.disabled =
-          searchBtn.disabled = newBtn.disabled = false;
+        // habilita botões de comando e remove classe 'disabled'
+        [updateBtn, delBtn, searchBtn, newBtn].forEach(
+          function (elm) {
+            elm.disabled = false;
+            elm.classList.remove('disabled');
+          });
         // desabilita botões de decisão
-        saveBtn.disabled = cancelBtn.disabled = true;
+        [saveBtn, cancelBtn].forEach(
+          function (elm) { elm.disabled = true; });
         // habilita edição do display do registro corrente
-        self.counter.disabled = false;
-        // remove atributo de classe
-        newBtn.className = searchBtn.className = updateBtn.className =
-          delBtn.className = "";
+        counter.disabled = false;
         saveBtn.value = 'Salvar';
-        setReadonly(true);
+        setInputsReadonly(true);
       }, true);
 
     xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
       if (this.readyState == 4 && this.status == 200) {
-        // inicia o display da quantidade total de registros
-        self.amount.value = numRecs = parseInt(this.responseText);
-        currentRec = (numRecs > 0) ? 1 : 0;
-        self.counter.maxLength = this.responseText.length;
-        // inicia conforme status do DB
-        if (numRecs > 0) {
-          firstBtn.click();
+        // inicia o input que exibe a quantidade de registros no DB
+        amount.value = numRecs = parseInt(this.responseText);
+        // declara a quantidade máxima de caracteres do input 'counter'
+        counter.maxLength = this.responseText.length;
+        // checa reutilização de valor do índice do registro corrente
+        if (counter.value.length > 0) {
+          indexRec = parseInt(counter.value);
         } else {
-          whenTableIsEmpty();
+          // ação inicial conforme quantidade de registros no DB
+          if (numRecs > 0) {
+            firstBtn.click();     // mostra o primeiro registro
+          } else {
+            whenTableIsEmpty();   // força inserção de registro
+          }
         }
         // inicia o mural informando a data e hora do sistema
         mural.value = ['Iniciado em ', new Date().toLocaleString()].join("");
       }
     };
-    xhr.open("GET", [self.uri, "?action=COUNT"].join(""), true);
+    xhr.open("GET", [uri, "?action=COUNT"].join(""), true);
     xhr.send();
 
   },
