@@ -29,9 +29,6 @@ section {
   margin-right: 10px;
   /* background-color: beige; */
 }
-aside {
-  margin-bottom: 3em;
-}
 footer {
   display: block;
   width: 100%;
@@ -40,7 +37,7 @@ footer {
   bottom: 0px;
   left: 0px;
   background-color: #cfd;
-  border-top: solid 1px #beb;
+  border-top: solid 3px #cec;
   opacity: .85;
   /* box-shadow: 0 0 4px 4px rgba(0, 0, 0,.2); */
 }
@@ -144,4 +141,10 @@ div#cmd p * + input {
 }
 textarea#mural { /* assume a dimensão do parent element */
   width: 100%;
+}
+
+@media (max-width: 1000px), (max-device-with: 1000px) {
+  aside {
+    margin-bottom: 3em;
+  }
 }

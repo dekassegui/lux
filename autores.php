@@ -19,6 +19,8 @@
 
   $db = new SQLite3(DB_FILENAME) or die('Unable to open database');
 
+  if ($db->createFunction("preg_match", "preg_match", 2) === FALSE) exit("Failed creating function\n");
+
   /**
    * Refaz a sequência contínua dos "rowid" dos registros da tabela
    * "autores", esvaziando-a para imediatamente preenchê-la com os
@@ -110,21 +112,31 @@ EOT;
 
     case 'SEARCH':
       /*
-       * Pesquisa registros usando ISNULL, SOUNDEX, GLOB ou LIKE.
+       * Pesquisa registros usando ISNULL, SOUNDEX, GLOB, LIKE ou REGEXP.
+       *
+       * TODO: melhorar extração de argumentos dos operadores/funções
       */
       // tenta montar alguma restrição
       $constraints = array();
       foreach (array('code', 'nome', 'espirito') as $name) {
         $needle = trim($_GET[$name]);
         if (strlen($needle) == 0) continue;
-        if (strtoupper($needle) == 'NULL') {
-          $constraints[] = "$name ISNULL";
-        } else if (preg_match('/^SOUNDEX\((.+)\)$/i', $needle, $matches)) {
+        if (preg_match('/^(GLOB|LIKE)\s+(.+)\s*$/i', $needle, $matches)) {
+          $constraints[] = "$name {$matches[1]} '{$matches[2]}'";
+        } else if (preg_match('/^(?:REGEXP?|MATCH(?:ES)?)\s+(.+)\s*$/i', $needle, $matches)) {
+          $constraints[] = "preg_match('/".$matches[1]."/i', $name)";
+        } else if (preg_match('/^SOUNDEX\s+(.+)\s*$/i', $needle, $matches)) {
           $constraints[] = "soundex($name) == '".soundex($matches[1])."'";
-        } else if (strpos($needle, '%') || strpos($needle, '_')) {
+        } else if (strtoupper($needle) == 'NULL') {
+          $constraints[] = "$name ISNULL";
+        } else if (!(strpos($needle, '*') === FALSE
+                     && strpos($needle, '?') === FALSE)) {
+          $constraints[] = "$name GLOB '$needle'";
+        } else if (!(strpos($needle, '%') === FALSE
+                     && strpos($needle, '_') === FALSE)) {
           $constraints[] = "$name LIKE '$needle'";
         } else {
-          $constraints[] = "$name GLOB '$needle'";
+          $constraints[] = "$name == '$needle'";
         }
       }
       $text = '';

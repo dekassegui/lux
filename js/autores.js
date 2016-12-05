@@ -1,24 +1,40 @@
 /**
- *  Este script é parte do projeto LUX.
+ * Este script é parte do projeto LUX, software livre para bibliotecas de
+ * casas Espíritas, em desenvolvimento desde 12/11/2016.
 */
 
+/**
+ * Listener que ativa comandos para controle "full time" de dimensões de
+ * elementos do documento que serve de interface entre o usuário e a
+ * aplicação para gestão da tabela persistente de "Autores & Espíritos", em
+ * complemento às suas declarações CSS.
+*/
 window.onresize = function () {
+  // estabelece dinamicamente a largura do elemento 'aside'
+  // em função da largura da janela (aka document.body)
   var w = parseInt(document.body.clientWidth);
-  $$('aside').style.width = [(w < 1000) ? w-20 :
-    w-parseInt($$('section').clientWidth)-30, 'px'].join("");
+  var x = (w < 1000) ? w-20 : w-parseInt($$('section').clientWidth)-30;
+  $$('aside').style.width = [x, 'px'].join("");
 }
 
+/** URI do script server side que atende as requisições ao DB desse script */
 var uri = localStorage.getItem("uri");
 
+/**
+ * Listener que ativa comandos para controle e check-up inicial do aplicativo
+ * para gestão da tabela persistente de "Autores & Espíritos", descartado
+ * imediatamente após terminar a execução "once a time" do seu conteúdo, com
+ * prioridade superior aos demais de mesmo evento.
+*/
 window.onload = function () {
 
-  window.onresize();    // ajuste inicial
+  window.onresize();  // ajuste inicial da largura do elemento 'aside'
 
   // checa se o documento foi atualizado durante alguma operação
-  if (!$('cancelBtn').disabled) {
+  if (!$('cancelBtn').disabled && !$('saveBtn').disabled) {
 
     // aproveita os valores remanescentes do índice do registro corrente
-    // e da quantidade de registros no DB no momento da atualização
+    // e da quantidade de registros da tabela no momento da atualização
     var indexRec = parseInt($('counter').value),
         numRecs  = parseInt($('amount').value);
 
@@ -26,8 +42,9 @@ window.onload = function () {
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
       if (this.readyState == 4 && this.status == 200) {
-        // atualiza os valores dos campos do registro corrente
+        // atualiza os valores do registro corrente
         var values = this.responseText.split('|');
+        // loop de atualização dos valores dos inputs
         $$('section > div#fields > input[type="text"]').forEach(
             function (input, index) {
               input.value = values[index];
@@ -62,14 +79,20 @@ window.onload = function () {
       function (id) { $(id).disabled = true; });
   }
 
+  // inicia o mural com mensagem em função da hora local
   var h = new Date().getHours();
-  $('mural').value = (h<12) ? 'Bom dia!' : ((h<18) ? 'Boa tarde!' : 'Boa noite!');
+  $('mural').value = (6<h && h<12) ? 'Bom dia!' : ((h<18) ? 'Boa tarde!' : 'Boa noite!');
 };
 
+/**
+ * Listener que ativa comandos para controle "full time" do aplicativo para
+ * gestão da tabela persistente de "Autores & Espíritos", até o fim do seu
+ * "life cycle", impertinente a recargas do documento interface.
+*/
 window.addEventListener('load',
   function () {
 
-    window.onload = null;  // código não mais necessário
+    window.onload = null;  // código não mais necessário :: libera memória
 
     var counter = $('counter'),
         amount  = $('amount');
@@ -88,12 +111,12 @@ window.addEventListener('load',
         saveBtn   = $('saveBtn'),
         cancelBtn = $('cancelBtn');
 
-    var mural = $('mural');  // área de notificação
+    var mural = $('mural');  // área de notificações ao usuário
 
     var indexRec,   // índice, ou número de ordem, do registro corrente
-        numRecs;    // quantidade de registros no DB
+        numRecs;    // quantidade de registros na tabela de autores
 
-    function print(text) {
+    function print(text) { // adiciona 'text' após a última linha do mural
       var t = mural.value;
       mural.value = (t.length == 0) ? text : [t, text].join("\n");
     }
@@ -104,17 +127,20 @@ window.addEventListener('load',
         newBtn].forEach(function (elm) { elm.disabled = true; });
       // habilita botões de decisão
       [saveBtn, cancelBtn].forEach(function (elm) { elm.disabled = false; });
-      // desabilita edição do display do registro corrente
+      // desabilita edição do índice do registro corrente
       counter.disabled = true;
     }
 
     function whenTableIsEmpty() {
+      // prepara a única ação possível quando a tabela está vazia
       counter.value = indexRec = 0;
       newBtn.click();
       cancelBtn.disabled = true;
     }
 
     function setInputsValues(array) {
+      // preenche os valores dos inputs com os componentes do argumento de
+      // tipo Array ou de array de strings vazias se argumento indeterminado
       var values = array;
       if (array === undefined) values = Array(fields.length).fill('');
       fields.forEach(
@@ -124,10 +150,13 @@ window.addEventListener('load',
     }
 
     function setInputsReadonly(boolValue) {
+      // preenche os valores de atributo readonly dos inputs
       fields.forEach(function (input) { input.readOnly = boolValue; });
     }
 
     function update() {
+      // testa o índice do registro corrente para atualizar os
+      // respectivos dados ou preparar inserção na tabela vazia
       if (indexRec > 0) {
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
@@ -188,10 +217,10 @@ window.addEventListener('load',
         } else {
           print('> Erro: Número de registro inválido.');
           if (0 < indexRec && indexRec <= numRecs) {
-            print('> Restaurando valor anterior.');
+            print('> Restaurando valor do registro corrente.');
             counter.value = indexRec;
           } else {
-            print('> Reiniciando mostrador do registro corrente.');
+            print('> Reiniciando valor do registro corrente.');
             counter.value = indexRec = 1;
           }
           update();
@@ -269,7 +298,7 @@ window.addEventListener('load',
       function () {
         var par = [uri];
 
-        function addFieldsData() {
+        function addDataFields() {
           fields.forEach(
             function (input) { par.push('&', input.id, '=', input.value); });
         }
@@ -292,7 +321,7 @@ window.addEventListener('load',
             }
           };
           par.push('?action=INSERT');
-          addFieldsData();
+          addDataFields();
         } else if (searchBtn.classList.contains('disabled')) {
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
@@ -306,7 +335,7 @@ window.addEventListener('load',
             }
           };
           par.push('?action=SEARCH');
-          addFieldsData();
+          addDataFields();
         } else if (updateBtn.classList.contains('disabled')) {
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
@@ -321,7 +350,7 @@ window.addEventListener('load',
             }
           };
           par.push("?action=UPDATE&recnumber=", indexRec);
-          addFieldsData();
+          addDataFields();
         } else if (delBtn.classList.contains('disabled')) {
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
