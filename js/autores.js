@@ -8,14 +8,14 @@ window.onresize = function () {
     w-parseInt($$('section').clientWidth)-30, 'px'].join("");
 }
 
+var uri = localStorage.getItem("uri");
+
 window.onload = function () {
 
   window.onresize();    // ajuste inicial
 
   // checa se o documento foi atualizado durante alguma operação
   if (!$('cancelBtn').disabled) {
-
-    var uri = "http://localhost/lux/autores.php";
 
     // aproveita os valores remanescentes do índice do registro corrente
     // e da quantidade de registros no DB no momento da atualização
@@ -58,17 +58,18 @@ window.onload = function () {
       });
 
     // desabilita botões de decisão
-    ['saveBtn'), 'cancelBtn'].forEach(
+    ['saveBtn', 'cancelBtn'].forEach(
       function (id) { $(id).disabled = true; });
   }
+
+  var h = new Date().getHours();
+  $('mural').value = (h<12) ? 'Bom dia!' : ((h<18) ? 'Boa tarde!' : 'Boa noite!');
 };
 
 window.addEventListener('load',
   function () {
 
     window.onload = null;  // código não mais necessário
-
-    var uri = "http://localhost/lux/autores.php";
 
     var counter = $('counter'),
         amount  = $('amount');
@@ -90,8 +91,7 @@ window.addEventListener('load',
     var mural = $('mural');  // área de notificação
 
     var indexRec,   // índice, ou número de ordem, do registro corrente
-        numRecs,    // quantidade de registros no DB
-        xhr;        // ponteiro para instâncias de XMLHttpRequest
+        numRecs;    // quantidade de registros no DB
 
     function print(text) {
       var t = mural.value;
@@ -129,7 +129,7 @@ window.addEventListener('load',
 
     function update() {
       if (indexRec > 0) {
-        xhr = new XMLHttpRequest();
+        var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
           if (this.readyState == 4 && this.status == 200) {
             // atualiza o display do número de ordem do registro corrente
@@ -269,12 +269,12 @@ window.addEventListener('load',
       function () {
         var par = [uri];
 
-        function addFieldsIdsAndValues() {
+        function addFieldsData() {
           fields.forEach(
             function (input) { par.push('&', input.id, '=', input.value); });
         }
 
-        xhr = new XMLHttpRequest();
+        var xhr = new XMLHttpRequest();
         if (newBtn.classList.contains('disabled')) {
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
@@ -292,12 +292,13 @@ window.addEventListener('load',
             }
           };
           par.push('?action=INSERT');
-          addFieldsIdsAndValues();
+          addFieldsData();
         } else if (searchBtn.classList.contains('disabled')) {
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText.length > 0) {
-                print('> Resultado da pesquisa:');
+                var n = this.responseText.split(/\n|\r|\r\n/g).length;
+                print(['> Sucesso, localizou ', ' registro(s):'].join(n));
                 print(this.responseText);
               } else {
                 print('> Pesquisa mal sucedida.');
@@ -305,7 +306,7 @@ window.addEventListener('load',
             }
           };
           par.push('?action=SEARCH');
-          addFieldsIdsAndValues();
+          addFieldsData();
         } else if (updateBtn.classList.contains('disabled')) {
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
@@ -320,7 +321,7 @@ window.addEventListener('load',
             }
           };
           par.push("?action=UPDATE&recnumber=", indexRec);
-          addFieldsIdsAndValues();
+          addFieldsData();
         } else if (delBtn.classList.contains('disabled')) {
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
@@ -360,14 +361,13 @@ window.addEventListener('load',
         setInputsReadonly(true);
       }, true);
 
-    // reutiliza valores se há vestígios de reload
+    // checa se o documento foi atualizado durante alguma operação
     if ((counter.value.length > 0) && (amount.value.length > 0)) {
       // coleta os valores dos mostradores
       indexRec = parseInt(counter.value);
       numRecs = parseInt(amount.value);
-      mural.value = ['Reiniciado em ', new Date().toLocaleString()].join("");
     } else {
-      xhr = new XMLHttpRequest();
+      var xhr = new XMLHttpRequest();
       xhr.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
           // inicia o input que exibe a quantidade de registros no DB
@@ -380,9 +380,6 @@ window.addEventListener('load',
           } else {
             whenTableIsEmpty();   // força inserção de registro
           }
-          // inicia o mural informando a data e hora do sistema
-          mural.value = ['Iniciado em ',
-            new Date().toLocaleString()].join("");
         }
       };
       xhr.open("GET", [uri, "?action=COUNT"].join(""), true);

@@ -40,8 +40,9 @@ footer {
   bottom: 0px;
   left: 0px;
   background-color: #cfd;
+  border-top: solid 1px #beb;
   opacity: .85;
-  box-shadow: 0 0 4px 4px rgba(0, 0, 0,.2);
+  /* box-shadow: 0 0 4px 4px rgba(0, 0, 0,.2); */
 }
 footer p {
   margin-top: .875em;
