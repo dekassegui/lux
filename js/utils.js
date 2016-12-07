@@ -1,12 +1,15 @@
 /**
- * Este script é parte do projeto LUX, código aberto em Domínio Público.
+ * Este script é parte do projeto LUX.
 */
 
-function $(id) { return document.getElementById(id) }
+function $(id) { return document.getElementById(id); }
 
 function $$(selector) {
-  var result = document.body.querySelectorAll(selector);
-  return (result.length > 1) ? result : result[0];
+  var nodeList = document.body.querySelectorAll(selector);
+  if (nodeList.length == 1) return nodeList[0];
+  var array = [];
+  for (var i=0; i<nodeList.length; ++i) array[i] = nodeList[i];
+  return array;
 }
 
 function removeChildNodes(node) {

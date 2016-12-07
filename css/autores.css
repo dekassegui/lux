@@ -82,15 +82,15 @@ input[type="text"], textarea {
 #fields > input[readonly] {
   color: darkblue;
 }
-input#counter, textarea#mural {
+input#counter, textarea {
   color: black;
   background-color: #fafafa;
 }
-input[type="text"]:focus, textarea:focus, input#counter:focus, textarea#mural:focus {
+input[type="text"]:focus, input#counter:focus, textarea:focus {
   background-color: white;
   border-color: #0f0;
 }
-input[type="text"]:disabled, textarea:disabled, input#counter:disabled, textarea#mural:disabled {
+input[type="text"]:disabled, input#counter:disabled {
   background-color: #ddd;
 }
 input#counter {
@@ -139,8 +139,12 @@ div#cmd p * + input {
 #newBtn.disabled, #searchBtn.disabled, #updateBtn.disabled, #delBtn.disabled {
   color: #f60;
 }
-textarea#mural { /* assume a dimensão do parent element */
+textarea { /* assume a dimensão do parent element */
   width: 100%;
+}
+textarea.empty {
+  font-style: italic;
+  color: #9c9;
 }
 
 @media (max-width: 1000px), (max-device-with: 1000px) {

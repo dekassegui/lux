@@ -112,31 +112,70 @@ EOT;
 
     case 'SEARCH':
       /*
-       * Pesquisa registros usando ISNULL, SOUNDEX, GLOB, LIKE ou REGEXP.
+       * Pesquisa registros usando ISNULL, SOUNDEX, GLOB, LIKE ou REGEXP
+       * além dos operadores NOT, IS e IN.
        *
        * TODO: melhorar extração de argumentos dos operadores/funções
       */
+
       // tenta montar alguma restrição
       $constraints = array();
-      foreach (array('code', 'nome', 'espirito') as $name) {
+      foreach (array('code', 'nome', 'espirito') as $name)
+      {
+        // tenta obter a expressão a pesquisar na coluna corrente
         $needle = trim($_GET[$name]);
         if (strlen($needle) == 0) continue;
-        if (preg_match('/^(GLOB|LIKE)\s+(.+)\s*$/i', $needle, $matches)) {
-          $constraints[] = "$name {$matches[1]} '{$matches[2]}'";
-        } else if (preg_match('/^(?:REGEXP?|MATCH(?:ES)?)\s+(.+)\s*$/i', $needle, $matches)) {
-          $constraints[] = "preg_match('/".$matches[1]."/i', $name)";
+
+        // checa se a expressão é uma negação
+        $negate = '';
+        if (preg_match('/^NOT\s+(.+)$/i', $needle, $matches)) {
+          $negate = 'NOT ';
+          $needle = $matches[1];
+        }
+
+        // checa uso explícito de GLOB, LIKE ou IS
+        if (preg_match('/^(GLOB|LIKE|IS)\s+(.+)\s*$/i', $needle, $matches)) {
+          $constraints[] = $negate."$name {$matches[1]} '{$matches[2]}'";
+
+        // checa uso de REGEXP também detectando aliases
+        } else if (preg_match('/^(I|)(?:REGEXP?|MATCH(?:ES)?)\s+(.+)\s*$/i',
+                              $needle, $matches)) {
+          // extrai opção "ignorecase" opcionalmente declarada
+          $ignorecase = strtolower($matches[1]);
+          $constraints[] =
+            $negate."preg_match('/{$matches[2]}/$ignorecase', $name)";
+
+        // checa uso de SOUNDEX
         } else if (preg_match('/^SOUNDEX\s+(.+)\s*$/i', $needle, $matches)) {
-          $constraints[] = "soundex($name) == '".soundex($matches[1])."'";
-        } else if (strtoupper($needle) == 'NULL') {
-          $constraints[] = "$name ISNULL";
+          $constraints[] =
+            $negate."soundex($name) == '".soundex($matches[1])."'";
+
+        // checa uso do operador IN
+        } else if (preg_match('/^IN\s+\((.+)\)\s*$/i', $needle, $matches)) {
+          $lista = '';
+          foreach (preg_split('/,\s*/', $matches[1]) as $item) {
+            if (strlen($lista) > 0) $lista .= ',';
+            $lista .= "'$item'";
+          }
+          $constraints[] = $negate."$name IN ($lista)";
+
+        // checa uso implícito de GLOB
         } else if (!(strpos($needle, '*') === FALSE
                      && strpos($needle, '?') === FALSE)) {
-          $constraints[] = "$name GLOB '$needle'";
+          $constraints[] = $negate."$name GLOB '$needle'";
+
+        // checa uso implícito de LIKE
         } else if (!(strpos($needle, '%') === FALSE
                      && strpos($needle, '_') === FALSE)) {
-          $constraints[] = "$name LIKE '$needle'";
+          $constraints[] = $negate."$name LIKE '$needle'";
+
+        // checa comparação com NULL
+        } else if (strtoupper($needle) == 'NULL') {
+          $constraints[] = $negate."$name ISNULL";
+
+        // default :: comparação simples
         } else {
-          $constraints[] = "$name == '$needle'";
+          $constraints[] = $negate."$name == '$needle'";
         }
       }
       $text = '';
@@ -144,9 +183,9 @@ EOT;
       if (count($constraints) > 0) {
         // montagem do sql da pesquisa
         $sql = "SELECT rowid, * FROM autores WHERE ".join(' AND ', $constraints);
+        // for debug purpose --> $text = $sql."\n";
         // consulta o DB
         $result = $db->query($sql);
-        // for debug purpose --> $text = $sql."\n";
         // montagem da lista de resultados
         if ($row = $result->fetchArray(SQLITE3_NUM)) {
           $text .= join('|', $row);

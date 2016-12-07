@@ -17,8 +17,10 @@ window.onresize = function () {
   $$('aside').style.width = [x, 'px'].join("");
 }
 
-/** URI do script server side que atende as requisições ao DB desse script */
-var uri = localStorage.getItem("uri");
+/**
+ * URI do script server side que atende as requisições ao DB desse script.
+*/
+var uri = location.href.replace(/html$/, "php");
 
 /**
  * Listener que ativa comandos para controle e check-up inicial do aplicativo
@@ -79,9 +81,9 @@ window.onload = function () {
       function (id) { $(id).disabled = true; });
   }
 
-  // inicia o mural com mensagem em função da hora local
-  var h = new Date().getHours();
-  $('mural').value = (6<h && h<12) ? 'Bom dia!' : ((h<18) ? 'Boa tarde!' : 'Boa noite!');
+  // inicia o mural com saudação em função da hora local
+  var k = Math.floor(new Date().getHours() / 6) % 3;
+  $('mural').value = ['Boa noite!', 'Bom dia!', 'Boa tarde!'][k];
 };
 
 /**
@@ -97,7 +99,7 @@ window.addEventListener('load',
     var counter = $('counter'),
         amount  = $('amount');
 
-    var fields = [$('code'), $('nome'), $('espirito')];
+    var fields = $$('section > div#fields > input[type="text"]');
 
     var firstBtn    = $('firstBtn'),
         previousBtn = $('previousBtn'),
@@ -115,11 +117,6 @@ window.addEventListener('load',
 
     var indexRec,   // índice, ou número de ordem, do registro corrente
         numRecs;    // quantidade de registros na tabela de autores
-
-    function print(text) { // adiciona 'text' após a última linha do mural
-      var t = mural.value;
-      mural.value = (t.length == 0) ? text : [t, text].join("\n");
-    }
 
     function disableButtons() {
       // desabilita botões de navegação & comando
@@ -178,6 +175,41 @@ window.addEventListener('load',
       }
     }
 
+    function print(text) {
+      // agrega 'text' como apêndice do conteúdo da textarea cujo canvas é
+      // escorrido até que 'text' seja visível tão ao topo quanto possível
+      var a = mural.clientHeight,   // altura do canvas
+          b = mural.scrollHeight;   // altura do conteúdo a priori
+      mural.value = (mural.textLength > 0) ? [mural.value, text].join("\n")
+        : text;
+      if (b > a) {
+        mural.scrollTop = b - parseInt(getCSSproperty(mural, 'line-height'));
+      }
+      mural.oninput();
+    }
+
+    mural.oninput = function () {
+        if (mural.textLength == 0)
+          mural.classList.add('empty');
+        else if (mural.classList.contains('empty'))
+          mural.classList.remove('empty');
+      };
+
+    fields.forEach(
+      function (input) {
+        // estende a responsividade ao teclado nos inputs
+        input.addEventListener('keydown',
+          function (ev) {
+            if (!saveBtn.disabled && !cancelBtn.disabled) {
+              ev = ev || event;
+              // <Ctrl>+<Enter> aciona comando pendente
+              if (ev.keyCode == 13 && ev.ctrlKey) saveBtn.click();
+              // <Escape> cancela comando pendente
+              else if (ev.keyCode == 27) cancelBtn.click();
+            }
+          }, true);
+      });
+
     counter.addEventListener('keydown',
       function (ev) {
         if (numRecs > 0) {
@@ -198,7 +230,7 @@ window.addEventListener('load',
               indexRec = valor;
               update();
             } else {
-              print('> Erro: Número de registro inválido.');
+              print('> Erro: Número de registro é ilegal.');
               ev.preventDefault();
             }
           }
@@ -215,12 +247,12 @@ window.addEventListener('load',
           indexRec = valor;                     // para evitar valor ilegal
           update();
         } else {
-          print('> Erro: Número de registro inválido.');
+          print('> Erro: Valor do índice do registro ilegal.');
           if (0 < indexRec && indexRec <= numRecs) {
-            print('> Restaurando valor do registro corrente.');
+            print('> Restaurando valor do índice do registro corrente.');
             counter.value = indexRec;
           } else {
-            print('> Reiniciando valor do registro corrente.');
+            print('> Reiniciando valor do índice do registro corrente.');
             counter.value = indexRec = 1;
           }
           update();
@@ -300,7 +332,9 @@ window.addEventListener('load',
 
         function addDataFields() {
           fields.forEach(
-            function (input) { par.push('&', input.id, '=', input.value); });
+            function (input) {
+              par.push('&', input.id, '=', encodeURIComponent(input.value));
+            });
         }
 
         var xhr = new XMLHttpRequest();
@@ -399,11 +433,11 @@ window.addEventListener('load',
       var xhr = new XMLHttpRequest();
       xhr.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
-          // inicia o input que exibe a quantidade de registros no DB
+          // inicia o input que exibe a quantidade de registros na tabela
           numRecs = parseInt(amount.value = this.responseText);
           // declara a quantidade máxima de caracteres do input 'counter'
           counter.maxLength = this.responseText.length;
-          // ação inicial conforme quantidade de registros no DB
+          // ação inicial conforme quantidade de registros na tabela
           if (numRecs > 0) {
             firstBtn.click();     // mostra o primeiro registro
           } else {
