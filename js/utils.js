@@ -5,11 +5,12 @@
 function $(id) { return document.getElementById(id); }
 
 function $$(selector) {
-  var nodeList = document.body.querySelectorAll(selector);
-  if (nodeList.length == 1) return nodeList[0];
-  var array = [];
-  for (var i=0; i<nodeList.length; ++i) array[i] = nodeList[i];
-  return array;
+  // pesquisa elementos conforme 'CSS selector' então
+  // transforma o container do tipo NodeList em Array
+  var array = Array.prototype.slice.call(
+                document.querySelectorAll(selector));
+  // retorna único elemento ou array de elementos
+  return (array.length == 1) ? array[0] : array;
 }
 
 function removeChildNodes(node) {

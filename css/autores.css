@@ -18,7 +18,6 @@ h2 {
   display: none;
   visibility: hidden;
 }
-
 section, aside {
   display: inline-block;
   float: left;
@@ -45,11 +44,10 @@ footer p {
   margin-top: .875em;
   text-align: center;
   font: 400 italic 45% serif;
-  line-height: 130%;
+  line-height: 125%;
   letter-spacing: .0375em;
-  color: darkblue;
+  color: black;
 }
-
 div {
   margin-top: .75em;
   padding: 1px;
@@ -67,35 +65,38 @@ label {
 * + label {
   margin-top: .25em;
 }
+
 input[type="text"] {
-  text-overflow: ellipsis;
-}
-input[type="text"], textarea {
   padding: 2px 5px;
   font: 400 100% 'Droid Sans Mono', 'Courier New', monospace;
   line-height: 160%;
+  text-overflow: ellipsis;
   color: mediumblue;
   background-color: #ffffe0;
   border: solid 1px #ccc;
   border-radius: 5px;
 }
-#fields > input[readonly] {
+
+div#fields input {
+  display: block;
+  margin-top: .125em;
+}
+div#fields > input[readonly] {
   color: darkblue;
 }
-input#counter, textarea {
+
+input#counter {
+  width: 2.5em;
+  text-align: center;
   color: black;
   background-color: #fafafa;
 }
-input[type="text"]:focus, input#counter:focus, textarea:focus {
+input[type="text"]:focus, input#counter:focus {
   background-color: white;
   border-color: #0f0;
 }
 input[type="text"]:disabled, input#counter:disabled {
   background-color: #ddd;
-}
-input#counter {
-  width: 2.5em;
-  text-align: center;
 }
 input#amount {
   width: 2.5em;
@@ -104,16 +105,14 @@ input#amount {
   background-color: transparent;
   border-color: transparent;
 }
-div#fields input {
-  display: block;
-  margin-top: .125em;
-}
+
 input#code {
   width: 200px;
 }
 input#nome, input#espirito {
   width: 440px;
 }
+
 input[type="button"] {
   display: inline;
   float: left;
@@ -121,12 +120,13 @@ input[type="button"] {
   line-height: 160%;
   color: black;
 }
-input[type="button"]:hover {
+input[type="button"]:hover, input[type="button"]:focus {
   color: red;
 }
 input[type="button"]:disabled {
   color: #b9b9b9;
 }
+
 div#cmd p input {
   width: 107px;
 }
@@ -137,10 +137,22 @@ div#cmd p * + input {
   margin-left: 5px;
 }
 #newBtn.disabled, #searchBtn.disabled, #updateBtn.disabled, #delBtn.disabled {
-  color: #f60;
+  color: dodgerblue;
 }
-textarea { /* assume a dimensão do parent element */
-  width: 100%;
+
+textarea {
+  width: 100%;      /* assume a dimensão do parent element */
+  padding: 2px 5px;
+  font: 400 100% 'Droid Sans Mono', 'Courier New', monospace;
+  line-height: 160%;
+  color: black;
+  background-color: #fafafa;
+  border: solid 1px #ccc;
+  border-radius: 5px;
+}
+textarea:focus {
+  background-color: white;
+  border-color: #0f0;
 }
 textarea.empty {
   font-style: italic;

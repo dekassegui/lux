@@ -115,6 +115,30 @@ window.addEventListener('load',
 
     var mural = $('mural');  // área de notificações ao usuário
 
+    mural.oninput = function () {
+      if (mural.textLength == 0) {
+        mural.classList.add('empty');
+      } else if (mural.classList.contains('empty')) {
+        mural.classList.remove('empty');
+      }
+    };
+
+    // agrega 'text' como apêndice do conteúdo da textarea cujo canvas
+    // escorre até que 'text' seja visível tão ao topo quanto possível
+    function print(text) {
+      var a = mural.clientHeight,   // altura do canvas
+          b = mural.scrollHeight;   // altura do conteúdo a priori
+      if (mural.textLength > 0) {
+        mural.value = [mural.value, text].join("\n");
+      } else {
+        mural.value = text;
+        mural.oninput();
+      }
+      if (b > a) {
+        mural.scrollTop = b - parseInt(getCSSproperty(mural, 'line-height'));
+      }
+    }
+
     var indexRec,   // índice, ou número de ordem, do registro corrente
         numRecs;    // quantidade de registros na tabela de autores
 
@@ -175,35 +199,15 @@ window.addEventListener('load',
       }
     }
 
-    function print(text) {
-      // agrega 'text' como apêndice do conteúdo da textarea cujo canvas é
-      // escorrido até que 'text' seja visível tão ao topo quanto possível
-      var a = mural.clientHeight,   // altura do canvas
-          b = mural.scrollHeight;   // altura do conteúdo a priori
-      mural.value = (mural.textLength > 0) ? [mural.value, text].join("\n")
-        : text;
-      if (b > a) {
-        mural.scrollTop = b - parseInt(getCSSproperty(mural, 'line-height'));
-      }
-      mural.oninput();
-    }
-
-    mural.oninput = function () {
-        if (mural.textLength == 0)
-          mural.classList.add('empty');
-        else if (mural.classList.contains('empty'))
-          mural.classList.remove('empty');
-      };
-
     fields.forEach(
       function (input) {
-        // estende a responsividade ao teclado nos inputs
+        // estende a responsividade do input no evento 'keydown'
         input.addEventListener('keydown',
           function (ev) {
             if (!saveBtn.disabled && !cancelBtn.disabled) {
               ev = ev || event;
-              // <Ctrl>+<Enter> aciona comando pendente
-              if (ev.keyCode == 13 && ev.ctrlKey) saveBtn.click();
+              // <Enter> aciona comando pendente
+              if (ev.keyCode == 13) saveBtn.click();
               // <Escape> cancela comando pendente
               else if (ev.keyCode == 27) cancelBtn.click();
             }
@@ -221,11 +225,11 @@ window.addEventListener('load',
           if ((c < 48 || c > 57) && (c < 96 || c > 105)
             && (binarySearch([8, 9, 13, 27, 35, 36, 37, 39, 46], c) == -1)) {
             ev.preventDefault();
-          } else if (c == 27) { // Escape
+          } else if (c == 27) {         // <Escape> desfaz edição
             counter.value = indexRec;
             update();
-          } else if (c == 13 || c == 9) { // Enter ou Tab
-            var valor = parseInt(ev.target.value);
+          } else if (c == 13 || c == 9) {           // <Enter> ou <Tab>
+            var valor = parseInt(ev.target.value);  // atualiza os campos
             if (0 < valor && valor <= numRecs) {
               indexRec = valor;
               update();
