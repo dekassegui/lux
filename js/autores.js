@@ -93,8 +93,8 @@ window.addEventListener('load',
     function whenTableIsEmpty() {
       // prepara a única ação possível quando a tabela está vazia
       counter.value = indexRec = 0;
-      newBtn.click();
-      cancelBtn.disabled = true;
+      newBtn.click();               // inserir registro :: o primeiro
+      cancelBtn.disabled = true;    // somente será possível 'salvar'
     }
 
     function setInputsValues(array) {
@@ -171,7 +171,7 @@ window.addEventListener('load',
             counter.value = indexRec;
             update();
           } else if (c == 13 || c == 9) {           // <Enter> ou <Tab>
-            var valor = parseInt(ev.target.value);  // atualiza os campos
+            var valor = parseInt(ev.target.value);  // atualiza o valor
             if (0 < valor && valor <= numRecs) {
               indexRec = valor;
               update();
@@ -205,8 +205,8 @@ window.addEventListener('load',
       }, true);
 
     amount.addEventListener('focus',
-      function (ev) {
-        (ev || event).target.blur();  // rejeita foco nesse campo
+      function () {
+        amount.target.blur();  // rejeita foco nesse input
       }, true);
 
     firstBtn.addEventListener('click',
@@ -373,9 +373,10 @@ window.addEventListener('load',
         setInputsReadonly(true);          // desabilita os inputs dos..
       }, true);
 
-    // verifica a habilitação dos 'action buttons', comprovando
-    // que o documento foi atualizado durante alguma operação
-    if (actionButtons.every(item => item.disabled == false)) {
+    // verifica a habilitação dos 'action buttons', a qual, sendo confirmada,
+    // evidencia que o documento foi atualizado durante exclusão, pesquisa,
+    // atualização, ou inserção (em tabela nao vazia) de novo registro
+    if (actionButtons.every(btn => btn.disabled == false)) {
 
       // aproveita os valores remanescentes do índice do registro corrente
       // e da quantidade de registros da tabela no momento da atualização

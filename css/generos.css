@@ -114,7 +114,7 @@ input#amount {
 input#code {
   width: 200px;
 }
-input#nome, input#espirito {
+input#nome {
   width: 440px;
 }
 

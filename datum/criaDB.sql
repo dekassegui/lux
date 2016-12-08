@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS generos (
 INSERT OR IGNORE INTO generos VALUES
   ("EST", "Estudos"), ("MSG", "Mensagens"), ("ROM", "Romance");
 
-CREATE TRIGGER generos_t1 BEFORE DELETE ON generos
+/* CREATE TRIGGER generos_t1 BEFORE DELETE ON generos
 BEGIN
   --
   -- Não permite eliminar registros da tabela.
@@ -174,7 +174,7 @@ BEGIN
   -- Não permite modificar registros da tabela.
   --
   SELECT raise(ABORT, "Não edite registros desta tabela.");
-END;
+END; */
 
 CREATE TABLE IF NOT EXISTS obras (
   --
