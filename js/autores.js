@@ -4,10 +4,10 @@
 */
 
 /**
- * Listener que ativa comandos para controle "full time" de dimensões de
- * elementos do documento que serve de interface entre o usuário e a
- * aplicação para gestão da tabela persistente de "Autores & Espíritos", em
- * complemento às suas declarações CSS.
+ * Listener que ativa comandos para controle "full time" de dimensões
+ * de elementos do documento que serve de interface entre o usuário e a
+ * aplicação para gestão da tabela persistente de "Autores & Espíritos",
+ * em complemento às suas declarações CSS.
 */
 window.onresize = function () {
   // estabelece dinamicamente a largura do elemento 'aside'
@@ -18,83 +18,17 @@ window.onresize = function () {
 }
 
 /**
- * URI do script server side que atende as requisições ao DB desse script.
-*/
-var uri = location.href.replace(/html$/, "php");
-
-/**
- * Listener que ativa comandos para controle e check-up inicial do aplicativo
- * para gestão da tabela persistente de "Autores & Espíritos", descartado
- * imediatamente após terminar a execução "once a time" do seu conteúdo, com
- * prioridade superior aos demais de mesmo evento.
-*/
-window.onload = function () {
-
-  window.onresize();  // ajuste inicial da largura do elemento 'aside'
-
-  // checa se o documento foi atualizado durante alguma operação
-  if (!$('cancelBtn').disabled && !$('saveBtn').disabled) {
-
-    // aproveita os valores remanescentes do índice do registro corrente
-    // e da quantidade de registros da tabela no momento da atualização
-    var indexRec = parseInt($('counter').value),
-        numRecs  = parseInt($('amount').value);
-
-    // restaura os valores dos inputs consultando o DB por segurança
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function () {
-      if (this.readyState == 4 && this.status == 200) {
-        // atualiza os valores do registro corrente
-        var values = this.responseText.split('|');
-        // loop de atualização dos valores dos inputs
-        $$('section > div#fields > input[type="text"]').forEach(
-            function (input, index) {
-              input.value = values[index];
-              input.readOnly = true;
-            }
-          );
-      }
-    };
-    xhr.open("GET",
-      [uri, "?action=GETREC&recnumber=", indexRec].join(""), true);
-    xhr.send();
-
-    // habilita edição e declara a quantidade máxima de caracteres
-    // do input do índice do registro corrente
-    $('counter').disabled = false;
-    $('counter').maxLength = $('amount').value.length;
-
-    // habilita botões de navegação
-    $('firstBtn').disabled = $('previousBtn').disabled = (indexRec <= 1);
-    $('lastBtn').disabled = $('nextBtn').disabled = (indexRec >= numRecs);
-
-    // habilita botões de comando e remove classe "disabled"
-    ['updateBtn', 'delBtn', 'searchBtn', 'newBtn'].forEach(
-      function (id) {
-        var elm = $(id);
-        elm.disabled = false;
-        elm.classList.remove('disabled');
-      });
-
-    // desabilita botões de decisão
-    ['saveBtn', 'cancelBtn'].forEach(
-      function (id) { $(id).disabled = true; });
-  }
-
-  // inicia o mural com saudação em função da hora local
-  var k = Math.floor(new Date().getHours() / 6) % 3;
-  $('mural').value = ['Boa noite!', 'Bom dia!', 'Boa tarde!'][k];
-};
-
-/**
  * Listener que ativa comandos para controle "full time" do aplicativo para
  * gestão da tabela persistente de "Autores & Espíritos", até o fim do seu
- * "life cycle", impertinente a recargas do documento interface.
+ * "life cycle", indiferente a recargas do documento interface.
 */
 window.addEventListener('load',
   function () {
 
-    window.onload = null;  // código não mais necessário :: libera memória
+    window.onresize();  // ajuste inicial da largura do elemento 'aside'
+
+    // URI do script "server side" que atende requisições ao DB
+    var uri = location.href.replace(/html$/, "php");
 
     var counter = $('counter'),
         amount  = $('amount');
@@ -118,7 +52,7 @@ window.addEventListener('load',
     mural.oninput = function () {
       if (mural.textLength == 0) {
         mural.classList.add('empty');
-      } else if (mural.classList.contains('empty')) {
+      } else {
         mural.classList.remove('empty');
       }
     };
@@ -140,14 +74,18 @@ window.addEventListener('load',
     }
 
     var indexRec,   // índice, ou número de ordem, do registro corrente
-        numRecs;    // quantidade de registros na tabela de autores
+        numRecs;    // quantidade de registros da tabela de autores
+
+    var actionButtons = [saveBtn, cancelBtn];
+
+    var commandButtons = [updateBtn, delBtn, searchBtn, newBtn];
 
     function disableButtons() {
       // desabilita botões de navegação & comando
-      [firstBtn, previousBtn, nextBtn, lastBtn, updateBtn, delBtn, searchBtn,
-        newBtn].forEach(function (elm) { elm.disabled = true; });
-      // habilita botões de decisão
-      [saveBtn, cancelBtn].forEach(function (elm) { elm.disabled = false; });
+      setDisabled([firstBtn, previousBtn, nextBtn, lastBtn], true);
+      setDisabled(commandButtons, true);
+      // habilita 'action buttons'
+      setDisabled(actionButtons, false);
       // desabilita edição do índice do registro corrente
       counter.disabled = true;
     }
@@ -160,18 +98,17 @@ window.addEventListener('load',
     }
 
     function setInputsValues(array) {
-      // preenche os valores dos inputs com os componentes do argumento de
-      // tipo Array ou de array de strings vazias se argumento indeterminado
-      var values = array;
-      if (array === undefined) values = Array(fields.length).fill('');
+      // preenche os inputs com componentes do argumento do tipo Array
+      // ou de array de strings vazias se o argumento for indeterminado
+      array = array || Array(fields.length).fill('');
       fields.forEach(
         function (input, index) {
-          input.value = (values[index] == 'NULL') ? '' : values[index];
+          input.value = (array[index] == 'NULL') ? '' : array[index];
         });
     }
 
     function setInputsReadonly(boolValue) {
-      // preenche os valores de atributo readonly dos inputs
+      // declara os valores do atributo readonly dos inputs de campos..
       fields.forEach(function (input) { input.readOnly = boolValue; });
     }
 
@@ -182,13 +119,13 @@ window.addEventListener('load',
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
           if (this.readyState == 4 && this.status == 200) {
-            // atualiza o display do número de ordem do registro corrente
+            // atualiza o input do índice do registro corrente
             counter.value = indexRec;
-            // atualiza o display dos valores dos campos do registro corrente
+            // atualiza os inputs dos campos do registro corrente
             setInputsValues(this.responseText.split('|'));
-            // habilita botões de navegação
-            firstBtn.disabled = previousBtn.disabled = (indexRec <= 1);
-            lastBtn.disabled = nextBtn.disabled = (indexRec >= numRecs);
+            // habilita/desabilita botões de navegação
+            setDisabled([firstBtn, previousBtn], indexRec <= 1);
+            setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
           }
         };
         xhr.open("GET", [uri, "?action=GETREC&recnumber=", indexRec]
@@ -201,15 +138,20 @@ window.addEventListener('load',
 
     fields.forEach(
       function (input) {
-        // estende a responsividade do input no evento 'keydown'
+        // incrementa a responsividade do input no evento 'keydown'
         input.addEventListener('keydown',
           function (ev) {
-            if (!saveBtn.disabled && !cancelBtn.disabled) {
+            // rejeita o evento na exclusão de registros
+            if (delBtn.classList.contains('disabled')) return;
+            // testa se 'action buttons' estão habilitados
+            if (actionButtons.every(item => item.disabled == false)) {
               ev = ev || event;
-              // <Enter> aciona comando pendente
-              if (ev.keyCode == 13) saveBtn.click();
-              // <Escape> cancela comando pendente
-              else if (ev.keyCode == 27) cancelBtn.click();
+              if (ev.keyCode == 13) {
+                saveBtn.click();    // <Enter> aciona comando pendente
+              } else if (ev.keyCode == 27) {
+                cancelBtn.click();  // <Escape> cancela comando pendente
+                ev.target.blur();   // remove o foco do input
+              }
             }
           }, true);
       });
@@ -225,7 +167,7 @@ window.addEventListener('load',
           if ((c < 48 || c > 57) && (c < 96 || c > 105)
             && (binarySearch([8, 9, 13, 27, 35, 36, 37, 39, 46], c) == -1)) {
             ev.preventDefault();
-          } else if (c == 27) {         // <Escape> desfaz edição
+          } else if (c == 27) { // <Escape> desfaz edição
             counter.value = indexRec;
             update();
           } else if (c == 13 || c == 9) {           // <Enter> ou <Tab>
@@ -244,12 +186,11 @@ window.addEventListener('load',
       }, true);
 
     counter.addEventListener('blur',
-      function (ev) {
-        ev = ev || event;                       // aborta edição pendente do
-        var valor = parseInt(ev.target.value);  // counter de registros e
-        if (0 < valor && valor <= numRecs) {    // toma a ação necessária
-          indexRec = valor;                     // para evitar valor ilegal
-          update();
+      function () {
+        var valor = parseInt(counter.value);  // aborta edição pendente do
+        if (0 < valor && valor <= numRecs) {  // input do índice do registro
+          indexRec = valor;                   // corrente, atualizando-o com
+          update();                           // algum valor legal
         } else {
           print('> Erro: Valor do índice do registro ilegal.');
           if (0 < indexRec && indexRec <= numRecs) {
@@ -265,7 +206,7 @@ window.addEventListener('load',
 
     amount.addEventListener('focus',
       function (ev) {
-        ev.target.blur();  // rejeita foco nesse campo
+        (ev || event).target.blur();  // rejeita foco nesse campo
       }, true);
 
     firstBtn.addEventListener('click',
@@ -276,10 +217,10 @@ window.addEventListener('load',
 
     previousBtn.addEventListener('click',
       function () {
-        if (indexRec-1 > 0) { // evita o boogie do botão pressionado, cuja
-          --indexRec;         // habilitação sai da sincronia com o número
-          update();           // do registro devido a latência do servidor
-        }                     // e do DB para atender requisições
+        if (indexRec-1 > 0) { // evita o "bug do botão pressionado", cuja
+          --indexRec;         // habilitação sai de sincronia com o índice
+          update();           // do registro corrente devido a latência do
+        }                     // servidor e do DB para atender requisições
       }, true);
 
     nextBtn.addEventListener('click',
@@ -343,12 +284,13 @@ window.addEventListener('load',
 
         var xhr = new XMLHttpRequest();
         if (newBtn.classList.contains('disabled')) {
+
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if ((this.responseText == 'FALSE')) {
                 print('> Inserção mal sucedida.');
               } else {
-                // atualiza contadores
+                // atualiza inputs do índice/quantidade de registros
                 amount.value = ++numRecs;
                 counter.value = indexRec = parseInt(this.responseText);
                 counter.maxLength = amount.value.length;
@@ -360,7 +302,9 @@ window.addEventListener('load',
           };
           par.push('?action=INSERT');
           addDataFields();
+
         } else if (searchBtn.classList.contains('disabled')) {
+
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText.length > 0) {
@@ -374,7 +318,9 @@ window.addEventListener('load',
           };
           par.push('?action=SEARCH');
           addDataFields();
+
         } else if (updateBtn.classList.contains('disabled')) {
+
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText == 'FALSE') {
@@ -389,7 +335,9 @@ window.addEventListener('load',
           };
           par.push("?action=UPDATE&recnumber=", indexRec);
           addDataFields();
+
         } else if (delBtn.classList.contains('disabled')) {
+
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText == 'TRUE') {
@@ -405,6 +353,7 @@ window.addEventListener('load',
             }
           };
           par.push("?action=DELETE&recnumber=", indexRec);
+
         }
         xhr.open("GET", par.join(""), true);
         xhr.send();
@@ -413,45 +362,80 @@ window.addEventListener('load',
     cancelBtn.addEventListener('click',
       function () {
         update();
-        // habilita botões de comando e remove classe 'disabled'
-        [updateBtn, delBtn, searchBtn, newBtn].forEach(
+        commandButtons.forEach(
           function (elm) {
-            elm.disabled = false;
-            elm.classList.remove('disabled');
+            elm.disabled = false;             // habilita o botão
+            elm.classList.remove('disabled'); // remove classe 'disabled'
           });
-        // desabilita botões de decisão
-        [saveBtn, cancelBtn].forEach(
-          function (elm) { elm.disabled = true; });
-        // habilita edição do display do registro corrente
-        counter.disabled = false;
-        saveBtn.value = 'Salvar';
-        setInputsReadonly(true);
+        setDisabled(actionButtons, true); // desabilita 'action buttons'
+        counter.disabled = false;         // habilita edição no input..
+        saveBtn.value = 'Salvar';         // restaura o rotulo do botão
+        setInputsReadonly(true);          // desabilita os inputs dos..
       }, true);
 
-    // checa se o documento foi atualizado durante alguma operação
-    if ((counter.value.length > 0) && (amount.value.length > 0)) {
-      // coleta os valores dos mostradores
+    // verifica a habilitação dos 'action buttons', comprovando
+    // que o documento foi atualizado durante alguma operação
+    if (actionButtons.every(item => item.disabled == false)) {
+
+      // aproveita os valores remanescentes do índice do registro corrente
+      // e da quantidade de registros da tabela no momento da atualização
       indexRec = parseInt(counter.value);
       numRecs = parseInt(amount.value);
-    } else {
+
+      // restaura os valores dos inputs consultando o DB por segurança
       var xhr = new XMLHttpRequest();
       xhr.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
-          // inicia o input que exibe a quantidade de registros na tabela
+          // atualiza os valores do registro corrente
+          setInputsValues(this.responseText.split('|'));
+        }
+      };
+      xhr.open("GET",
+        [uri, "?action=GETREC&recnumber=", indexRec].join(""), true);
+      xhr.send();
+
+      // habilita edição e declara a quantidade máxima de
+      // caracteres do input do índice do registro corrente
+      counter.disabled = false;
+      counter.maxLength = amount.value.length;
+
+      // habilita/desabilita botões de navegação
+      setDisabled([firstBtn, previousBtn], indexRec <= 1);
+      setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
+
+      commandButtons.forEach(
+        function (btn) {
+          btn.disabled = false;             // habilita o botão
+          btn.classList.remove('disabled'); // remove classe 'disabled'
+        });
+
+      setDisabled(actionButtons, true); // desabilita os 'action buttons'
+
+    } else {
+
+      var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          // declara a quantidade inicial de registros da tabela
           numRecs = parseInt(amount.value = this.responseText);
-          // declara a quantidade máxima de caracteres do input 'counter'
+          // declara a quantidade máxima de caracteres do input
           counter.maxLength = this.responseText.length;
-          // ação inicial conforme quantidade de registros na tabela
+          // ação inicial conforme quantidade de registros da tabela
           if (numRecs > 0) {
-            firstBtn.click();     // mostra o primeiro registro
+            firstBtn.click();   // mostra o primeiro registro
           } else {
-            whenTableIsEmpty();   // força inserção de registro
+            whenTableIsEmpty(); // força inserção de registro
           }
         }
       };
       xhr.open("GET", [uri, "?action=COUNT"].join(""), true);
       xhr.send();
+
     }
+
+    // inicia o mural com saudação em função da hora local
+    mural.value = ['> Boa noite!', '> Bom dia!', '> Boa tarde!'][
+      Math.floor(new Date().getHours() / 6) % 3];
 
   },
   true);

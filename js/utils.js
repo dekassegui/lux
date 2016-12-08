@@ -65,3 +65,7 @@ function binarySearch(array, key) {
   }
   return -1;
 }
+
+function setDisabled(array, boolValue) {
+  array.forEach( function (item) { item.disabled = boolValue; } );
+}
