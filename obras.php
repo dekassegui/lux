@@ -23,8 +23,9 @@
 
   /**
    * Refaz a sequência contínua dos "rowid" dos registros da tabela
-   * "generos", esvaziando-a para imediatamente preenchê-la com os
-   * registros de sua cópia, ordenados pelo "nome" em ordem crescente.
+   * "obras", esvaziando-a para imediatamente preenchê-la com os
+   * registros de sua cópia, ordenados pela combinação das colunas
+   * "nome" e "espirito", em ordem crescente.
    *
    * Nota: As requisições são feitas numa transação, para comprometer
    *       minimamente o desempenho da interface.
@@ -36,10 +37,10 @@
       PRAGMA foreign_keys = OFF;
       BEGIN TRANSACTION;
       DROP TABLE IF EXISTS t;
-      CREATE TEMP TABLE t AS SELECT * FROM generos ORDER BY nome;
-      DELETE FROM generos;
-      INSERT INTO generos SELECT * FROM t;
-      -- REINDEX generos_ndx;
+      CREATE TEMP TABLE t AS SELECT * FROM obras ORDER BY titulo;
+      DELETE FROM obras;
+      INSERT INTO obras SELECT * FROM t;
+      -- REINDEX obras_ndx;
       COMMIT;
       PRAGMA foreign_keys = ON;
       -- VACUUM;
@@ -51,26 +52,28 @@ EOT
 
     case 'GETREC':
       $result = $db->query(
-        "SELECT * FROM generos WHERE rowid == {$_GET['recnumber']}");
+        "SELECT * FROM obras_view WHERE rowid == {$_GET['recnumber']}");
       echo join('|', $result->fetchArray(SQLITE3_NUM));
       break;
 
     case 'COUNT':
-      echo $db->querySingle('SELECT count() FROM generos');
+      echo $db->querySingle('SELECT count() FROM obras');
       break;
 
     case 'UPDATE':
       $code = chk($_GET['code']);
-      $nome = chk($_GET['nome']);
+      $titulo = chk($_GET['titulo']);
+      $autor = chk($_GET['autor']);
+      $genero = chk($_GET['genero']);
       $sql = <<<EOT
         PRAGMA foreign_keys = ON;
         PRAGMA recursive_triggers = ON;
-        UPDATE generos SET code=$code, nome=$nome
+        UPDATE obras SET code=$code, titulo=$titulo, autor=$autor, genero=$genero
           WHERE rowid == {$_GET['recnumber']};
 EOT;
       if ($db->exec($sql)) {
         rebuildTable($db);
-        $sql = "SELECT rowid FROM generos WHERE code == $code";
+        $sql = "SELECT rowid FROM obras WHERE code == $code";
         echo $db->querySingle($sql);
       } else {
         echo 'FALSE';
@@ -79,15 +82,17 @@ EOT;
 
     case 'INSERT':
       $code = chk($_GET['code']);
-      $nome = chk($_GET['nome']);
+      $titulo = chk($_GET['titulo']);
+      $autor = chk($_GET['autor']);
+      $genero = chk($_GET['genero']);
       $sql = <<<EOT
         PRAGMA foreign_keys = ON;
         PRAGMA recursive_triggers = ON;
-        INSERT INTO generos SELECT $code, $nome;
+        INSERT INTO obras SELECT $code, $titulo, $autor, $genero;
 EOT;
       if ($db->exec($sql)) {
         rebuildTable($db);
-        $sql = "SELECT rowid FROM generos WHERE code == $code";
+        $sql = "SELECT rowid FROM obras WHERE code == $code";
         echo $db->querySingle($sql);
       } else {
         echo 'FALSE';
@@ -97,7 +102,7 @@ EOT;
     case 'DELETE':
       $sql = <<<EOT
         PRAGMA foreign_keys = ON;
-        DELETE FROM generos WHERE rowid = {$_GET['recnumber']};
+        DELETE FROM obras WHERE rowid = {$_GET['recnumber']};
 EOT;
       if ($db->exec($sql)) {
         rebuildTable($db);
@@ -117,7 +122,7 @@ EOT;
 
       // tenta montar alguma restrição
       $constraints = array();
-      foreach (array('code', 'nome') as $name)
+      foreach (array('code', 'titulo', 'autor', 'genero') as $name)
       {
         // tenta obter a expressão a pesquisar na coluna corrente
         $needle = trim($_GET[$name]);
@@ -179,7 +184,7 @@ EOT;
       // requisita a pesquisa se a montagem foi bem sucedida
       if (count($constraints) > 0) {
         // montagem do sql da pesquisa
-        $sql = "SELECT rowid, * FROM generos WHERE ".join(' AND ', $constraints);
+        $sql = "SELECT rowid, code, titulo, autor, espirito, genero FROM obras_view WHERE ".join(' AND ', $constraints);
         // for debug purpose --> $text = $sql."\n";
         // consulta o DB
         $result = $db->query($sql);
@@ -189,18 +194,6 @@ EOT;
           while ($row = $result->fetchArray(SQLITE3_NUM)) {
             $text .= "\n".join('|', $row);
           }
-        }
-      }
-      echo $text;
-      break;
-
-    case 'GETALL':
-      $text = '';
-      $result = $db->query('SELECT code, nome FROM generos');
-      if ($row = $result->fetchArray(SQLITE3_NUM)) {
-        $text .= $row[0].'|'.$row[1];
-        while ($row = $result->fetchArray(SQLITE3_NUM)) {
-          $text .= "\n".$row[0].'|'.$row[1];
         }
       }
       echo $text;

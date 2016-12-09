@@ -196,6 +196,19 @@ EOT;
       }
       echo $text;
       break;
+
+    case 'GETALL':
+      $text = '';
+      $result = $db->query(
+        'SELECT code, nome, espirito FROM autores');
+      if ($row = $result->fetchArray(SQLITE3_NUM)) {
+        $text .= join('|', $row);
+        while ($row = $result->fetchArray(SQLITE3_NUM)) {
+          $text .= "\n".join('|', $row);
+        }
+      }
+      echo $text;
+      break;
   }
 
   $db->close();

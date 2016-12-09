@@ -102,7 +102,10 @@ window.addEventListener('load',
       // ou de array de strings vazias se o argumento for indeterminado
       var fn = (array === undefined) ? function (input) { input.value = ''; }
         : function (input, index) {
-            input.value = (array[index] == 'NULL') ? '' : array[index];
+            var data = (index == 2)
+              ? (array[4] + (array[5].length > 0 ? ' - ' + array[5] : ''))
+              : ((index == 3) ? array[7] : array[index+1]);
+            input.value = (data == 'NULL') ? '' : data;
           };
       fields.forEach(fn);
     }
@@ -146,8 +149,8 @@ window.addEventListener('load',
             // testa se 'action buttons' estão habilitados
             if (actionButtons.every(item => item.disabled == false)) {
               ev = ev || event;
-              if (ev.keyCode == 13) {
-                saveBtn.click();    // <Enter> aciona comando pendente
+              if (ev.keyCode == 13 && ev.ctrlKey) {
+                saveBtn.click();    // <Ctrl>+<Enter> aciona comando pendente
               } else if (ev.keyCode == 27) {
                 cancelBtn.click();  // <Escape> cancela comando pendente
                 ev.target.blur();   // remove o foco do input
@@ -275,10 +278,16 @@ window.addEventListener('load',
       function () {
         var par = [uri];
 
-        function addDataFields() {
+        function addDataFields(bool) {
           fields.forEach(
             function (input) {
-              par.push('&', input.id, '=', encodeURIComponent(input.value));
+              var value = input.value.trim();
+              if (!bool && input.hasAttribute("list")) {
+                value = $(input.getAttribute("list"))
+                  .querySelector("option[value='" + value + "']")
+                  .getAttribute("code");
+              }
+              par.push('&', input.id, '=', encodeURIComponent(value));
             });
         }
 
@@ -317,7 +326,7 @@ window.addEventListener('load',
             }
           };
           par.push('?action=SEARCH');
-          addDataFields();
+          addDataFields(true);
 
         } else if (updateBtn.classList.contains('disabled')) {
 
@@ -373,10 +382,44 @@ window.addEventListener('load',
         setInputsReadonly(true);          // desabilita os inputs dos..
       }, true);
 
+    {
+      // preenche datalists dos inputs 'autor' e 'genero'
+
+      ["autores", "generos"].forEach(
+        function (iD) {
+          var xhr = new XMLHttpRequest();
+          xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+              var datalist = $(iD);
+              this.responseText.split(/\n|\r|\r\n/g).forEach(
+                function (text) {
+                  var option = document.createElement("option");
+                  var j = text.indexOf('|');
+                  option.setAttribute('code', text.substring(0, j));
+                  var value = text.substring(j+1);
+                  j = value.indexOf('|');
+                  option.value = (j < value.length-1)
+                    ? value.replace('|', ' - ') : value.substring(0, j);
+                  datalist.appendChild(option);
+                }
+              );
+            }
+          };
+          xhr.open("GET", [uri.replace("obras", iD), "?action=GETALL"]
+            .join(""), true);
+          xhr.send();
+        });
+    }
+
     // verifica a habilitação dos 'action buttons', a qual, sendo confirmada,
     // evidencia que o documento foi atualizado durante exclusão, pesquisa,
     // atualização, ou inserção (em tabela nao vazia) de novo registro
-    if (actionButtons.every(btn => btn.disabled == false)) {
+    //
+    //if (actionButtons.every(btn => btn.disabled == false)) {
+    //
+    // --> BUG: perda de escopo :: WORKAROUND: testar os inputs dos números
+    //
+    if ([counter, amount].every(input => input.value.length > 0)) {
 
       // aproveita os valores remanescentes do índice do registro corrente
       // e da quantidade de registros da tabela no momento da atualização
