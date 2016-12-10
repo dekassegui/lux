@@ -200,7 +200,7 @@ EOT;
     case 'GETALL':
       $text = '';
       $result = $db->query(
-        'SELECT code, nome, espirito FROM autores');
+        'SELECT code, ifnull(nome||" - "||espirito, nome) FROM autores');
       if ($row = $result->fetchArray(SQLITE3_NUM)) {
         $text .= join('|', $row);
         while ($row = $result->fetchArray(SQLITE3_NUM)) {

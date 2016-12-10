@@ -52,7 +52,7 @@ EOT
 
     case 'GETREC':
       $result = $db->query(
-        "SELECT * FROM obras_view WHERE rowid == {$_GET['recnumber']}");
+        "SELECT code, titulo, ifnull(autor||' - '||espirito, autor), genero FROM obras_view WHERE rowid == {$_GET['recnumber']}");
       echo join('|', $result->fetchArray(SQLITE3_NUM));
       break;
 
@@ -184,7 +184,7 @@ EOT;
       // requisita a pesquisa se a montagem foi bem sucedida
       if (count($constraints) > 0) {
         // montagem do sql da pesquisa
-        $sql = "SELECT rowid, code, titulo, autor, espirito, genero FROM obras_view WHERE ".join(' AND ', $constraints);
+        $sql = "SELECT rowid, code, titulo, ifnull(autor||' - '||espirito, autor), genero FROM obras_view WHERE ".join(' AND ', $constraints);
         // for debug purpose --> $text = $sql."\n";
         // consulta o DB
         $result = $db->query($sql);

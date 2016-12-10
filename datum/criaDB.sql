@@ -246,6 +246,12 @@ BEGIN
     WHERE titulo == new.titulo;
 END;
 
+CREATE VIEW IF NOT EXISTS obras_view AS
+  SELECT obras.rowid, obras.code, obras.titulo, obras.autor AS autor_code, autores.nome AS autor, autores.espirito, obras.genero AS genero_code, generos.nome AS genero
+  FROM obras JOIN autores ON (obras.autor == autores.code)
+    JOIN generos ON (obras.genero == generos.code)
+  ORDER BY obras.titulo;
+
 CREATE TABLE IF NOT EXISTS acervo (
   --
   -- coleção de livros :: exemplares físicos (instâncias) de obras literárias

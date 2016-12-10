@@ -6,7 +6,7 @@
 /**
  * Listener que ativa comandos para controle "full time" de dimensões
  * de elementos do documento que serve de interface entre o usuário e a
- * aplicação para gestão da tabela persistente de "Autores & Espíritos",
+ * aplicação para gestão da tabela persistente de "Obras Espíritas",
  * em complemento às suas declarações CSS.
 */
 window.onresize = function () {
@@ -19,7 +19,7 @@ window.onresize = function () {
 
 /**
  * Listener que ativa comandos para controle "full time" do aplicativo para
- * gestão da tabela persistente de "Autores & Espíritos", até o fim do seu
+ * gestão da tabela persistente de "Obras Espíritas", até o fim do seu
  * "life cycle", indiferente a recargas do documento interface.
 */
 window.addEventListener('load',
@@ -100,14 +100,12 @@ window.addEventListener('load',
     function setInputsValues(array) {
       // preenche os inputs com componentes do argumento do tipo Array
       // ou de array de strings vazias se o argumento for indeterminado
-      var fn = (array === undefined) ? function (input) { input.value = ''; }
-        : function (input, index) {
-            var data = (index == 2)
-              ? (array[4] + (array[5].length > 0 ? ' - ' + array[5] : ''))
-              : ((index == 3) ? array[7] : array[index+1]);
-            input.value = (data == 'NULL') ? '' : data;
-          };
-      fields.forEach(fn);
+      fields.forEach(
+        (array === undefined) ? function (input) { input.value = ''; }
+          : function (input, index) {
+              input.value = (array[index] == 'NULL') ? '' : array[index];
+            }
+      );
     }
 
     function setInputsReadonly(boolValue) {
@@ -278,14 +276,20 @@ window.addEventListener('load',
       function () {
         var par = [uri];
 
-        function addDataFields(bool) {
+        function addDataFields(searching) {
+          searching = searching || false;
           fields.forEach(
             function (input) {
-              var value = input.value.trim();
-              if (!bool && input.hasAttribute("list")) {
-                value = $(input.getAttribute("list"))
-                  .querySelector("option[value='" + value + "']")
-                  .getAttribute("code");
+              var value = input.value;
+              // se nao é pesquisa e se o input é associado a datalist
+              // então tenta trocar o valor do input pelo respectivo código
+              if (searching == false && input.hasAttribute("list")) {
+                // tenta obter a option cujo valor de atributo 'value'
+                // corresponde exatamente ao valor do input
+                var el = $$("datalist#" + input.getAttribute("list")
+                  + " option[value='" + value + "']");
+                // testa se 'de facto' é HTMLelement :: tem o método..
+                if (el.getAttribute) value = el.getAttribute("code");
               }
               par.push('&', input.id, '=', encodeURIComponent(value));
             });
@@ -396,10 +400,7 @@ window.addEventListener('load',
                   var option = document.createElement("option");
                   var j = text.indexOf('|');
                   option.setAttribute('code', text.substring(0, j));
-                  var value = text.substring(j+1);
-                  j = value.indexOf('|');
-                  option.value = (j < value.length-1)
-                    ? value.replace('|', ' - ') : value.substring(0, j);
+                  option.value = text.substring(j+1);
                   datalist.appendChild(option);
                 }
               );
