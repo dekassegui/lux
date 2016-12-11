@@ -66,7 +66,7 @@ label {
   margin-top: .25em;
 }
 
-input[type="text"] {
+input[type="text"], input[type="tel"], input[type="email"] {
   padding: 2px 5px;
   font: 400 100% 'Droid Sans Mono', 'Courier New', monospace;
   line-height: 160%;
@@ -78,7 +78,7 @@ input[type="text"] {
   /* configura uso de "transition" */
   -webkit-transition: color .5s, background-color .5s;
   -webkit-transition-timing-function: linear;
-  transition: color .5s, background-color .5s;
+  transition: color .5s, background-color .5s, border-color .5s;
   transition-timing-function: linear;
 }
 
@@ -96,7 +96,7 @@ input#counter {
   color: black;
   background-color: #fafafa;
 }
-input[type="text"]:focus, input#counter:focus {
+input[type="text"]:focus, input[type="tel"]:focus, input[type="email"]:focus, input#counter:focus {
   background-color: white;
   border-color: #9E9;
 }
@@ -105,7 +105,8 @@ input[list]:focus {
 }
 
 input[type="text"]:disabled, input#counter:disabled {
-  background-color: #ddd;
+  border-color: transparent;
+  background-color: transparent;
 }
 input#amount {
   width: 2.5em;
@@ -159,8 +160,8 @@ textarea {
   padding: 2px 5px;
   font: 400 100% 'Droid Sans Mono', 'Courier New', monospace;
   line-height: 160%;
-  color: black;
-  background-color: #fafafa;
+  color: darkblue;
+  background-color: #f6fcff;
   border: solid 1px #ccc;
   border-radius: 5px;
   /* configura uso de "transition" */
@@ -170,6 +171,7 @@ textarea {
   transition-timing-function: linear;
 }
 textarea:focus {
+  color: black;
   background-color: white;
   border-color: #9cf;
 }

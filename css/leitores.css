@@ -1,0 +1,13 @@
+body {
+  min-width: 485px;
+  font-size: 17.75pt;
+}
+section {
+  width: 485px;
+}
+input#code {
+  width: 200px;
+}
+input#nome, input#telefone, input#email {
+  width: 480px;
+}

@@ -11,10 +11,10 @@
   addRegex($db);
 
   /**
-   * Refaz a sequência contínua dos "rowid" dos registros da tabela "acervo",
-   * esvaziando-a para imediatamente preenchê-la com os registros de sua
-   * cópia, ordenados pelo "titulo" da obra correspondentes aos seus códigos
-   * e pela coluna "exemplar", mediante junção com a tabela "obras".
+   * Refaz a sequência contínua dos "rowid" dos registros da tabela
+   * "leitores", esvaziando-a para imediatamente preenchê-la com os
+   * registros de sua cópia, ordenados pela combinação das colunas
+   * "nome" e "espirito", em ordem crescente.
    *
    * Nota: As requisições são feitas numa transação, para comprometer
    *       minimamente o desempenho da interface.
@@ -26,13 +26,10 @@
       PRAGMA foreign_keys = OFF;
       BEGIN TRANSACTION;
       DROP TABLE IF EXISTS t;
-      CREATE TEMP TABLE t AS
-        SELECT acervo.*
-        FROM acervo JOIN obras ON acervo.obra == obras.code
-        ORDER BY titulo, exemplar;
-      DELETE FROM acervo;
-      INSERT INTO acervo SELECT * FROM t;
-      -- REINDEX acervo_ndx;
+      CREATE TEMP TABLE t AS SELECT * FROM leitores ORDER BY nome;
+      DELETE FROM leitores;
+      INSERT INTO leitores SELECT * FROM t;
+      -- REINDEX leitores_ndx;
       COMMIT;
       PRAGMA foreign_keys = ON;
       -- VACUUM;
@@ -44,28 +41,28 @@ EOT
 
     case 'GETREC':
       $result = $db->query(
-        "SELECT obra, exemplar, posicao, comentario FROM acervo_view WHERE rowid == {$_GET['recnumber']}");
+        "SELECT * FROM leitores WHERE rowid == {$_GET['recnumber']}");
       echo join('|', $result->fetchArray(SQLITE3_NUM));
       break;
 
     case 'COUNT':
-      echo $db->querySingle('SELECT count() FROM acervo');
+      echo $db->querySingle('SELECT count() FROM leitores');
       break;
 
     case 'UPDATE':
-      $obra = chk($_GET['obra']);
-      $exemplar = chk($_GET['exemplar']);
-      $posicao = chk($_GET['posicao']);
-      $comentario = chk($_GET['comentario']);
+      $code = chk($_GET['code']);
+      $nome = chk($_GET['nome']);
+      $telefone = chk($_GET['telefone']);
+      $email = chk($_GET['email']);
       $sql = <<<EOT
         PRAGMA foreign_keys = ON;
         PRAGMA recursive_triggers = ON;
-        UPDATE acervo SET obra=$obra, exemplar=$exemplar, posicao=$posicao, comentario=$comentario
-        WHERE rowid == {$_GET['recnumber']};
+        UPDATE leitores SET code=$code, nome=$nome, telefone=$telefone, email=$email
+          WHERE rowid == {$_GET['recnumber']};
 EOT;
       if ($db->exec($sql)) {
         rebuildTable($db);
-        $sql = "SELECT rowid FROM acervo WHERE obra == $obra AND exemplar == $exemplar";
+        $sql = "SELECT rowid FROM leitores WHERE code == $code";
         echo $db->querySingle($sql);
       } else {
         echo 'FALSE';
@@ -73,18 +70,18 @@ EOT;
       break;
 
     case 'INSERT':
-      $obra = chk($_GET['obra']);
-      $exemplar = chk($_GET['exemplar']);
-      $posicao = chk($_GET['posicao']);
-      $comentario = chk($_GET['comentario']);
+      $code = chk($_GET['code']);
+      $nome = chk($_GET['nome']);
+      $telefone = chk($_GET['telefone']);
+      $email = chk($_GET['email']);
       $sql = <<<EOT
         PRAGMA foreign_keys = ON;
         PRAGMA recursive_triggers = ON;
-        INSERT INTO acervo SELECT $obra, $exemplar, $posicao, $comentario;
+        INSERT INTO leitores SELECT $code, $nome, $telefone, $email;
 EOT;
       if ($db->exec($sql)) {
         rebuildTable($db);
-        $sql = "SELECT rowid FROM acervo WHERE obra == $obra AND exemplar == $exemplar";
+        $sql = "SELECT rowid FROM leitores WHERE code == $code";
         echo $db->querySingle($sql);
       } else {
         echo 'FALSE';
@@ -94,7 +91,7 @@ EOT;
     case 'DELETE':
       $sql = <<<EOT
         PRAGMA foreign_keys = ON;
-        DELETE FROM acervo WHERE rowid = {$_GET['recnumber']};
+        DELETE FROM leitores WHERE rowid = {$_GET['recnumber']};
 EOT;
       if ($db->exec($sql)) {
         rebuildTable($db);
@@ -110,13 +107,13 @@ EOT;
        * além dos operadores NOT, IS e IN.
       */
 
-      $constraints = buildConstraints(array('obra', 'exemplar', 'posicao', 'comentario'));
+      $constraints = buildConstraints(array('code', 'nome', 'telefone', 'email'));
 
       $text = '';
       // requisita a pesquisa se a montagem foi bem sucedida
       if (count($constraints) > 0) {
         // montagem do sql da pesquisa
-        $sql = 'SELECT rowid, obra, exemplar, posicao, comentario FROM acervo_view WHERE '.join(' AND ', $constraints);
+        $sql = "SELECT rowid, * FROM leitores WHERE ".join(' AND ', $constraints);
         // for debug purpose --> $text = $sql."\n";
         // consulta o DB
         $result = $db->query($sql);
@@ -133,7 +130,7 @@ EOT;
 
     case 'GETALL':
       $text = '';
-      $result = $db->query('SELECT code, obra FROM acervo_view');
+      $result = $db->query('SELECT code, nome FROM leitores');
       if ($row = $result->fetchArray(SQLITE3_NUM)) {
         $text .= join('|', $row);
         while ($row = $result->fetchArray(SQLITE3_NUM)) {

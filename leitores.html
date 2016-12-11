@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Lux - Leitores</title>
+<meta http-equiv="expires" content="0"/>
+<meta http-equiv="pragma" content="no-cache"/>
+<link href="css/reset.css" rel="stylesheet" type="text/css" media="screen">
+<link href="css/autores.css" rel="stylesheet" type="text/css" media="screen">
+<link href="css/leitores.css" rel="stylesheet" type="text/css" media="screen">
+<script type="text/javascript" src="js/utils.js"></script>
+<script type="text/javascript" src="js/obras.js"></script>
+</head>
+<body>
+
+  <header>
+    <h1>Lux - Leitores</h1>
+  </header>
+
+  <section>
+    <h2>Leitores</h2>
+
+    <p><label for="counter">Registro:</label> <input type="text" id="counter" name="counter" tabindex="1"> de <input type="text" id="amount" readonly></p>
+
+    <div id="fields">
+      <label for="code">Código:</label>
+      <input type="text" id="code" name="code" tabindex="2" spellcheck="false" readonly>
+      <label for="nome">Nome:</label>
+      <input type="text" id="nome" name="nome" tabindex="3" spellcheck="false" readonly>
+      <label for="telefone">Telefone:</label>
+      <input type="tel" id="telefone" name="telefone" tabindex="4" spellcheck="false" readonly>
+      <label for="email">e-Mail:</label>
+      <input type="email" id="email" name="email" tabindex="5" spellcheck="false" readonly>
+      <datalist id="generos">
+      </datalist>
+    </div>
+
+    <div id="cmd">
+      <p>
+        <input type="button" id="firstBtn" tabindex="6" value="<<">
+        <input type="button" id="previousBtn" tabindex="7" value="<">
+        <input type="button" id="nextBtn" tabindex="8" value=">">
+        <input type="button" id="lastBtn" tabindex="9" value=">>">
+      </p>
+      <p>
+        <input type="button" id="updateBtn" tabindex="10" value="Atualizar">
+        <input type="button" id="delBtn" tabindex="11" value="Excluir">
+        <input type="button" id="searchBtn" tabindex="12" value="Pesquisar">
+      </p>
+      <p>
+        <input type="button" id="newBtn" tabindex="13" value="Novo">
+        <input type="button" id="saveBtn" tabindex="14" value="Salvar" disabled>
+        <input type="button" id="cancelBtn" tabindex="15" value="Cancelar" disabled>
+      </p>
+    </div>
+
+  </section>
+
+  <aside>
+    <textarea id="mural" tabindex="16" rows="13" spellcheck="false" placeholder="Área de notificação editável!"></textarea>
+  </aside>
+
+  <footer>
+    <p>Software Livre para<br>bibliotecas de casas Espíritas.</p>
+  </footer>
+
+</body>
+</html>

@@ -6,8 +6,8 @@
 /**
  * Listener que ativa comandos para controle "full time" de dimensões
  * de elementos do documento que serve de interface entre o usuário e a
- * aplicação para gestão da tabela persistente de "Obras Espíritas",
- * em complemento às suas declarações CSS.
+ * aplicação para gestão de tabelas persistentes do projeto LUX, em
+ * complemento às suas declarações CSS.
 */
 window.onresize = function () {
   // estabelece dinamicamente a largura do elemento 'aside'
@@ -18,8 +18,8 @@ window.onresize = function () {
 }
 
 /**
- * Listener que ativa comandos para controle "full time" do aplicativo para
- * gestão da tabela persistente de "Obras Espíritas", até o fim do seu
+ * Listener que ativa comandos para controle "full time" do aplicativo
+ * para gestão de tabelas persistentes do projeto LUX, até o fim do seu
  * "life cycle", indiferente a recargas do documento interface.
 */
 window.addEventListener('load',
@@ -33,9 +33,11 @@ window.addEventListener('load',
     var counter = $('counter'),
         amount  = $('amount');
 
-    var fields = $$('section > div#fields > input[type="text"]');
+    var fields = $$('section > div#fields > input');
 
-    var FOCUS_NDX = (fields[0].id == "code") ? 1 : 0;
+    var FOCUS_NDX = (fields[0].id == "code")  // número de ordem do input
+                     ? 1 : 0;                 // focado ao iniciar a
+                                              // atualização ou pesquisa
 
     var firstBtn    = $('firstBtn'),
         previousBtn = $('previousBtn'),
@@ -394,28 +396,31 @@ window.addEventListener('load',
     {
       // preenche datalists cujos ids correspondem ao nome (sem extensão)
       // do script server side que atende a requisição dos seus dados
-      $$("section > div#fields > datalist").forEach(
-        function (datalist) {
-          var xhr = new XMLHttpRequest();
-          xhr.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-              this.responseText.split(/\n|\r|\r\n/g).forEach(
-                function (text) {
-                  var option = document.createElement("option");
-                  var j = text.indexOf('|');
-                  option.setAttribute("code", text.substring(0, j));
-                  option.value = text.substring(j+1);
-                  datalist.appendChild(option);
-                }
-              );
-            }
-          };
-          // monta a string da uri do script server side incumbente
-          var aUri = uri.substring(0, uri.lastIndexOf("/")+1)
-            + datalist.id + ".php?action=GETALL";
-          xhr.open("GET", aUri, true);
-          xhr.send();
-        });
+      var array = $$("section > div#fields > datalist");
+      if (Array.isArray(array.length)) {
+        array.forEach(
+          function (datalist) {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+              if (this.readyState == 4 && this.status == 200) {
+                this.responseText.split(/\n|\r|\r\n/g).forEach(
+                  function (text) {
+                    var option = document.createElement("option");
+                    var j = text.indexOf('|');
+                    option.setAttribute("code", text.substring(0, j));
+                    option.value = text.substring(j+1);
+                    datalist.appendChild(option);
+                  }
+                );
+              }
+            };
+            // monta a string da uri do script server side incumbente
+            var aUri = uri.substring(0, uri.lastIndexOf("/")+1)
+              + datalist.id + ".php?action=GETALL";
+            xhr.open("GET", aUri, true);
+            xhr.send();
+          });
+      }
     }
 
     // verifica a habilitação dos 'action buttons', a qual, sendo confirmada,
