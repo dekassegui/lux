@@ -28,12 +28,14 @@ window.addEventListener('load',
     window.onresize();  // ajuste inicial da largura do elemento 'aside'
 
     // URI do script "server side" que atende requisições ao DB
-    var uri = location.href.replace(/html$/, "php");
+    var uri = location.href.replace("html", "php");
 
     var counter = $('counter'),
         amount  = $('amount');
 
     var fields = $$('section > div#fields > input[type="text"]');
+
+    var FOCUS_NDX = (fields[0].id == "code") ? 1 : 0;
 
     var firstBtn    = $('firstBtn'),
         previousBtn = $('previousBtn'),
@@ -74,7 +76,7 @@ window.addEventListener('load',
     }
 
     var indexRec,   // índice, ou número de ordem, do registro corrente
-        numRecs;    // quantidade de registros da tabela de autores
+        numRecs;    // quantidade de registros da tabela..
 
     var actionButtons = [saveBtn, cancelBtn];
 
@@ -99,7 +101,7 @@ window.addEventListener('load',
 
     function setInputsValues(array) {
       // preenche os inputs com componentes do argumento do tipo Array
-      // ou de array de strings vazias se o argumento for indeterminado
+      // ou com strings vazias se o argumento for indeterminado
       fields.forEach(
         (array === undefined) ? function (input) { input.value = ''; }
           : function (input, index) {
@@ -147,11 +149,14 @@ window.addEventListener('load',
             // testa se 'action buttons' estão habilitados
             if (actionButtons.every(item => item.disabled == false)) {
               ev = ev || event;
-              if (ev.keyCode == 13 && ev.ctrlKey) {
-                saveBtn.click();    // <Ctrl>+<Enter> aciona comando pendente
+              if (ev.keyCode == 13) {
+                // rejeita o evento se o input é associado a datalist
+                // e nao foi pressionado <Ctrl> simultaneamente
+                if (!ev.ctrlKey && ev.target.hasAttribute("list")) return;
+                saveBtn.click();  // (<Ctrl>+)<Enter> aciona comando pendente
               } else if (ev.keyCode == 27) {
-                cancelBtn.click();  // <Escape> cancela comando pendente
-                ev.target.blur();   // remove o foco do input
+                cancelBtn.click(); // <Escape> cancela comando pendente
+                ev.target.blur();  // remove o foco do input
               }
             }
           }, true);
@@ -243,7 +248,7 @@ window.addEventListener('load',
         updateBtn.classList.add('disabled');
         disableButtons();
         setInputsReadonly(false);
-        fields[1].focus();
+        fields[FOCUS_NDX].focus();
       }, true);
 
     delBtn.addEventListener('click',
@@ -260,7 +265,7 @@ window.addEventListener('load',
         disableButtons();
         setInputsValues();
         setInputsReadonly(false);
-        fields[1].focus();
+        fields[FOCUS_NDX].focus();
       }, true);
 
     newBtn.addEventListener('click',
@@ -276,19 +281,19 @@ window.addEventListener('load',
       function () {
         var par = [uri];
 
-        function addDataFields(searching) {
-          searching = searching || false;
+        function addDataFields(isToReplace) {
+          isToReplace = (isToReplace === undefined) ? true : isToReplace;
           fields.forEach(
             function (input) {
               var value = input.value;
               // se nao é pesquisa e se o input é associado a datalist
               // então tenta trocar o valor do input pelo respectivo código
-              if (searching == false && input.hasAttribute("list")) {
+              if (isToReplace && input.hasAttribute("list")) {
                 // tenta obter a option cujo valor de atributo 'value'
                 // corresponde exatamente ao valor do input
                 var el = $$("datalist#" + input.getAttribute("list")
                   + " option[value='" + value + "']");
-                // testa se 'de facto' é HTMLelement :: tem o método..
+                // testa se 'de facto' é DOM element :: tem o método..
                 if (el.getAttribute) value = el.getAttribute("code");
               }
               par.push('&', input.id, '=', encodeURIComponent(value));
@@ -330,7 +335,7 @@ window.addEventListener('load',
             }
           };
           par.push('?action=SEARCH');
-          addDataFields(true);
+          addDataFields(false);
 
         } else if (updateBtn.classList.contains('disabled')) {
 
@@ -387,27 +392,28 @@ window.addEventListener('load',
       }, true);
 
     {
-      // preenche datalists dos inputs 'autor' e 'genero'
-
-      ["autores", "generos"].forEach(
-        function (iD) {
+      // preenche datalists cujos ids correspondem ao nome (sem extensão)
+      // do script server side que atende a requisição dos seus dados
+      $$("section > div#fields > datalist").forEach(
+        function (datalist) {
           var xhr = new XMLHttpRequest();
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
-              var datalist = $(iD);
               this.responseText.split(/\n|\r|\r\n/g).forEach(
                 function (text) {
                   var option = document.createElement("option");
                   var j = text.indexOf('|');
-                  option.setAttribute('code', text.substring(0, j));
+                  option.setAttribute("code", text.substring(0, j));
                   option.value = text.substring(j+1);
                   datalist.appendChild(option);
                 }
               );
             }
           };
-          xhr.open("GET", [uri.replace("obras", iD), "?action=GETALL"]
-            .join(""), true);
+          // monta a string da uri do script server side incumbente
+          var aUri = uri.substring(0, uri.lastIndexOf("/")+1)
+            + datalist.id + ".php?action=GETALL";
+          xhr.open("GET", aUri, true);
           xhr.send();
         });
     }
@@ -479,7 +485,7 @@ window.addEventListener('load',
     }
 
     // inicia o mural com saudação em função da hora local
-    mural.value = ['> Boa noite!', '> Bom dia!', '> Boa tarde!'][
+    mural.value = ["> Boa noite!", "> Bom dia!", "> Boa tarde!"][
       Math.floor(new Date().getHours() / 6) % 3];
 
   },

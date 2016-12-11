@@ -5,9 +5,9 @@ body {
 section {
   width: 485px;
 }
-input#code, input#genero {
-  width: 200px;
-}
-input#autor, input#titulo {
+input#obra, input#comentario {
   width: 480px;
+}
+input#exemplar, input#posicao {
+  width: 200px;
 }

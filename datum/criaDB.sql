@@ -311,6 +311,10 @@ CREATE INDEX acervo_obra_ndx ON acervo(obra);
 CREATE VIEW IF NOT EXISTS conta_obras_acervo AS
   SELECT obra, count(1) AS N FROM acervo GROUP BY obra ORDER BY obra;
 
+CREATE VIEW IF NOT EXISTS acervo_view AS
+  SELECT acervo.rowid, code, titulo AS obra, exemplar, posicao, comentario
+  FROM acervo JOIN obras ON acervo.obra == obras.code;
+
 CREATE TABLE IF NOT EXISTS bibliotecarios (
   --
   -- pessoas responsáveis pela operação da biblioteca em qualquer turno

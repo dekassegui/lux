@@ -98,8 +98,12 @@ input#counter {
 }
 input[type="text"]:focus, input#counter:focus {
   background-color: white;
-  border-color: #0f0;
+  border-color: #9E9;
 }
+input[list]:focus {
+  border-color: #c9f;
+}
+
 input[type="text"]:disabled, input#counter:disabled {
   background-color: #ddd;
 }
@@ -167,7 +171,7 @@ textarea {
 }
 textarea:focus {
   background-color: white;
-  border-color: #0f0;
+  border-color: #9cf;
 }
 textarea.empty {
   font-style: italic;

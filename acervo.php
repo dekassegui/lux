@@ -11,9 +11,10 @@
   addRegex($db);
 
   /**
-   * Refaz a sequência contínua dos "rowid" dos registros da tabela
-   * "bibliotecarios", esvaziando-a para imediatamente preenchê-la com os
-   * registros de sua cópia, ordenados pelo "nome" em ordem crescente.
+   * Refaz a sequência contínua dos "rowid" dos registros da tabela "acervo",
+   * esvaziando-a para imediatamente preenchê-la com os registros de sua
+   * cópia, ordenados pelas colunas "titulo" e "exemplar" via junção com a
+   * tabela "obras".
    *
    * Nota: As requisições são feitas numa transação, para comprometer
    *       minimamente o desempenho da interface.
@@ -25,10 +26,13 @@
       PRAGMA foreign_keys = OFF;
       BEGIN TRANSACTION;
       DROP TABLE IF EXISTS t;
-      CREATE TEMP TABLE t AS SELECT * FROM bibliotecarios ORDER BY nome;
-      DELETE FROM bibliotecarios;
-      INSERT INTO bibliotecarios SELECT * FROM t;
-      -- REINDEX bibliotecarios_ndx;
+      CREATE TEMP TABLE t AS
+        SELECT acervo.*
+        FROM acervo JOIN obras ON acervo.obra == obras.code
+        ORDER BY titulo, exemplar;
+      DELETE FROM acervo;
+      INSERT INTO acervo SELECT * FROM t;
+      -- REINDEX acervo_ndx;
       COMMIT;
       PRAGMA foreign_keys = ON;
       -- VACUUM;
@@ -40,26 +44,28 @@ EOT
 
     case 'GETREC':
       $result = $db->query(
-        "SELECT * FROM bibliotecarios WHERE rowid == {$_GET['recnumber']}");
+        "SELECT obra, exemplar, posicao, comentario FROM acervo_view WHERE rowid == {$_GET['recnumber']}");
       echo join('|', $result->fetchArray(SQLITE3_NUM));
       break;
 
     case 'COUNT':
-      echo $db->querySingle('SELECT count() FROM bibliotecarios');
+      echo $db->querySingle('SELECT count() FROM acervo');
       break;
 
     case 'UPDATE':
-      $code = chk($_GET['code']);
-      $nome = chk($_GET['nome']);
+      $obra = chk($_GET['obra']);
+      $exemplar = chk($_GET['exemplar']);
+      $posicao = chk($_GET['posicao']);
+      $comentario = chk($_GET['comentario']);
       $sql = <<<EOT
         PRAGMA foreign_keys = ON;
         PRAGMA recursive_triggers = ON;
-        UPDATE bibliotecarios SET code=$code, nome=$nome
-          WHERE rowid == {$_GET['recnumber']};
+        UPDATE acervo SET obra=$obra, exemplar=$exemplar, posicao=$posicao, comentario=$comentario
+        WHERE rowid == {$_GET['recnumber']};
 EOT;
       if ($db->exec($sql)) {
         rebuildTable($db);
-        $sql = "SELECT rowid FROM bibliotecarios WHERE code == $code";
+        $sql = "SELECT rowid FROM acervo WHERE obra == $obra AND exemplar == $exemplar";
         echo $db->querySingle($sql);
       } else {
         echo 'FALSE';
@@ -67,16 +73,18 @@ EOT;
       break;
 
     case 'INSERT':
-      $code = chk($_GET['code']);
-      $nome = chk($_GET['nome']);
+      $obra = chk($_GET['obra']);
+      $exemplar = chk($_GET['exemplar']);
+      $posicao = chk($_GET['posicao']);
+      $comentario = chk($_GET['comentario']);
       $sql = <<<EOT
         PRAGMA foreign_keys = ON;
         PRAGMA recursive_triggers = ON;
-        INSERT INTO bibliotecarios SELECT $code, $nome;
+        INSERT INTO acervo SELECT $obra, $exemplar, $posicao, $comentario;
 EOT;
       if ($db->exec($sql)) {
         rebuildTable($db);
-        $sql = "SELECT rowid FROM bibliotecarios WHERE code == $code";
+        $sql = "SELECT rowid FROM acervo WHERE obra == $obra AND exemplar == $exemplar";
         echo $db->querySingle($sql);
       } else {
         echo 'FALSE';
@@ -86,7 +94,7 @@ EOT;
     case 'DELETE':
       $sql = <<<EOT
         PRAGMA foreign_keys = ON;
-        DELETE FROM bibliotecarios WHERE rowid = {$_GET['recnumber']};
+        DELETE FROM acervo WHERE rowid = {$_GET['recnumber']};
 EOT;
       if ($db->exec($sql)) {
         rebuildTable($db);
@@ -102,13 +110,13 @@ EOT;
        * além dos operadores NOT, IS e IN.
       */
 
-      $constraints = buildConstraints(array('code', 'nome'));
+      $constraints = buildConstraints(array('obra', 'exemplar', 'posicao', 'comentario'));
 
       $text = '';
       // requisita a pesquisa se a montagem foi bem sucedida
       if (count($constraints) > 0) {
         // montagem do sql da pesquisa
-        $sql = "SELECT rowid, * FROM bibliotecarios WHERE ".join(' AND ', $constraints);
+        $sql = 'SELECT rowid, obra, exemplar, posicao, comentario FROM acervo_view WHERE '.join(' AND ', $constraints);
         // for debug purpose --> $text = $sql."\n";
         // consulta o DB
         $result = $db->query($sql);
@@ -118,6 +126,18 @@ EOT;
           while ($row = $result->fetchArray(SQLITE3_NUM)) {
             $text .= "\n".join('|', $row);
           }
+        }
+      }
+      echo $text;
+      break;
+
+    case 'GETALL':
+      $text = '';
+      $result = $db->query('SELECT code, obra FROM acervo_view');
+      if ($row = $result->fetchArray(SQLITE3_NUM)) {
+        $text .= join('|', $row);
+        while ($row = $result->fetchArray(SQLITE3_NUM)) {
+          $text .= "\n".join('|', $row);
         }
       }
       echo $text;
