@@ -40,8 +40,12 @@ EOT
   switch ($_GET['action']) {
 
     case 'GETREC':
-      $result = $db->query(
-        "SELECT code, titulo, ifnull(autor||' - '||espirito, autor), genero FROM obras_view WHERE rowid == {$_GET['recnumber']}");
+      $result = $db->query(<<<EOT
+      SELECT code, titulo, ifnull(autor||' - '||espirito, autor), genero
+      FROM obras_view
+      WHERE rowid == {$_GET['recnumber']};
+EOT
+      );
       echo join('|', $result->fetchArray(SQLITE3_NUM));
       break;
 
@@ -57,7 +61,8 @@ EOT
       $sql = <<<EOT
         PRAGMA foreign_keys = ON;
         PRAGMA recursive_triggers = ON;
-        UPDATE obras SET code=$code, titulo=$titulo, autor=$autor, genero=$genero
+        UPDATE obras
+          SET code=$code, titulo=$titulo, autor=$autor, genero=$genero
           WHERE rowid == {$_GET['recnumber']};
 EOT;
       if ($db->exec($sql)) {
@@ -102,18 +107,18 @@ EOT;
       break;
 
     case 'SEARCH':
-      /*
-       * Pesquisa registros usando ISNULL, SOUNDEX, GLOB, LIKE ou REGEXP
-       * além dos operadores NOT, IS e IN.
-      */
-
-      $constraints = buildConstraints(array('code', 'titulo', 'autor', 'genero'));
-
+      $constraints = buildConstraints(
+        array('code', 'titulo', 'autor', 'genero'));
       $text = '';
       // requisita a pesquisa se a montagem foi bem sucedida
       if (count($constraints) > 0) {
         // montagem do sql da pesquisa
-        $sql = "SELECT rowid, code, titulo, ifnull(autor||' - '||espirito, autor), genero FROM obras_view WHERE ".join(' AND ', $constraints);
+        $sql = <<<EOT
+  SELECT rowid, code, titulo, ifnull(autor||' - '||espirito, autor), genero
+    FROM obras_view
+    WHERE
+EOT;
+        $sql .= ' '.join(' AND ', $constraints);
         // for debug purpose --> $text = $sql."\n";
         // consulta o DB
         $result = $db->query($sql);

@@ -11,3 +11,7 @@ input#code {
 input#nome, input#telefone, input#email {
   width: 480px;
 }
+input#telefone:invalid, input#email:invalid {
+  color: white;
+  background-color: red;
+}

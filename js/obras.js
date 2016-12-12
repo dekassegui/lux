@@ -14,7 +14,7 @@ window.onresize = function () {
   // em função da largura da janela (aka document.body)
   var w = parseInt(document.body.clientWidth);
   var x = (w < 1000) ? w-20 : w-parseInt($$('section').clientWidth)-30;
-  $$('aside').style.width = [x, 'px'].join("");
+  $$('aside').style.width = x + 'px';
 }
 
 /**
@@ -36,7 +36,7 @@ window.addEventListener('load',
     var fields = $$('section > div#fields > input');
 
     var FOCUS_NDX = (fields[0].id == "code")  // número de ordem do input
-                     ? 1 : 0;                 // focado ao iniciar a
+                    ? 1 : 0;                  // focado no início de
                                               // atualização ou pesquisa
 
     var firstBtn    = $('firstBtn'),
@@ -288,14 +288,14 @@ window.addEventListener('load',
           fields.forEach(
             function (input) {
               var value = input.value;
-              // se nao é pesquisa e se o input é associado a datalist
+              // se não é pesquisa e se o input é associado a datalist
               // então tenta trocar o valor do input pelo respectivo código
               if (isToReplace && input.hasAttribute("list")) {
                 // tenta obter a option cujo valor de atributo 'value'
                 // corresponde exatamente ao valor do input
                 var el = $$("datalist#" + input.getAttribute("list")
                   + " option[value='" + value + "']");
-                // testa se 'de facto' é DOM element :: tem o método..
+                // testa se 'de facto' é DOM element e tem o método..
                 if (el.getAttribute) value = el.getAttribute("code");
               }
               par.push('&', input.id, '=', encodeURIComponent(value));
@@ -396,9 +396,9 @@ window.addEventListener('load',
     {
       // preenche datalists cujos ids correspondem ao nome (sem extensão)
       // do script server side que atende a requisição dos seus dados
-      var array = $$("section > div#fields > datalist");
-      if (Array.isArray(array.length)) {
-        array.forEach(
+      var set = $$("section > div#fields > datalist");
+      if (Array.isArray(set)) {
+        set.forEach(
           function (datalist) {
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function () {
@@ -423,49 +423,52 @@ window.addEventListener('load',
       }
     }
 
-    // verifica a habilitação dos 'action buttons', a qual, sendo confirmada,
-    // evidencia que o documento foi atualizado durante exclusão, pesquisa,
-    // atualização, ou inserção (em tabela nao vazia) de novo registro
-    //
-    //if (actionButtons.every(btn => btn.disabled == false)) {
-    //
-    // --> BUG: perda de escopo :: WORKAROUND: testar os inputs dos números
-    //
+    // testa se valores de ambos inputs mostradores de status da tabela não
+    // são string vazia, evidenciando que o documento foi atualizado durante
+    // pesquisa, atualização, exclusão ou inserção de novo registro
     if ([counter, amount].every(input => input.value.length > 0)) {
 
-      // aproveita os valores remanescentes do índice do registro corrente
-      // e da quantidade de registros da tabela no momento da atualização
-      indexRec = parseInt(counter.value);
-      numRecs = parseInt(amount.value);
+      numRecs = parseInt(amount.value); // extrai o valor do input
 
-      // restaura os valores dos inputs consultando o DB por segurança
-      var xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-          // atualiza os valores do registro corrente
-          setInputsValues(this.responseText.split('|'));
-        }
-      };
-      xhr.open("GET",
-        [uri, "?action=GETREC&recnumber=", indexRec].join(""), true);
-      xhr.send();
+      if (numRecs == 0) {
 
-      // habilita edição e declara a quantidade máxima de
-      // caracteres do input do índice do registro corrente
-      counter.disabled = false;
-      counter.maxLength = amount.value.length;
+        newBtn.click();
+        cancelBtn.disabled = true;
 
-      // habilita/desabilita botões de navegação
-      setDisabled([firstBtn, previousBtn], indexRec <= 1);
-      setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
+      } else {
 
-      commandButtons.forEach(
-        function (btn) {
-          btn.disabled = false;             // habilita o botão
-          btn.classList.remove('disabled'); // remove classe 'disabled'
-        });
+        indexRec = parseInt(counter.value); // extrai o valor do input
 
-      setDisabled(actionButtons, true); // desabilita os 'action buttons'
+        // restaura os valores dos inputs consultando o DB por segurança
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+          if (this.readyState == 4 && this.status == 200) {
+            // atualiza os valores do registro corrente
+            setInputsValues(this.responseText.split('|'));
+          }
+        };
+        xhr.open("GET",
+          [uri, "?action=GETREC&recnumber=", indexRec].join(""), true);
+        xhr.send();
+
+        // habilita edição e declara a quantidade máxima de
+        // caracteres do input do índice do registro corrente
+        counter.disabled = false;
+        counter.maxLength = amount.value.length;
+
+        // habilita/desabilita botões de navegação
+        setDisabled([firstBtn, previousBtn], indexRec <= 1);
+        setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
+
+        commandButtons.forEach(
+          function (btn) {
+            btn.disabled = false;             // habilita o botão
+            btn.classList.remove('disabled'); // remove classe 'disabled'
+          });
+
+        setDisabled(actionButtons, true); // desabilita os 'action buttons'
+
+      }
 
     } else {
 

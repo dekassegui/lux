@@ -94,7 +94,7 @@ input#counter {
   width: 2.5em;
   text-align: center;
   color: black;
-  background-color: #fafafa;
+  background-color: #f6fcff;
 }
 input[type="text"]:focus, input[type="tel"]:focus, input[type="email"]:focus, input#counter:focus {
   background-color: white;
@@ -180,8 +180,8 @@ textarea.empty {
   color: #9c9;
 }
 
-@media (max-width: 1000px), (max-device-with: 1000px) {
+@media (max-width: 1024px), (max-device-with: 1024px) {
   aside {
-    margin-bottom: 3em;
+    margin-bottom: 2.5em;
   }
 }

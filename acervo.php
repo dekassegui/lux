@@ -43,8 +43,12 @@ EOT
   switch ($_GET['action']) {
 
     case 'GETREC':
-      $result = $db->query(
-        "SELECT obra, exemplar, posicao, comentario FROM acervo_view WHERE rowid == {$_GET['recnumber']}");
+      $result = $db->query(<<<EOT
+        SELECT obra, exemplar, posicao, comentario
+        FROM acervo_view
+        WHERE rowid == {$_GET['recnumber']};
+EOT
+      );
       echo join('|', $result->fetchArray(SQLITE3_NUM));
       break;
 
@@ -60,12 +64,16 @@ EOT
       $sql = <<<EOT
         PRAGMA foreign_keys = ON;
         PRAGMA recursive_triggers = ON;
-        UPDATE acervo SET obra=$obra, exemplar=$exemplar, posicao=$posicao, comentario=$comentario
-        WHERE rowid == {$_GET['recnumber']};
+        UPDATE acervo SET obra=$obra, exemplar=$exemplar,
+            posicao=$posicao, comentario=$comentario
+          WHERE rowid == {$_GET['recnumber']};
 EOT;
       if ($db->exec($sql)) {
         rebuildTable($db);
-        $sql = "SELECT rowid FROM acervo WHERE obra == $obra AND exemplar == $exemplar";
+        $sql = <<<EOT
+          SELECT rowid FROM acervo
+            WHERE obra == $obra AND exemplar == $exemplar
+EOT;
         echo $db->querySingle($sql);
       } else {
         echo 'FALSE';
@@ -84,7 +92,10 @@ EOT;
 EOT;
       if ($db->exec($sql)) {
         rebuildTable($db);
-        $sql = "SELECT rowid FROM acervo WHERE obra == $obra AND exemplar == $exemplar";
+        $sql = <<<EOT
+          SELECT rowid FROM acervo
+            WHERE obra == $obra AND exemplar == $exemplar;
+EOT;
         echo $db->querySingle($sql);
       } else {
         echo 'FALSE';

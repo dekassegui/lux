@@ -57,7 +57,8 @@ EOT
       $sql = <<<EOT
         PRAGMA foreign_keys = ON;
         PRAGMA recursive_triggers = ON;
-        UPDATE leitores SET code=$code, nome=$nome, telefone=$telefone, email=$email
+        UPDATE leitores
+          SET code=$code, nome=$nome, telefone=$telefone, email=$email
           WHERE rowid == {$_GET['recnumber']};
 EOT;
       if ($db->exec($sql)) {
@@ -107,13 +108,15 @@ EOT;
        * além dos operadores NOT, IS e IN.
       */
 
-      $constraints = buildConstraints(array('code', 'nome', 'telefone', 'email'));
+      $constraints = buildConstraints(
+        array('code', 'nome', 'telefone', 'email'));
 
       $text = '';
       // requisita a pesquisa se a montagem foi bem sucedida
       if (count($constraints) > 0) {
         // montagem do sql da pesquisa
-        $sql = "SELECT rowid, * FROM leitores WHERE ".join(' AND ', $constraints);
+        $sql = "SELECT rowid, * FROM leitores WHERE "
+          .join(' AND ', $constraints);
         // for debug purpose --> $text = $sql."\n";
         // consulta o DB
         $result = $db->query($sql);
