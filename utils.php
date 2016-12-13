@@ -2,6 +2,8 @@
 
   define('DB_FILENAME', 'datum/lux.sqlite');
 
+  define('BR_DATETIME_PATTERN', '/^\s*(?#DATE)(\d\d)(?<separator>\D)(\d\d)(?&separator)(\d{4})(?:\s*(\s(?#TIME)\d\d(?::\d\d){1,2}))?\s*$/');
+
   $nomeMes = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
   /**
@@ -32,6 +34,26 @@
   }
 
   /**
+   * Converte string representando Date&Time no formato DD?MM?YYYY HH:MM:SS,
+   * indiferente ao separador de componentes usado no argumento com a parte
+   * das horas opcional que pode conter apenas as horas e minutos, para o
+   * formato YYYY-MM-DD HH:MM:SS aka ISO-8601, conforme disponibilidade de
+   * componentes.
+   *
+   * @param $datetime String representando data e hora opcional.
+   * @return String
+  */
+  function toISOdate($datetime) {
+    if (preg_match(BR_DATETIME_PATTERN, $datetime, $matches)) {
+      $r = "{$matches[4]}-{$matches[3]}-{$matches[1]}";
+      if (count($matches) == 6) $r .= $matches[5];
+      return $r;
+    } else {
+      return $datetime;
+    }
+  }
+
+  /**
    * Tenta montar alguma restrição de pesquisa SQL com os valores postados
    * via método GET.
    *
@@ -53,8 +75,22 @@
         $needle = $matches[1];
       }
 
+      // checa uso de operadores lógicos
+      if (preg_match('/^\s*([<=>!]=?)\s+(.+)$/', $needle, $m)) {
+
+        $operator = $m[1];
+        $RHS = $m[2];
+        // testa se o RHS é uma Date&Time
+        if (preg_match(BR_DATETIME_PATTERN, $RHS)) {
+          $RHS = toISOdate($RHS);
+          $constraints[] = $negate."strftime('%s', substr($name, 7, 4)||substr($name, 3, 4)||substr($name, 1, 2)||substr($name, 11)) $operator strftime('%s', '$RHS')";
+        } else {
+          $constraints[] = $negate."$name $operator $RHS";
+        }
+
       // checa uso explícito de GLOB, LIKE ou IS
-      if (preg_match('/^(GLOB|LIKE|IS)\s+(.+)\s*$/i', $needle, $matches)) {
+      } else if (preg_match('/^(GLOB|LIKE|IS)\s+(.+)\s*$/i', $needle,
+                            $matches)) {
         $constraints[] = $negate."$name {$matches[1]} '{$matches[2]}'";
 
       // checa uso de REGEXP também detectando aliases

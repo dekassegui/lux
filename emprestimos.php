@@ -6,21 +6,6 @@
 
   require 'utils.php';
 
-  /**
-   * Converte string representando data&hora no formato
-   * DD?MM?YYYY( HH:MM(:SS))? para o formato YYYY-MM-DD( HH:MM)? aka
-   * ISO-8601, indiferente ao separador de componentes usado no argumento.
-   *
-   * @param $datetime String representando data e hora opcional.
-   * @return String
-  */
-  function toISOdate($datetime) {
-    return preg_match('/^(\d\d).(\d\d).(\d{4})(\s\d\d(?::\d\d){1,2})?$/',
-      $datetime, $matches)
-      ? "{$matches[3]}-{$matches[2]}-{$matches[1]}{$matches[4]}"
-      : $datetime;
-  }
-
   $db = new SQLite3(DB_FILENAME) or die('Unable to open database');
 
   addRegex($db);
@@ -28,7 +13,7 @@
   /**
    * Refaz a sequência contínua dos "rowid" dos registros da tabela
    * "emprestimos", esvaziando-a para imediatamente preenchê-la com os
-   * registros de sua cópia, ordenados..
+   * registros de sua cópia, ordenados por valores relativos.
    *
    * Nota: As requisições são feitas numa transação, para comprometer
    *       minimamente o desempenho da interface.
@@ -102,8 +87,8 @@ EOT;
   PRAGMA foreign_keys = ON;
   PRAGMA recursive_triggers = ON;
   INSERT INTO emprestimos
-    SELECT $data_emprestimo, $data_devolucao, $bibliotecario,
-      $leitor, $obra, $exemplar, $comentario;
+    SELECT $data_emprestimo, $data_devolucao, $bibliotecario, $leitor, $obra,
+      $exemplar, $comentario;
 EOT;
       }
       // tenta executar a requisição
@@ -145,8 +130,8 @@ EOT;
         $restricoes = join(' AND ', $constraints);
         // montagem do sql da pesquisa
         $sql = <<<EOT
-  SELECT rowid, data_emprestimo, data_devolucao, bibliotecario, leitor,
-    obra, exemplar, comentario
+  SELECT rowid, data_emprestimo, data_devolucao, bibliotecario, leitor, obra,
+    exemplar, comentario
   FROM emprestimos_easy
   WHERE $restricoes;
 EOT;
