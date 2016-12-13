@@ -23,16 +23,16 @@
   */
   function rebuildTable($db) {
     $db->exec(<<<EOT
-      PRAGMA foreign_keys = OFF;
-      BEGIN TRANSACTION;
-      DROP TABLE IF EXISTS t;
-      CREATE TEMP TABLE t AS SELECT * FROM obras ORDER BY titulo;
-      DELETE FROM obras;
-      INSERT INTO obras SELECT * FROM t;
-      -- REINDEX obras_ndx;
-      COMMIT;
-      PRAGMA foreign_keys = ON;
-      -- VACUUM;
+  PRAGMA foreign_keys = OFF;
+  BEGIN TRANSACTION;
+  DROP TABLE IF EXISTS t;
+  CREATE TEMP TABLE t AS SELECT * FROM obras ORDER BY titulo;
+  DELETE FROM obras;
+  INSERT INTO obras SELECT * FROM t;
+  -- REINDEX obras_ndx;
+  COMMIT;
+  PRAGMA foreign_keys = ON;
+  -- VACUUM;
 EOT
     );
   }
@@ -41,9 +41,9 @@ EOT
 
     case 'GETREC':
       $result = $db->query(<<<EOT
-      SELECT code, titulo, ifnull(autor||' - '||espirito, autor), genero
-      FROM obras_view
-      WHERE rowid == {$_GET['recnumber']};
+  SELECT code, titulo, ifnull(autor||' - '||espirito, autor), genero
+  FROM obras_view
+  WHERE rowid == {$_GET['recnumber']};
 EOT
       );
       echo join('|', $result->fetchArray(SQLITE3_NUM));
@@ -53,37 +53,27 @@ EOT
       echo $db->querySingle('SELECT count() FROM obras');
       break;
 
+    case 'INSERT':
     case 'UPDATE':
       $code = chk($_GET['code']);
       $titulo = chk($_GET['titulo']);
       $autor = chk($_GET['autor']);
       $genero = chk($_GET['genero']);
-      $sql = <<<EOT
-        PRAGMA foreign_keys = ON;
-        PRAGMA recursive_triggers = ON;
-        UPDATE obras
-          SET code=$code, titulo=$titulo, autor=$autor, genero=$genero
-          WHERE rowid == {$_GET['recnumber']};
+      if ($_GET['action'] == 'UPDATE') {
+        $sql = <<<EOT
+  PRAGMA foreign_keys = ON;
+  PRAGMA recursive_triggers = ON;
+  UPDATE obras
+    SET code=$code, titulo=$titulo, autor=$autor, genero=$genero
+  WHERE rowid == {$_GET['recnumber']};
 EOT;
-      if ($db->exec($sql)) {
-        rebuildTable($db);
-        $sql = "SELECT rowid FROM obras WHERE code == $code";
-        echo $db->querySingle($sql);
       } else {
-        echo 'FALSE';
-      }
-      break;
-
-    case 'INSERT':
-      $code = chk($_GET['code']);
-      $titulo = chk($_GET['titulo']);
-      $autor = chk($_GET['autor']);
-      $genero = chk($_GET['genero']);
-      $sql = <<<EOT
-        PRAGMA foreign_keys = ON;
-        PRAGMA recursive_triggers = ON;
-        INSERT INTO obras SELECT $code, $titulo, $autor, $genero;
+        $sql = <<<EOT
+  PRAGMA foreign_keys = ON;
+  PRAGMA recursive_triggers = ON;
+  INSERT INTO obras SELECT $code, $titulo, $autor, $genero;
 EOT;
+      }
       if ($db->exec($sql)) {
         rebuildTable($db);
         $sql = "SELECT rowid FROM obras WHERE code == $code";
@@ -95,8 +85,8 @@ EOT;
 
     case 'DELETE':
       $sql = <<<EOT
-        PRAGMA foreign_keys = ON;
-        DELETE FROM obras WHERE rowid = {$_GET['recnumber']};
+  PRAGMA foreign_keys = ON;
+  DELETE FROM obras WHERE rowid = {$_GET['recnumber']};
 EOT;
       if ($db->exec($sql)) {
         rebuildTable($db);
@@ -112,13 +102,13 @@ EOT;
       $text = '';
       // requisita a pesquisa se a montagem foi bem sucedida
       if (count($constraints) > 0) {
+        $restricoes = join(' AND ', $constraints);
         // montagem do sql da pesquisa
         $sql = <<<EOT
   SELECT rowid, code, titulo, ifnull(autor||' - '||espirito, autor), genero
-    FROM obras_view
-    WHERE
+  FROM obras_view
+  WHERE $restricoes;
 EOT;
-        $sql .= ' '.join(' AND ', $constraints);
         // for debug purpose --> $text = $sql."\n";
         // consulta o DB
         $result = $db->query($sql);

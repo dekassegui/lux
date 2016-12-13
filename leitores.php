@@ -23,16 +23,16 @@
   */
   function rebuildTable($db) {
     $db->exec(<<<EOT
-      PRAGMA foreign_keys = OFF;
-      BEGIN TRANSACTION;
-      DROP TABLE IF EXISTS t;
-      CREATE TEMP TABLE t AS SELECT * FROM leitores ORDER BY nome;
-      DELETE FROM leitores;
-      INSERT INTO leitores SELECT * FROM t;
-      -- REINDEX leitores_ndx;
-      COMMIT;
-      PRAGMA foreign_keys = ON;
-      -- VACUUM;
+  PRAGMA foreign_keys = OFF;
+  BEGIN TRANSACTION;
+  DROP TABLE IF EXISTS t;
+  CREATE TEMP TABLE t AS SELECT * FROM leitores ORDER BY nome;
+  DELETE FROM leitores;
+  INSERT INTO leitores SELECT * FROM t;
+  -- REINDEX leitores_ndx;
+  COMMIT;
+  PRAGMA foreign_keys = ON;
+  -- VACUUM;
 EOT
     );
   }
@@ -49,37 +49,27 @@ EOT
       echo $db->querySingle('SELECT count() FROM leitores');
       break;
 
+    case 'INSERT':
     case 'UPDATE':
       $code = chk($_GET['code']);
       $nome = chk($_GET['nome']);
       $telefone = chk($_GET['telefone']);
       $email = chk($_GET['email']);
-      $sql = <<<EOT
-        PRAGMA foreign_keys = ON;
-        PRAGMA recursive_triggers = ON;
-        UPDATE leitores
-          SET code=$code, nome=$nome, telefone=$telefone, email=$email
-          WHERE rowid == {$_GET['recnumber']};
+      if ($_GET['action'] == 'UPDATE') {
+        $sql = <<<EOT
+  PRAGMA foreign_keys = ON;
+  PRAGMA recursive_triggers = ON;
+  UPDATE leitores
+    SET code=$code, nome=$nome, telefone=$telefone, email=$email
+  WHERE rowid == {$_GET['recnumber']};
 EOT;
-      if ($db->exec($sql)) {
-        rebuildTable($db);
-        $sql = "SELECT rowid FROM leitores WHERE code == $code";
-        echo $db->querySingle($sql);
       } else {
-        echo 'FALSE';
-      }
-      break;
-
-    case 'INSERT':
-      $code = chk($_GET['code']);
-      $nome = chk($_GET['nome']);
-      $telefone = chk($_GET['telefone']);
-      $email = chk($_GET['email']);
       $sql = <<<EOT
-        PRAGMA foreign_keys = ON;
-        PRAGMA recursive_triggers = ON;
-        INSERT INTO leitores SELECT $code, $nome, $telefone, $email;
+  PRAGMA foreign_keys = ON;
+  PRAGMA recursive_triggers = ON;
+  INSERT INTO leitores SELECT $code, $nome, $telefone, $email;
 EOT;
+      }
       if ($db->exec($sql)) {
         rebuildTable($db);
         $sql = "SELECT rowid FROM leitores WHERE code == $code";
@@ -103,20 +93,14 @@ EOT;
       break;
 
     case 'SEARCH':
-      /*
-       * Pesquisa registros usando ISNULL, SOUNDEX, GLOB, LIKE ou REGEXP
-       * além dos operadores NOT, IS e IN.
-      */
-
       $constraints = buildConstraints(
         array('code', 'nome', 'telefone', 'email'));
-
       $text = '';
       // requisita a pesquisa se a montagem foi bem sucedida
       if (count($constraints) > 0) {
+        $restricoes = join(' AND ', $constraints);
         // montagem do sql da pesquisa
-        $sql = "SELECT rowid, * FROM leitores WHERE "
-          .join(' AND ', $constraints);
+        $sql = "SELECT rowid, * FROM leitores WHERE $restricoes";
         // for debug purpose --> $text = $sql."\n";
         // consulta o DB
         $result = $db->query($sql);

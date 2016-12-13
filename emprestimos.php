@@ -6,15 +6,29 @@
 
   require 'utils.php';
 
+  /**
+   * Converte string representando data&hora no formato
+   * DD?MM?YYYY( HH:MM(:SS))? para o formato YYYY-MM-DD( HH:MM)? aka
+   * ISO-8601, indiferente ao separador de componentes usado no argumento.
+   *
+   * @param $datetime String representando data e hora opcional.
+   * @return String
+  */
+  function toISOdate($datetime) {
+    return preg_match('/^(\d\d).(\d\d).(\d{4})(\s\d\d(?::\d\d){1,2})?$/',
+      $datetime, $matches)
+      ? "{$matches[3]}-{$matches[2]}-{$matches[1]}{$matches[4]}"
+      : $datetime;
+  }
+
   $db = new SQLite3(DB_FILENAME) or die('Unable to open database');
 
   addRegex($db);
 
   /**
-   * Refaz a sequência contínua dos "rowid" dos registros da tabela "acervo",
-   * esvaziando-a para imediatamente preenchê-la com os registros de sua
-   * cópia, ordenados pelo "titulo" da obra correspondentes aos seus códigos
-   * e pela coluna "exemplar", mediante junção com a tabela "obras".
+   * Refaz a sequência contínua dos "rowid" dos registros da tabela
+   * "emprestimos", esvaziando-a para imediatamente preenchê-la com os
+   * registros de sua cópia, ordenados..
    *
    * Nota: As requisições são feitas numa transação, para comprometer
    *       minimamente o desempenho da interface.
@@ -27,12 +41,14 @@
   BEGIN TRANSACTION;
   DROP TABLE IF EXISTS t;
   CREATE TEMP TABLE t AS
-    SELECT acervo.*
-    FROM acervo JOIN obras ON acervo.obra == obras.code
-    ORDER BY titulo, exemplar;
-  DELETE FROM acervo;
-  INSERT INTO acervo SELECT * FROM t;
-  -- REINDEX acervo_ndx;
+    SELECT emprestimos.*
+    FROM emprestimos
+      JOIN leitores ON (emprestimos.leitor == leitores.code)
+      JOIN obras ON (emprestimos.obra == obras.code)
+    ORDER BY data_emprestimo, leitores.nome, obras.titulo;
+  DELETE FROM emprestimos;
+  INSERT INTO emprestimos SELECT * FROM t;
+  -- REINDEX autores_ndx;
   COMMIT;
   PRAGMA foreign_keys = ON;
   -- VACUUM;
@@ -44,29 +60,40 @@ EOT
 
     case 'GETREC':
       $result = $db->query(<<<EOT
-  SELECT obra, exemplar, posicao, comentario
-  FROM acervo_view
-  WHERE rowid == {$_GET['recnumber']};
+  SELECT data_emprestimo, data_devolucao, bibliotecario, leitor, obra,
+    exemplar, comentario
+  FROM emprestimos_easy
+  WHERE rowid == {$_GET['recnumber']}
 EOT
       );
       echo join('|', $result->fetchArray(SQLITE3_NUM));
       break;
 
     case 'COUNT':
-      echo $db->querySingle('SELECT count() FROM acervo');
+      echo $db->querySingle('SELECT count() FROM emprestimos');
       break;
 
     case 'INSERT':
     case 'UPDATE':
+      $data_emprestimo = chk(toISOdate($_GET['data_emprestimo']));
+      $data_devolucao = chk(toISOdate($_GET['data_devolucao']));
+      $bibliotecario = chk($_GET['bibliotecario']);
+      $leitor = chk($_GET['leitor']);
       $obra = chk($_GET['obra']);
       $exemplar = chk($_GET['exemplar']);
-      $posicao = chk($_GET['posicao']);
       $comentario = chk($_GET['comentario']);
+      // preparação do sql conforme tipo de requisição
       if ($_GET['action'] == 'UPDATE') {
         $sql = <<<EOT
   PRAGMA foreign_keys = ON;
   PRAGMA recursive_triggers = ON;
-  UPDATE acervo SET obra=$obra, exemplar=$exemplar, posicao=$posicao,
+  UPDATE emprestimos SET
+    data_emprestimo=$data_emprestimo,
+    data_devolucao=$data_devolucao,
+    bibliotecario=$bibliotecario,
+    leitor=$leitor,
+    obra=$obra,
+    exemplar=$exemplar,
     comentario=$comentario
   WHERE rowid == {$_GET['recnumber']};
 EOT;
@@ -74,15 +101,20 @@ EOT;
         $sql = <<<EOT
   PRAGMA foreign_keys = ON;
   PRAGMA recursive_triggers = ON;
-  INSERT INTO acervo SELECT $obra, $exemplar, $posicao, $comentario;
+  INSERT INTO emprestimos
+    SELECT $data_emprestimo, $data_devolucao, $bibliotecario,
+      $leitor, $obra, $exemplar, $comentario;
 EOT;
       }
+      // tenta executar a requisição
       if ($db->exec($sql)) {
         rebuildTable($db);
         $sql = <<<EOT
   SELECT rowid
-  FROM acervo
-  WHERE obra == $obra AND exemplar == $exemplar
+  FROM emprestimos
+  WHERE data_emprestimo == $data_emprestimo
+    AND leitor == $leitor
+    AND obra == $obra;
 EOT;
         echo $db->querySingle($sql);
       } else {
@@ -93,7 +125,7 @@ EOT;
     case 'DELETE':
       $sql = <<<EOT
   PRAGMA foreign_keys = ON;
-  DELETE FROM acervo WHERE rowid = {$_GET['recnumber']};
+  DELETE FROM emprestimos WHERE rowid = {$_GET['recnumber']};
 EOT;
       if ($db->exec($sql)) {
         rebuildTable($db);
@@ -105,15 +137,17 @@ EOT;
 
     case 'SEARCH':
       $constraints = buildConstraints(
-        array('obra', 'exemplar', 'posicao', 'comentario'));
+        array('data_emprestimo', 'data_devolucao', 'bibliotecario', 'leitor',
+          'obra', 'exemplar', 'comentario'));
       $text = '';
       // requisita a pesquisa se a montagem foi bem sucedida
       if (count($constraints) > 0) {
         $restricoes = join(' AND ', $constraints);
         // montagem do sql da pesquisa
         $sql = <<<EOT
-  SELECT rowid, obra, exemplar, posicao, comentario
-  FROM acervo_view
+  SELECT rowid, data_emprestimo, data_devolucao, bibliotecario, leitor,
+    obra, exemplar, comentario
+  FROM emprestimos_easy
   WHERE $restricoes;
 EOT;
         // for debug purpose --> $text = $sql."\n";
@@ -125,20 +159,6 @@ EOT;
           while ($row = $result->fetchArray(SQLITE3_NUM)) {
             $text .= "\n".join('|', $row);
           }
-        }
-      }
-      echo $text;
-      break;
-
-    case 'GETALL': // TODO: eliminar este trecho se não utilizado
-      $text = '';
-      $result = $db->query(
-        'SELECT code, obra || " (" || exemplar || " - " || posicao || ")" FROM acervo_view'
-        );
-      if ($row = $result->fetchArray(SQLITE3_NUM)) {
-        $text .= join('|', $row);
-        while ($row = $result->fetchArray(SQLITE3_NUM)) {
-          $text .= "\n".join('|', $row);
         }
       }
       echo $text;

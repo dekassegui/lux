@@ -22,16 +22,16 @@
   */
   function rebuildTable($db) {
     $db->exec(<<<EOT
-      PRAGMA foreign_keys = OFF;
-      BEGIN TRANSACTION;
-      DROP TABLE IF EXISTS t;
-      CREATE TEMP TABLE t AS SELECT * FROM bibliotecarios ORDER BY nome;
-      DELETE FROM bibliotecarios;
-      INSERT INTO bibliotecarios SELECT * FROM t;
-      -- REINDEX bibliotecarios_ndx;
-      COMMIT;
-      PRAGMA foreign_keys = ON;
-      -- VACUUM;
+  PRAGMA foreign_keys = OFF;
+  BEGIN TRANSACTION;
+  DROP TABLE IF EXISTS t;
+  CREATE TEMP TABLE t AS SELECT * FROM bibliotecarios ORDER BY nome;
+  DELETE FROM bibliotecarios;
+  INSERT INTO bibliotecarios SELECT * FROM t;
+  -- REINDEX bibliotecarios_ndx;
+  COMMIT;
+  PRAGMA foreign_keys = ON;
+  -- VACUUM;
 EOT
     );
   }
@@ -48,32 +48,24 @@ EOT
       echo $db->querySingle('SELECT count() FROM bibliotecarios');
       break;
 
+    case 'INSERT':
     case 'UPDATE':
       $code = chk($_GET['code']);
       $nome = chk($_GET['nome']);
-      $sql = <<<EOT
-        PRAGMA foreign_keys = ON;
-        PRAGMA recursive_triggers = ON;
-        UPDATE bibliotecarios SET code=$code, nome=$nome
-          WHERE rowid == {$_GET['recnumber']};
+      if ($_GET['action'] == 'UPDATE') {
+        $sql = <<<EOT
+  PRAGMA foreign_keys = ON;
+  PRAGMA recursive_triggers = ON;
+  UPDATE bibliotecarios SET code=$code, nome=$nome
+  WHERE rowid == {$_GET['recnumber']};
 EOT;
-      if ($db->exec($sql)) {
-        rebuildTable($db);
-        $sql = "SELECT rowid FROM bibliotecarios WHERE code == $code";
-        echo $db->querySingle($sql);
       } else {
-        echo 'FALSE';
-      }
-      break;
-
-    case 'INSERT':
-      $code = chk($_GET['code']);
-      $nome = chk($_GET['nome']);
       $sql = <<<EOT
-        PRAGMA foreign_keys = ON;
-        PRAGMA recursive_triggers = ON;
-        INSERT INTO bibliotecarios SELECT $code, $nome;
+  PRAGMA foreign_keys = ON;
+  PRAGMA recursive_triggers = ON;
+  INSERT INTO bibliotecarios SELECT $code, $nome;
 EOT;
+      }
       if ($db->exec($sql)) {
         rebuildTable($db);
         $sql = "SELECT rowid FROM bibliotecarios WHERE code == $code";
@@ -85,8 +77,8 @@ EOT;
 
     case 'DELETE':
       $sql = <<<EOT
-        PRAGMA foreign_keys = ON;
-        DELETE FROM bibliotecarios WHERE rowid = {$_GET['recnumber']};
+  PRAGMA foreign_keys = ON;
+  DELETE FROM bibliotecarios WHERE rowid = {$_GET['recnumber']};
 EOT;
       if ($db->exec($sql)) {
         rebuildTable($db);
@@ -97,18 +89,13 @@ EOT;
       break;
 
     case 'SEARCH':
-      /*
-       * Pesquisa registros usando ISNULL, SOUNDEX, GLOB, LIKE ou REGEXP
-       * além dos operadores NOT, IS e IN.
-      */
-
       $constraints = buildConstraints(array('code', 'nome'));
-
       $text = '';
       // requisita a pesquisa se a montagem foi bem sucedida
       if (count($constraints) > 0) {
+        $restricoes = join(' AND ', $constraints);
         // montagem do sql da pesquisa
-        $sql = "SELECT rowid, * FROM bibliotecarios WHERE ".join(' AND ', $constraints);
+        $sql = "SELECT rowid, * FROM bibliotecarios WHERE $restricoes";
         // for debug purpose --> $text = $sql."\n";
         // consulta o DB
         $result = $db->query($sql);
@@ -118,6 +105,18 @@ EOT;
           while ($row = $result->fetchArray(SQLITE3_NUM)) {
             $text .= "\n".join('|', $row);
           }
+        }
+      }
+      echo $text;
+      break;
+
+    case 'GETALL':
+      $text = '';
+      $result = $db->query('SELECT code, nome FROM bibliotecarios');
+      if ($row = $result->fetchArray(SQLITE3_NUM)) {
+        $text .= join('|', $row);
+        while ($row = $result->fetchArray(SQLITE3_NUM)) {
+          $text .= "\n".join('|', $row);
         }
       }
       echo $text;

@@ -22,16 +22,16 @@
   */
   function rebuildTable($db) {
     $db->exec(<<<EOT
-      PRAGMA foreign_keys = OFF;
-      BEGIN TRANSACTION;
-      DROP TABLE IF EXISTS t;
-      CREATE TEMP TABLE t AS SELECT * FROM generos ORDER BY nome;
-      DELETE FROM generos;
-      INSERT INTO generos SELECT * FROM t;
-      -- REINDEX generos_ndx;
-      COMMIT;
-      PRAGMA foreign_keys = ON;
-      -- VACUUM;
+  PRAGMA foreign_keys = OFF;
+  BEGIN TRANSACTION;
+  DROP TABLE IF EXISTS t;
+  CREATE TEMP TABLE t AS SELECT * FROM generos ORDER BY nome;
+  DELETE FROM generos;
+  INSERT INTO generos SELECT * FROM t;
+  -- REINDEX generos_ndx;
+  COMMIT;
+  PRAGMA foreign_keys = ON;
+  -- VACUUM;
 EOT
     );
   }
@@ -48,32 +48,24 @@ EOT
       echo $db->querySingle('SELECT count() FROM generos');
       break;
 
+    case 'INSERT':
     case 'UPDATE':
       $code = chk($_GET['code']);
       $nome = chk($_GET['nome']);
-      $sql = <<<EOT
-        PRAGMA foreign_keys = ON;
-        PRAGMA recursive_triggers = ON;
-        UPDATE generos SET code=$code, nome=$nome
-          WHERE rowid == {$_GET['recnumber']};
+      if ($_GET['action']) {
+        $sql = <<<EOT
+  PRAGMA foreign_keys = ON;
+  PRAGMA recursive_triggers = ON;
+  UPDATE generos SET code=$code, nome=$nome
+  WHERE rowid == {$_GET['recnumber']};
 EOT;
-      if ($db->exec($sql)) {
-        rebuildTable($db);
-        $sql = "SELECT rowid FROM generos WHERE code == $code";
-        echo $db->querySingle($sql);
       } else {
-        echo 'FALSE';
-      }
-      break;
-
-    case 'INSERT':
-      $code = chk($_GET['code']);
-      $nome = chk($_GET['nome']);
-      $sql = <<<EOT
-        PRAGMA foreign_keys = ON;
-        PRAGMA recursive_triggers = ON;
-        INSERT INTO generos SELECT $code, $nome;
+        $sql = <<<EOT
+  PRAGMA foreign_keys = ON;
+  PRAGMA recursive_triggers = ON;
+  INSERT INTO generos SELECT $code, $nome;
 EOT;
+      }
       if ($db->exec($sql)) {
         rebuildTable($db);
         $sql = "SELECT rowid FROM generos WHERE code == $code";
@@ -97,13 +89,7 @@ EOT;
       break;
 
     case 'SEARCH':
-      /*
-       * Pesquisa registros usando ISNULL, SOUNDEX, GLOB, LIKE ou REGEXP
-       * além dos operadores NOT, IS e IN.
-      */
-
       $constraints = buildConstraints(array('code', 'nome'));
-
       $text = '';
       // requisita a pesquisa se a montagem foi bem sucedida
       if (count($constraints) > 0) {
