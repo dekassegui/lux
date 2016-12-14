@@ -212,10 +212,7 @@ window.addEventListener('load',
         }
       }, true);
 
-    amount.addEventListener('focus',
-      function () {
-        amount.target.blur();  // rejeita foco nesse input
-      }, true);
+    amount.addEventListener('focus', function () { this.blur(); }, true);
 
     firstBtn.addEventListener('click',
       function () {
@@ -328,12 +325,13 @@ window.addEventListener('load',
 
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
-              if (this.responseText.length > 0) {
+              if (this.responseText.startsWith('Warning')) {
+                print('> Não há dados que satisfaçam a pesquisa.');
+                print(this.responseText);
+              } else {
                 var n = this.responseText.split(/\n|\r|\r\n/g).length;
                 print(['> Sucesso, localizou ', ' registro(s):'].join(n));
                 print(this.responseText);
-              } else {
-                print('> Pesquisa mal sucedida.');
               }
             }
           };

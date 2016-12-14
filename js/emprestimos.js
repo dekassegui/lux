@@ -208,10 +208,7 @@ window.addEventListener('load',
         }
       }, true);
 
-    amount.addEventListener('focus',
-      function () {
-        amount.target.blur();  // rejeita foco nesse input
-      }, true);
+    amount.addEventListener('focus', function () { this.blur(); }, true);
 
     firstBtn.addEventListener('click',
       function () {
@@ -303,7 +300,6 @@ window.addEventListener('load',
 
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
-              //if (this.responseText == 'FALSE') {
               if (this.responseText.startsWith('Error')) {
                 print('> Inserção mal sucedida.');
                 print(this.responseText);
@@ -325,12 +321,13 @@ window.addEventListener('load',
 
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
-              if (this.responseText.length > 0) {
+              if (this.responseText.startsWith('Warning')) {
+                print('> Não há dados que satisfaçam a pesquisa.');
+                print(this.responseText);
+              } else {
                 var n = this.responseText.split(/\n|\r|\r\n/g).length;
                 print(['> Sucesso, localizou ', ' registro(s):'].join(n));
                 print(this.responseText);
-              } else {
-                print('> Pesquisa mal sucedida.');
               }
             }
           };
@@ -360,15 +357,15 @@ window.addEventListener('load',
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText.startsWith('Error')) {
+                print('> Exclusão mal sucedida.');
+                print(this.responseText);
+              } else {
                 amount.value = --numRecs;
                 if (indexRec > numRecs) --indexRec;
                 counter.maxLength = amount.value.length;
                 update();
                 print('> Exclusão bem sucedida.');
                 cancelBtn.click();
-              } else {
-                print('> Exclusão mal sucedida.');
-                print(this.responseText);
               }
             }
           };

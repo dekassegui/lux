@@ -45,7 +45,7 @@
    * (2) separador da data  (4) ano  (6) tempo no formato HH:MM(:SS)?
   */
   define('BR_DATETIME_REGEX_PATTERN',
-    '/^\s*(?#DATE)(\d\d)(?<separator>\D)(\d\d)(?&separator)(\d{4})(?:\s*(\s(?#TIME)(\d\d(?::\d\d){1,2})))?\s*$/');
+    '/^\s*(?#DATE)(\d\d)(?<separator>\D)(\d\d)(?&separator)(\d{4})(?:\s*(\s(?#TIME)(\d\d(?::\d\d){1,2}))?)\s*$/');
 
   /**
    * Converte string representando Date&Time pt-BR para o formato que
@@ -58,7 +58,7 @@
   function toISOdate($datetime) {
     if (preg_match(BR_DATETIME_REGEX_PATTERN, $datetime, $matches)) {
       $r = "{$matches[4]}-{$matches[3]}-{$matches[1]}";
-      if (count($matches) > 5) $r .= $matches[5];
+      if (isset($matches[5])) $r .= $matches[5];
       return $r;
     } else {
       return $datetime;
@@ -94,8 +94,9 @@
         $RHS = $m[2];
         // testa se o RHS é uma Date&Time pt-BR
         if (preg_match(BR_DATETIME_REGEX_PATTERN, $RHS)) {
-          $RHS = toISOdate($RHS);
-          $constraints[] = $negate."strftime('%s', substr($name, 7, 4)||substr($name, 3, 4)||substr($name, 1, 2)||substr($name, 11)) $operator strftime('%s', '$RHS')";
+          $RHS = "strftime('%s', '".toISOdate($RHS)."')";
+          $constraints[] = $negate."strftime('%s', toISOdate($name))"
+            ." $operator $RHS";
         } else {
           $constraints[] = $negate."$name $operator $RHS";
         }
@@ -161,6 +162,8 @@
 
   function addRegex($db) {
     if ($db->createFunction("preg_match", "preg_match", 2) === FALSE)
+      exit("Failed creating function\n");
+    if ($db->createFunction("toISOdate", "toISOdate", 1) === FALSE)
       exit("Failed creating function\n");
   }
 

@@ -110,6 +110,8 @@ EOT;
           while ($row = $result->fetchArray(SQLITE3_NUM)) {
             $text .= "\n".join('|', $row);
           }
+        } else {
+          $text = "Warning: No data found to satisfy search:\n$sql";
         }
       }
       echo $text;
