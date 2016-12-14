@@ -75,10 +75,11 @@ input[type="text"], input[type="tel"], input[type="email"] {
   background-color: #ffffe0;
   border: solid 1px #ccc;
   border-radius: 5px;
+  box-shadow: none;
   /* configura uso de "transition" */
-  -webkit-transition: color .5s, background-color .5s;
+  -webkit-transition: color .5s, background-color .5s, border-color .5s, box-shadow .5s;
   -webkit-transition-timing-function: linear;
-  transition: color .5s, background-color .5s, border-color .5s;
+  transition: color .5s, background-color .5s, border-color .5s, box-shadow .5s;
   transition-timing-function: linear;
 }
 
@@ -99,6 +100,7 @@ input#counter {
 input[type="text"]:focus, input[type="tel"]:focus, input[type="email"]:focus, input#counter:focus {
   background-color: white;
   border-color: #9E9;
+  box-shadow: 0px 0px 2px #ccc;
 }
 input[list]:focus {
   border-color: #c9f;
@@ -160,20 +162,22 @@ textarea {
   padding: 2px 5px;
   font: 400 100% 'Droid Sans Mono', 'Courier New', monospace;
   line-height: 160%;
-  color: darkblue;
+  color: black;
   background-color: #f6fcff;
   border: solid 1px #ccc;
   border-radius: 5px;
+  box-shadow: none;
   /* configura uso de "transition" */
-  -webkit-transition: color .5s, background-color .5s;
+  -webkit-transition: color .5s, background-color .5s, box-shadow .5s;
   -webkit-transition-timing-function: linear;
-  transition: color .5s, background-color .5s;
+  transition: color .5s, background-color .5s, box-shadow .5s;
   transition-timing-function: linear;
 }
 textarea:focus {
-  color: black;
+  color: darkblue;
   background-color: white;
   border-color: #9cf;
+  box-shadow: 0px 0px 2px #ccc;
 }
 textarea.empty {
   font-style: italic;

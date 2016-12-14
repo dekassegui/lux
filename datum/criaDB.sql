@@ -483,25 +483,29 @@ CREATE TABLE IF NOT EXISTS emprestimos (
 
   data_devolucao  DATE,     --> NULL value se exemplar está emprestado!
 
-  bibliotecario   TEXT      --> valor coincidente com um dos valores
-                            --> de código de bibliotecario na tabela
-                            --> "bibliotecarios"
-
+  bibliotecario   TEXT           --> valor coincidente com um dos valores
+                  NOT NULL       --> de código de bibliotecario na tabela
+                  COLLATE NOCASE --> "bibliotecarios"
+                  CHECK(trim(bibliotecario) <> "")
                   REFERENCES bibliotecarios(code)
                     ON UPDATE CASCADE ON DELETE RESTRICT,
 
-  leitor          TEXT      --> valor coincidente com um dos valores
-                            --> de código de leitor na tabela "leitores"
-
+  leitor          TEXT           --> valor coincidente com um dos valores
+                  NOT NULL       --> de código de leitor na tabela "leitores"
+                  COLLATE NOCASE
+                  CHECK(trim(leitor) <> "")
                   REFERENCES leitores(code)
                     ON UPDATE CASCADE ON DELETE RESTRICT,
 
-  obra            TEXT,       --> valor coincidente com um dos valores
-                              --> de obra na tabela "acervo"
+  obra            TEXT             --> valor coincidente com um dos valores
+                  NOT NULL         --> de obra na tabela "acervo"
+                  COLLATE NOCASE
+                  CHECK(trim(obra) <> ""),
 
   exemplar        TEXT        --> valor coincidente com um dos valores
                   DEFAULT 1   --> de exemplar na tabela "acervo"
                   NOT NULL
+                  COLLATE NOCASE
                   CHECK(trim(exemplar) <> ""),
 
   comentario      TEXT,   --> qualquer comentário sobre a operação

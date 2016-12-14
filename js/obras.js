@@ -307,8 +307,9 @@ window.addEventListener('load',
 
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
-              if ((this.responseText == 'FALSE')) {
+              if (this.responseText.startsWith('Error')) {
                 print('> Inserção mal sucedida.');
+                print(this.responseText);
               } else {
                 // atualiza inputs do índice/quantidade de registros
                 amount.value = ++numRecs;
@@ -343,8 +344,9 @@ window.addEventListener('load',
 
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
-              if (this.responseText == 'FALSE') {
+              if (this.responseText.startsWith('Error')) {
                 print('> Atualização mal sucedida.');
+                print(this.responseText);
               } else {
                 var n = parseInt(this.responseText);
                 if (n != indexRec) indexRec = n;
@@ -360,15 +362,16 @@ window.addEventListener('load',
 
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
-              if (this.responseText == 'TRUE') {
+              if (this.responseText.startsWith('Error')) {
+                print('> Exclusão mal sucedida.');
+                print(this.responseText);
+              } else {
                 amount.value = --numRecs;
                 if (indexRec > numRecs) --indexRec;
                 counter.maxLength = amount.value.length;
                 update();
                 print('> Exclusão bem sucedida.');
                 cancelBtn.click();
-              } else {
-                print('> Exclusão mal sucedida.');
               }
             }
           };

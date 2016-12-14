@@ -86,7 +86,7 @@ EOT;
 EOT;
         echo $db->querySingle($sql);
       } else {
-        echo 'FALSE';
+        echo 'Error: '.$db->lastErrorMsg();
       }
       break;
 
@@ -99,7 +99,7 @@ EOT;
         rebuildTable($db);
         echo 'TRUE';
       } else {
-        echo 'FALSE';
+        echo 'Error: '.$db->lastErrorMsg();
       }
       break;
 

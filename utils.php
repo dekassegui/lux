@@ -1,8 +1,10 @@
 <?php
 
-  define('DB_FILENAME', 'datum/lux.sqlite');
+  /**
+   * Este script é parte do projeto LUX :: Código aberto em Domínio Público.
+  */
 
-  define('BR_DATETIME_PATTERN', '/^\s*(?#DATE)(\d\d)(?<separator>\D)(\d\d)(?&separator)(\d{4})(?:\s*(\s(?#TIME)\d\d(?::\d\d){1,2}))?\s*$/');
+  define('DB_FILENAME', 'datum/lux.sqlite');
 
   $nomeMes = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
@@ -34,19 +36,29 @@
   }
 
   /**
-   * Converte string representando Date&Time no formato DD?MM?YYYY HH:MM:SS,
-   * indiferente ao separador de componentes usado no argumento com a parte
-   * das horas opcional que pode conter apenas as horas e minutos, para o
-   * formato YYYY-MM-DD HH:MM:SS aka ISO-8601, conforme disponibilidade de
-   * componentes.
+   * Padrão de expressão regular para identificação de strings representando
+   * Date&Time pt-BR ie.: no formato DD?MM?YYYY HH:MM:SS, indiferente ao
+   * separador de componentes usado na data, com a componente dos segundos e
+   * até a própria parte do tempo, opcionais.
+   * Os grupos de captura são:
+   * (1) dia                (3) mês  (5) espaço em branco + tempo (aka TIME)
+   * (2) separador da data  (4) ano  (6) tempo no formato HH:MM(:SS)?
+  */
+  define('BR_DATETIME_REGEX_PATTERN',
+    '/^\s*(?#DATE)(\d\d)(?<separator>\D)(\d\d)(?&separator)(\d{4})(?:\s*(\s(?#TIME)(\d\d(?::\d\d){1,2})))?\s*$/');
+
+  /**
+   * Converte string representando Date&Time pt-BR para o formato que
+   * representa Date&Time no ISO-8601, removendo espaços em branco
+   * desnecessários e conforme disponibilidades dos componentes.
    *
-   * @param $datetime String representando data e hora opcional.
-   * @return String
+   * @param $datetime String representando Date&Time no formato pt-BR.
+   * @return String representando Date&Time no formato ISO-8601.
   */
   function toISOdate($datetime) {
-    if (preg_match(BR_DATETIME_PATTERN, $datetime, $matches)) {
+    if (preg_match(BR_DATETIME_REGEX_PATTERN, $datetime, $matches)) {
       $r = "{$matches[4]}-{$matches[3]}-{$matches[1]}";
-      if (count($matches) == 6) $r .= $matches[5];
+      if (count($matches) > 5) $r .= $matches[5];
       return $r;
     } else {
       return $datetime;
@@ -76,12 +88,12 @@
       }
 
       // checa uso de operadores lógicos
-      if (preg_match('/^\s*([<=>!]=?)\s+(.+)$/', $needle, $m)) {
+      if (preg_match('/^\s*([<=>]=?|!=)\s+(.+)$/', $needle, $m)) {
 
         $operator = $m[1];
         $RHS = $m[2];
-        // testa se o RHS é uma Date&Time
-        if (preg_match(BR_DATETIME_PATTERN, $RHS)) {
+        // testa se o RHS é uma Date&Time pt-BR
+        if (preg_match(BR_DATETIME_REGEX_PATTERN, $RHS)) {
           $RHS = toISOdate($RHS);
           $constraints[] = $negate."strftime('%s', substr($name, 7, 4)||substr($name, 3, 4)||substr($name, 1, 2)||substr($name, 11)) $operator strftime('%s', '$RHS')";
         } else {
@@ -91,11 +103,13 @@
       // checa uso explícito de GLOB, LIKE ou IS
       } else if (preg_match('/^(GLOB|LIKE|IS)\s+(.+)\s*$/i', $needle,
                             $matches)) {
+
         $constraints[] = $negate."$name {$matches[1]} '{$matches[2]}'";
 
       // checa uso de REGEXP também detectando aliases
       } else if (preg_match('/^(I|)(?:REGEXP?|MATCH(?:ES)?)\s+(.+)\s*$/i',
                             $needle, $matches)) {
+
         // extrai opção "ignorecase" opcionalmente declarada
         $ignorecase = strtolower($matches[1]);
         $constraints[] =
@@ -103,11 +117,13 @@
 
       // checa uso de SOUNDEX
       } else if (preg_match('/^SOUNDEX\s+(.+)\s*$/i', $needle, $matches)) {
+
         $constraints[] =
           $negate."soundex($name) == '".soundex($matches[1])."'";
 
       // checa uso do operador IN
       } else if (preg_match('/^IN\s+\((.+)\)\s*$/i', $needle, $matches)) {
+
         $lista = '';
         foreach (preg_split('/,\s*/', $matches[1]) as $item) {
           if (strlen($lista) > 0) $lista .= ',';
@@ -118,20 +134,25 @@
       // checa uso implícito de GLOB
       } else if (!(strpos($needle, '*') === FALSE
                    && strpos($needle, '?') === FALSE)) {
+
         $constraints[] = $negate."$name GLOB '$needle'";
 
       // checa uso implícito de LIKE
       } else if (!(strpos($needle, '%') === FALSE
                    && strpos($needle, '_') === FALSE)) {
+
         $constraints[] = $negate."$name LIKE '$needle'";
 
       // checa comparação com NULL
       } else if (strtoupper($needle) == 'NULL') {
+
         $constraints[] = $negate."$name ISNULL";
 
       // default :: comparação simples
       } else {
+
         $constraints[] = $negate."$name == '$needle'";
+
       }
     }
 
