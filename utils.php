@@ -88,7 +88,7 @@
       }
 
       // checa uso de operadores lógicos
-      if (preg_match('/^\s*([<=>]=?|!=)\s+(.+)$/', $needle, $m)) {
+      if (preg_match('/^([<=>]=?|!=)\s+(.+)$/', $needle, $m)) {
 
         $operator = $m[1];
         $RHS = $m[2];

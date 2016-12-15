@@ -181,7 +181,7 @@ textarea:focus {
 }
 textarea.empty {
   font-style: italic;
-  color: #9c9;
+  color: #99c;
 }
 
 @media (max-width: 1024px), (max-device-with: 1024px) {

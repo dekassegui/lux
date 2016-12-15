@@ -32,6 +32,7 @@ drop table if exists bibliotecarios;
 drop table if exists leitores;
 drop table if exists emprestimos;
 drop view if exists conta_obras_acervo;
+drop view if exists disponiveis_acervo;
 drop view if exists emprestados;
 drop view if exists atrasados;
 drop view if exists count_emprestados;
@@ -486,27 +487,23 @@ CREATE TABLE IF NOT EXISTS emprestimos (
   bibliotecario   TEXT           --> valor coincidente com um dos valores
                   NOT NULL       --> de código de bibliotecario na tabela
                   COLLATE NOCASE --> "bibliotecarios"
-                  CHECK(trim(bibliotecario) <> "")
                   REFERENCES bibliotecarios(code)
                     ON UPDATE CASCADE ON DELETE RESTRICT,
 
   leitor          TEXT           --> valor coincidente com um dos valores
                   NOT NULL       --> de código de leitor na tabela "leitores"
                   COLLATE NOCASE
-                  CHECK(trim(leitor) <> "")
                   REFERENCES leitores(code)
                     ON UPDATE CASCADE ON DELETE RESTRICT,
 
   obra            TEXT             --> valor coincidente com um dos valores
                   NOT NULL         --> de obra na tabela "acervo"
-                  COLLATE NOCASE
-                  CHECK(trim(obra) <> ""),
+                  COLLATE NOCASE,
 
   exemplar        TEXT        --> valor coincidente com um dos valores
                   DEFAULT 1   --> de exemplar na tabela "acervo"
                   NOT NULL
-                  COLLATE NOCASE
-                  CHECK(trim(exemplar) <> ""),
+                  COLLATE NOCASE,
 
   comentario      TEXT,   --> qualquer comentário sobre a operação
 
@@ -516,7 +513,14 @@ CREATE TABLE IF NOT EXISTS emprestimos (
   FOREIGN KEY (obra, exemplar) REFERENCES acervo(obra, exemplar)
     ON UPDATE CASCADE ON DELETE RESTRICT,
 
-  CONSTRAINT datas_chk CHECK(              --> assegura que data de devolução
+  CONSTRAINT chk_data_emprestimo CHECK(
+    cast(strftime('%s', data_emprestimo) AS INTEGER) NOTNULL),
+
+  CONSTRAINT chk_data_devolucao CHECK(
+    data_devolucao ISNULL
+    OR (cast(strftime('%s', data_devolucao) AS INTEGER) NOTNULL)),
+
+  CONSTRAINT chk_dates_range CHECK(        --> assegura que data de devolução
     data_devolucao ISNULL                  --> NÃO ESTÁ PREENCHIDA ou é
     OR (data_devolucao > data_emprestimo)) --> posterior à data de empréstimo
 );
@@ -570,6 +574,17 @@ CREATE VIEW IF NOT EXISTS atrasados AS
 --
 CREATE VIEW IF NOT EXISTS obras_emprestadas AS
   SELECT obra, count(1) AS N FROM emprestados GROUP BY obra ORDER BY obra;
+
+CREATE VIEW IF NOT EXISTS disponiveis_acervo AS
+  SELECT *
+  FROM acervo
+  WHERE NOT EXISTS (
+      SELECT 1
+      FROM emprestimos
+      WHERE data_devolucao isnull
+        AND emprestimos.obra == acervo.obra
+        AND emprestimos.exemplar == acervo.exemplar
+    );
 
 COMMIT;
 
