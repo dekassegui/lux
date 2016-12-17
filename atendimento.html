@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Lux - Atendimento</title>
+<meta http-equiv="expires" content="0"/>
+<meta http-equiv="pragma" content="no-cache"/>
+<link href="css/reset.css" rel="stylesheet" type="text/css" media="screen">
+<link href="css/atendimento.css" rel="stylesheet" type="text/css" media="screen">
+<script type="text/javascript" src="js/utils.js"></script>
+<script type="text/javascript" src="js/atendimento.js"></script>
+</head>
+<body>
+
+  <header>
+    <h1>Lux - Atendimento</h1>
+  </header>
+
+  <section>
+    <div>
+      <h2>Atendimento</h2>
+
+      <p>
+        <span>
+          <label for="bibliotecario">Bibliotecário:</label>
+          <input type="text" id="bibliotecario" name="bibliotecario" list="bibliotecarios" tabindex="2" spellcheck="false" readonly>
+          <datalist id="bibliotecarios"></datalist>
+        </span>
+        <span>
+          <label for="counter">Registro:</label>
+          <input type="text" id="counter" name="counter" tabindex="1"> de <input type="text" id="amount" readonly>
+        </span>
+      </p>
+
+      <div id="fields">
+
+        <div>
+
+          <label for="data_emprestimo">Data de <em>empréstimo</em>:</label>
+          <input type="text" id="data_emprestimo" name="data_emprestimo" tabindex="3" spellcheck="false" readonly>
+
+          <label for="data_devolucao">Data de <em>devolução</em>:</label>
+          <input type="text" id="data_devolucao" name="data_devolucao" tabindex="4" spellcheck="false" readonly>
+
+        </div>
+
+        <div>
+
+          <label for="leitor">Leitor:</label>
+          <input type="text" id="leitor" name="leitor" list="leitores" tabindex="5" spellcheck="false" readonly>
+          <datalist id="leitores"></datalist>
+
+          <label for="obra">Obra:</label>
+          <input type="text" id="obra" name="obra" list="acervo_obras" tabindex="6" spellcheck="false" readonly>
+          <datalist id="acervo_obras"></datalist>
+
+          <label for="autor">Autor & Espírito:</label>
+          <input type="text" id="autor" name="autor" list="autores" tabindex="7" spellcheck="false" readonly>
+          <!-- <datalist id="autores"></datalist> -->
+
+          <span>
+
+            <span>
+              <label for="exemplar">Exemplar:</label>
+              <input type="text" id="exemplar" name="exemplar" list="acervo_exemplares" tabindex="8" spellcheck="false" readonly>
+              <datalist id="acervo_exemplares"></datalist>
+            </span>
+
+            <span>
+              <label for="posicao">Posição:</label>
+              <input type="text" id="posicao" name="posicao" list="posicoes" tabindex="9" spellcheck="false" readonly>
+              <datalist id="posicoes"></datalist>
+            </span>
+
+          </span>
+
+        </div>
+
+        <div>
+          <label for="comentario">Comentário:</label>
+          <input type="text" id="comentario" name="comentario" tabindex="10" spellcheck="false" readonly>
+        </div>
+
+      </div>
+
+      <div id="cmd">
+        <p>
+          <input type="button" id="firstBtn" tabindex="11" value="<<">
+          <input type="button" id="previousBtn" tabindex="12" value="<">
+          <input type="button" id="nextBtn" tabindex="13" value=">">
+          <input type="button" id="lastBtn" tabindex="14" value=">>">
+          <input type="button" id="saveBtn" tabindex="19" value="Salvar" disabled>
+          <input type="button" id="cmd01Btn" tabindex="21" value="Cmd 01" disabled>
+        </p>
+        <p>
+          <input type="button" id="updateBtn" tabindex="15" value="Atualizar">
+          <input type="button" id="newBtn" tabindex="16" value="Novo">
+          <input type="button" id="delBtn" tabindex="17" value="Excluir">
+          <input type="button" id="searchBtn" tabindex="18" value="Pesquisar">
+          <input type="button" id="cancelBtn" tabindex="20" value="Cancelar" disabled>
+          <input type="button" id="cmd02Btn" tabindex="22" value="Cmd 02" disabled>
+        </p>
+      </div>
+    </div>
+    <div>
+      <textarea id="mural" tabindex="23" rows="11" spellcheck="false" placeholder="Área de notificação editável!"></textarea>
+    </div>
+  </section>
+
+  <footer>
+    <p>Software Livre para<br>bibliotecas de casas Espíritas.</p>
+  </footer>
+
+</body>
+</html>

@@ -253,6 +253,13 @@ CREATE VIEW IF NOT EXISTS obras_view AS
     JOIN generos ON (obras.genero == generos.code)
   ORDER BY obras.titulo;
 
+CREATE VIEW IF NOT EXISTS obras_facil AS
+  SELECT obras.code, obras.titulo,
+    ifnull(autores.nome||' & '||autores.espirito, autores.nome) AS autor,
+    generos.nome AS genero
+  FROM obras JOIN autores ON obras.autor == autores.code
+    JOIN generos ON obras.genero == generos.code;
+
 CREATE TABLE IF NOT EXISTS acervo (
   --
   -- coleção de livros :: exemplares físicos (instâncias) de obras literárias
@@ -315,6 +322,10 @@ CREATE VIEW IF NOT EXISTS conta_obras_acervo AS
 CREATE VIEW IF NOT EXISTS acervo_view AS
   SELECT acervo.rowid, code, titulo AS obra, exemplar, posicao, comentario
   FROM acervo JOIN obras ON acervo.obra == obras.code;
+
+CREATE VIEW IF NOT EXISTS acervo_facil AS
+  SELECT obra, exemplar, posicao, comentario, titulo, autor, genero
+  FROM acervo JOIN obras_facil ON acervo.obra == obras_facil.code;
 
 CREATE TABLE IF NOT EXISTS bibliotecarios (
   --
@@ -553,6 +564,17 @@ BEGIN
     RAISE(ABORT, "O leitor não pode emprestar mais de um exemplar da mesma obra")
   END;
 END;
+
+CREATE VIEW IF NOT EXISTS emprestimos_facil AS
+  SELECT emprestimos.rowid AS rowid, bibliotecarios.nome AS bibliotecario,
+    data_emprestimo, data_devolucao, leitores.nome AS leitor, titulo AS obra,
+    autor, emprestimos.exemplar AS exemplar, posicao,
+    emprestimos.comentario AS comentario
+  FROM emprestimos
+    JOIN bibliotecarios ON (emprestimos.bibliotecario == bibliotecarios.code)
+    JOIN leitores ON (emprestimos.leitor == leitores.code)
+    JOIN acervo_facil AS af ON (emprestimos.obra == af.obra
+      AND emprestimos.exemplar == af.exemplar);
 
 --
 -- listagem de todos os empréstimos pendentes
