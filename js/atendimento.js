@@ -265,22 +265,10 @@ window.addEventListener('load',
       function () {
         var par = [uri];
 
-        function addDataFields(isToReplace) {
-          isToReplace = (isToReplace === undefined) ? true : isToReplace;
+        function addDataFields() {
           fields.forEach(
             function (input) {
-              var value = input.value;
-              // se não é pesquisa e se o input é associado a datalist
-              // então tenta trocar o valor do input pelo respectivo código
-              if (isToReplace && input.hasAttribute("list")) {
-                // tenta obter a option cujo valor de atributo 'value'
-                // corresponde exatamente ao valor do input
-                var el = $$("datalist#" + input.getAttribute("list")
-                  + " option[value='" + value + "']");
-                // testa se 'de facto' é DOM element e tem o método..
-                if (el.getAttribute) value = el.getAttribute("code");
-              }
-              par.push('&', input.id, '=', encodeURIComponent(value));
+              par.push('&', input.id, '=', encodeURIComponent(input.value));
             });
         }
 
@@ -305,6 +293,7 @@ window.addEventListener('load',
           };
           par.push('?action=INSERT');
           addDataFields();
+          console.log(par.join(""));
 
         } else if (searchBtn.classList.contains('disabled')) {
 
@@ -321,7 +310,7 @@ window.addEventListener('load',
             }
           };
           par.push('?action=SEARCH');
-          addDataFields(false);
+          addDataFields();
 
         } else if (updateBtn.classList.contains('disabled')) {
 
@@ -382,8 +371,8 @@ window.addEventListener('load',
     {
       // preenche datalists cujos ids correspondem ao nome (sem extensão)
       // do script server side que atende a requisição dos seus dados
-      ['bibliotecarios', 'leitores', 'acervo_obras', 'acervo_exemplares',
-        'posicoes'].forEach(
+      ['bibliotecarios', 'leitores', 'acervo_obras',
+        'acervo_exemplares'].forEach(
         function (iD) {
           var datalist = $(iD);
           var xhr = new XMLHttpRequest();

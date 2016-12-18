@@ -565,9 +565,36 @@ BEGIN
   END;
 END;
 
+--
+-- THIS VIEW IS DEPRECATED as will be any view with sufix 'easy'
+--
+CREATE VIEW emprestimos_easy AS
+  SELECT emprestimos.rowid as rowid,
+    strftime("%d-%m-%Y %H:%M:%S", data_emprestimo) AS data_emprestimo,
+    strftime("%d-%m-%Y %H:%M:%S", data_devolucao) AS data_devolucao,
+    emprestimos.bibliotecario AS bibliotecario_code,
+    bibliotecarios.nome AS bibliotecario,
+    emprestimos.leitor AS leitor_code,
+    leitores.nome AS leitor,
+    emprestimos.obra AS obra_code,
+    obras.titulo AS obra,
+    exemplar,
+    comentario
+  FROM emprestimos
+    JOIN bibliotecarios ON (emprestimos.bibliotecario == bibliotecarios.code)
+    JOIN leitores ON (emprestimos.leitor == leitores.code)
+    JOIN obras ON (emprestimos.obra == obras.code);
+
+--
+-- conveniência para exibir registros da tabela 'emprestimos' com valores
+-- correspondentes aos respectivos códigos em suas tabelas e datas
+-- localizadas em pt-BR
+--
 CREATE VIEW IF NOT EXISTS emprestimos_facil AS
   SELECT emprestimos.rowid AS rowid, bibliotecarios.nome AS bibliotecario,
-    data_emprestimo, data_devolucao, leitores.nome AS leitor, titulo AS obra,
+    strftime("%d-%m-%Y %H:%M:%S", data_emprestimo) AS data_emprestimo,
+    strftime("%d-%m-%Y %H:%M:%S", data_devolucao) AS data_devolucao,
+    leitores.nome AS leitor, titulo AS obra,
     autor, emprestimos.exemplar AS exemplar, posicao,
     emprestimos.comentario AS comentario
   FROM emprestimos
@@ -575,6 +602,49 @@ CREATE VIEW IF NOT EXISTS emprestimos_facil AS
     JOIN leitores ON (emprestimos.leitor == leitores.code)
     JOIN acervo_facil AS af ON (emprestimos.obra == af.obra
       AND emprestimos.exemplar == af.exemplar);
+
+--
+-- conveniência para inserção de registros na tabela 'emprestimos' com
+-- valores correspondentes aos respectivos códigos em suas tabelas e datas
+-- localizadas em pt-BR
+--
+CREATE TRIGGER emprestimos_facil_t0 INSTEAD OF INSERT ON emprestimos_facil
+BEGIN
+  INSERT INTO emprestimos SELECT
+    substr(NEW.data_emprestimo, 7, 4)||'-'||substr(NEW.data_emprestimo, 4, 2)||'-'||substr(NEW.data_emprestimo, 1, 2)||substr(NEW.data_emprestimo, 11),
+    substr(NEW.data_devolucao, 7, 4)||'-'||substr(NEW.data_devolucao, 4, 2)||'-'||substr(NEW.data_devolucao, 1, 2)||substr(NEW.data_devolucao, 11),
+    (SELECT code FROM bibliotecarios WHERE nome == NEW.bibliotecario),
+    (SELECT code FROM leitores WHERE nome == NEW.leitor),
+    (SELECT code FROM obras WHERE titulo ==  NEW.obra),
+    NEW.exemplar,
+    NEW.comentario;
+END;
+
+--
+-- conveniência para atualização de registros na tabela 'emprestimos' com
+-- valores correspondentes aos respectivos códigos em suas tabelas e datas
+-- localizadas em pt-BR
+--
+CREATE TRIGGER emprestimos_facil_t1 INSTEAD OF UPDATE ON emprestimos_facil
+BEGIN
+  UPDATE emprestimos SET
+    data_emprestimo=substr(NEW.data_emprestimo, 7, 4)||'-'||substr(NEW.data_emprestimo, 4, 2)||'-'||substr(NEW.data_emprestimo, 1, 2)||substr(NEW.data_emprestimo, 11),
+    data_devolucao=substr(NEW.data_devolucao, 7, 4)||'-'||substr(NEW.data_devolucao, 4, 2)||'-'||substr(NEW.data_devolucao, 1, 2)||substr(NEW.data_devolucao, 11),
+    bibliotecario=(SELECT code FROM bibliotecarios WHERE nome == NEW.bibliotecario),
+    leitor=(SELECT code FROM leitores WHERE nome == NEW.leitor),
+    obra=(SELECT code FROM obras WHERE titulo ==  NEW.obra),
+    exemplar=NEW.exemplar,
+    comentario=NEW.comentario
+  WHERE rowid == OLD.rowid;
+END;
+
+--
+-- conveniência para excluir registros da tabela 'emprestimos'
+--
+CREATE TRIGGER emprestimos_facil_t2 INSTEAD OF DELETE ON emprestimos_facil
+BEGIN
+  DELETE FROM emprestimos WHERE rowid == OLD.rowid;
+END;
 
 --
 -- listagem de todos os empréstimos pendentes

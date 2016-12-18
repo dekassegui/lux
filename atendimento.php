@@ -60,9 +60,12 @@ EOT
 
     case 'INSERT':
     case 'UPDATE':
-      $data_emprestimo = chk(toISOdate($_GET['data_emprestimo']));
-      $data_devolucao = chk(toISOdate($_GET['data_devolucao']));
+      //
+      // TODO: what happens when a legal reader is changed to an illegal?
+      //
       $bibliotecario = chk($_GET['bibliotecario']);
+      $data_emprestimo = chk($_GET['data_emprestimo']);
+      $data_devolucao = chk($_GET['data_devolucao']);
       $leitor = chk($_GET['leitor']);
       $obra = chk($_GET['obra']);
       $exemplar = chk($_GET['exemplar']);
@@ -72,10 +75,10 @@ EOT
         $sql = <<<EOT
   PRAGMA foreign_keys = ON;
   PRAGMA recursive_triggers = ON;
-  UPDATE emprestimos SET
+  UPDATE emprestimos_facil SET
+    bibliotecario=$bibliotecario,
     data_emprestimo=$data_emprestimo,
     data_devolucao=$data_devolucao,
-    bibliotecario=$bibliotecario,
     leitor=$leitor,
     obra=$obra,
     exemplar=$exemplar,
@@ -86,9 +89,9 @@ EOT;
         $sql = <<<EOT
   PRAGMA foreign_keys = ON;
   PRAGMA recursive_triggers = ON;
-  INSERT INTO emprestimos
-    SELECT $data_emprestimo, $data_devolucao, $bibliotecario, $leitor, $obra,
-      $exemplar, $comentario;
+  INSERT INTO emprestimos_facil
+    SELECT 'dummy_rowid', $bibliotecario, $data_emprestimo, $data_devolucao,
+      $leitor, $obra, 'dummy_autor', $exemplar, 'dummy_posicao', $comentario;
 EOT;
       }
       // tenta executar a requisição
@@ -96,10 +99,13 @@ EOT;
         rebuildTable($db);
         $sql = <<<EOT
   SELECT rowid
-  FROM emprestimos
-  WHERE data_emprestimo == $data_emprestimo
+  FROM emprestimos_facil
+  WHERE
+    --> the above is a nixtime comparison of ISO-8601 dates
+    strftime('%s', substr(data_emprestimo, 7, 4)||'-'||substr(data_emprestimo, 4, 2)||'-'||substr(data_emprestimo, 1, 2)||substr(data_emprestimo, 11)) == strftime('%s', substr($data_emprestimo, 7, 4)||'-'||substr($data_emprestimo, 4, 2)||'-'||substr($data_emprestimo, 1, 2)||substr($data_emprestimo, 11))
     AND leitor == $leitor
-    AND obra == $obra;
+    AND obra == $obra
+    AND exemplar == $exemplar;
 EOT;
         echo $db->querySingle($sql);
       } else {
