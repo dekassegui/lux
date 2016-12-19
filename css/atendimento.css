@@ -67,7 +67,7 @@ div#fields > div:nth-child(2) * + label { margin-top: .125em; }
 
 div#fields > div:nth-child(2) > span {
   display: inline-block;
-  width: 476px;
+  width: 516px;
   margin-top: .125em;
 }
 div#fields > div:nth-child(2) > span > span { display: inline; float: left; }
@@ -131,10 +131,13 @@ input#amount {
 }
 
 #bibliotecario { width: 200px; }
-#data_emprestimo, #data_devolucao { width: 280px; }
-#leitor, #obra, #autor { width: 480px; }
+#data_emprestimo, #data_devolucao {
+  width: 240px;
+  border-color: #fcc;
+}
+#leitor, #obra, #autor { width: 520px; }
 #exemplar { width: 260px; }
-#posicao { width: 200px; }
+#posicao { width: 250px; }
 #comentario { width: 766px; }
 
 input[type="button"] {

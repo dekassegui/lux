@@ -16,10 +16,16 @@ window.addEventListener('load',
       function (iD) {
         jQuery(iD).datepicker({
           language: 'pt-BR',
+          navTitles: {
+            days: 'MM - <i>yyyy</i>',
+            months: 'yyyy',
+            years: 'yyyy1 - yyyy2'
+          },
           timepicker: true,
           todayButton: new Date(),
           clearButton: true,
           onShow: function (dp, animationCompleted) {
+            // impede abertura do datepicker se o input é readonly
             if (!animationCompleted && dp.el.readOnly) dp.hide();
           }
         });
@@ -414,10 +420,7 @@ window.addEventListener('load',
     // testa se valores de ambos inputs mostradores de status da tabela não
     // são string vazia, evidenciando que o documento foi atualizado durante
     // pesquisa, atualização, exclusão ou inserção de novo registro
-    //if ([counter, amount].every(input => input.value.length > 0)) {
-    if (counter.value !== undefined && counter.value.length > 0
-        && amount.value !== undefined && amount.value.length > 0)
-    {
+    if ([counter, amount].every(input => input.value.length > 0)) {
 
       numRecs = parseInt(amount.value); // extrai o valor do input
 

@@ -105,7 +105,7 @@ EOT;
         $restricoes = join(' AND ', $constraints);
         // montagem do sql da pesquisa
         $sql = <<<EOT
-  SELECT rowid, code, titulo, ifnull(autor||' - '||espirito, autor), genero
+  SELECT rowid, code, titulo, ifnull(autor||' - '||espirito, autor) AS autor, genero
   FROM obras_view
   WHERE $restricoes;
 EOT;

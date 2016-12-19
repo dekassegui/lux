@@ -592,8 +592,8 @@ CREATE VIEW emprestimos_easy AS
 --
 CREATE VIEW IF NOT EXISTS emprestimos_facil AS
   SELECT emprestimos.rowid AS rowid, bibliotecarios.nome AS bibliotecario,
-    strftime("%d-%m-%Y %H:%M:%S", data_emprestimo) AS data_emprestimo,
-    strftime("%d-%m-%Y %H:%M:%S", data_devolucao) AS data_devolucao,
+    strftime("%d-%m-%Y %H:%M", data_emprestimo) AS data_emprestimo,
+    strftime("%d-%m-%Y %H:%M", data_devolucao) AS data_devolucao,
     leitores.nome AS leitor, titulo AS obra,
     autor, emprestimos.exemplar AS exemplar, posicao,
     emprestimos.comentario AS comentario
