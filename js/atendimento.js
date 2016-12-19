@@ -8,8 +8,29 @@
  * para gestão de tabelas persistentes do projeto LUX, até o fim do seu
  * "life cycle", indiferente a recargas do documento interface.
 */
-window.addEventListener('load',
+window.onload =
   function () {
+
+    $.noConflict();
+    ["#data_emprestimo", "#data_devolucao"].forEach(
+      function (iD) {
+        jQuery(iD).datepicker(
+          {
+            language: {
+              days: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
+              daysShort: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'],
+              daysMin: ['Do', 'Se', 'Te', 'Qu', 'Qu', 'Se', 'Sa'],
+              months: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+              monthsShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+              today: 'Hoje',
+              clear: 'Limpar',
+              dateFormat: 'dd-mm-yyyy',
+              timeFormat: 'hh:ii',
+              firstDay: 0
+            },
+            timepicker: true
+          });
+      });
 
     // URI do script "server side" que atende requisições ao DB
     var uri = location.href.replace("html", "php");
@@ -384,7 +405,7 @@ window.addEventListener('load',
                   var j = text.indexOf('|');
                   option.setAttribute("code", text.substring(0, j));
                   option.value = text.substring(j+1);
-                  datalist.appendChild(option);
+                  datalist.append(option);
                 }
               );
             }
@@ -400,7 +421,10 @@ window.addEventListener('load',
     // testa se valores de ambos inputs mostradores de status da tabela não
     // são string vazia, evidenciando que o documento foi atualizado durante
     // pesquisa, atualização, exclusão ou inserção de novo registro
-    if ([counter, amount].every(input => input.value.length > 0)) {
+    //if ([counter, amount].every(input => input.value.length > 0)) {
+    if (counter.value !== undefined && counter.value.length > 0
+        && amount.value !== undefined && amount.value.length > 0)
+    {
 
       numRecs = parseInt(amount.value); // extrai o valor do input
 
@@ -470,5 +494,4 @@ window.addEventListener('load',
     mural.value = ["> Boa noite!", "> Bom dia!", "> Boa tarde!"]
       [Math.floor(new Date().getHours() / 6) % 3];
 
-  },
-  true);
+  };
