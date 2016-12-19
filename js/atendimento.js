@@ -8,28 +8,21 @@
  * para gestão de tabelas persistentes do projeto LUX, até o fim do seu
  * "life cycle", indiferente a recargas do documento interface.
 */
-window.onload =
+window.addEventListener('load',
   function () {
 
     $.noConflict();
     ["#data_emprestimo", "#data_devolucao"].forEach(
       function (iD) {
-        jQuery(iD).datepicker(
-          {
-            language: {
-              days: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
-              daysShort: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'],
-              daysMin: ['Do', 'Se', 'Te', 'Qu', 'Qu', 'Se', 'Sa'],
-              months: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
-              monthsShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-              today: 'Hoje',
-              clear: 'Limpar',
-              dateFormat: 'dd-mm-yyyy',
-              timeFormat: 'hh:ii',
-              firstDay: 0
-            },
-            timepicker: true
-          });
+        jQuery(iD).datepicker({
+          language: 'pt-BR',
+          timepicker: true,
+          todayButton: new Date(),
+          clearButton: true,
+          onShow: function (dp, animationCompleted) {
+            if (!animationCompleted && dp.el.readOnly) dp.hide();
+          }
+        });
       });
 
     // URI do script "server side" que atende requisições ao DB
@@ -494,4 +487,4 @@ window.onload =
     mural.value = ["> Boa noite!", "> Bom dia!", "> Boa tarde!"]
       [Math.floor(new Date().getHours() / 6) % 3];
 
-  };
+  }, true);
