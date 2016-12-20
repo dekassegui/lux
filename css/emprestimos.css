@@ -1,15 +1,7 @@
-section {
-  margin-bottom: 2.5em;
-  /* background-color: #f9f3ff; */
-  overflow: auto;
-}
+section { overflow: auto; }
 
-#data_emprestimo, #data_devolucao {
-  width: 280px;
-}
-#bibliotecario, #leitor, #obra, #exemplar, #comentario {
-  width: 440px;
-}
+#data_emprestimo, #data_devolucao { width: 280px; }
+#bibliotecario, #leitor, #obra, #exemplar, #comentario { width: 440px; }
 
 label em {
   color: black;

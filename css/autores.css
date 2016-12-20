@@ -18,10 +18,22 @@ h2 {
   display: none;
   visibility: hidden;
 }
+header {
+  display: block;
+  width: 100%;
+  height: 2em;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  background-color: #cfd;
+  border-bottom: solid 1px #cec;
+  opacity: .85;
+  box-shadow: 0 0 2px 2px rgba(0, 0, 0, .2);
+}
 section, aside {
   display: inline-block;
   float: left;
-  margin-top: 1em;
+  margin-top: 2.25em;
 }
 section {
   width: 445px;
@@ -29,25 +41,17 @@ section {
   /* background-color: beige; */
 }
 footer {
-  display: block;
-  width: 100%;
-  height: 2em;
-  position: fixed;
-  bottom: 0px;
-  left: 0px;
-  background-color: #cfd;
-  border-top: solid 3px #cec;
-  opacity: .85;
-  /* box-shadow: 0 0 4px 4px rgba(0, 0, 0,.2); */
+  display: none;
+  visibility: hidden;
 }
-footer p {
+/* footer p {
   margin-top: .875em;
   text-align: center;
   font: 400 italic 45% serif;
   line-height: 125%;
   letter-spacing: .0375em;
-  color: black;
-}
+  color: darkblue;
+} */
 div {
   margin-top: .75em;
   padding: 1px;
@@ -184,8 +188,9 @@ textarea.empty {
   color: #99c;
 }
 
-@media (max-width: 1024px), (max-device-with: 1024px) {
+@media (max-width: 1000px), (max-device-with: 1000px) {
   aside {
-    margin-bottom: 2.5em;
+    margin-top: 1em;
+    margin-bottom: 1em;
   }
 }

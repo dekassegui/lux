@@ -11,8 +11,7 @@ h1 {
   letter-spacing: .03125em;
   text-align: center;
   text-transform: capitalize;
-  text-shadow: -1px -1px 1px #000;
-  text-shadow: 1px 1px 1px #fff;
+  text-shadow: 2px 2px 4px #777;
   color: darkblue;
 }
 h2 {

@@ -93,8 +93,9 @@ EOT;
       $text = '';
       // requisita a pesquisa se a montagem foi bem sucedida
       if (count($constraints) > 0) {
+        $restricoes = join(' AND ', $constraints);
         // montagem do sql da pesquisa
-        $sql = "SELECT rowid, * FROM generos WHERE ".join(' AND ', $constraints);
+        $sql = "SELECT rowid, * FROM generos WHERE $restricoes";
         // for debug purpose --> $text = $sql."\n";
         // consulta o DB
         $result = $db->query($sql);

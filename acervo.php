@@ -45,7 +45,7 @@ EOT
     case 'GETREC':
       $result = $db->query(<<<EOT
   SELECT obra, exemplar, posicao, comentario
-  FROM acervo_view
+  FROM acervo_facil
   WHERE rowid == {$_GET['recnumber']};
 EOT
       );
@@ -66,22 +66,23 @@ EOT
         $sql = <<<EOT
   PRAGMA foreign_keys = ON;
   PRAGMA recursive_triggers = ON;
-  UPDATE acervo SET obra=$obra, exemplar=$exemplar, posicao=$posicao,
-    comentario=$comentario
+  UPDATE acervo_facil SET code='dummy_code', obra=$obra, autor='dummy_autor',
+    exemplar=$exemplar, posicao=$posicao, comentario=$comentario
   WHERE rowid == {$_GET['recnumber']};
 EOT;
       } else {
         $sql = <<<EOT
   PRAGMA foreign_keys = ON;
   PRAGMA recursive_triggers = ON;
-  INSERT INTO acervo SELECT $obra, $exemplar, $posicao, $comentario;
+  INSERT INTO acervo_facil SELECT 'dummy_rowid', 'dummy_code', $obra,
+    'dummy_autor', $exemplar, $posicao, $comentario;
 EOT;
       }
       if ($db->exec($sql)) {
         rebuildTable($db);
         $sql = <<<EOT
   SELECT rowid
-  FROM acervo
+  FROM acervo_facil
   WHERE obra == $obra AND exemplar == $exemplar
 EOT;
         echo $db->querySingle($sql);
@@ -113,7 +114,7 @@ EOT;
         // montagem do sql da pesquisa
         $sql = <<<EOT
   SELECT rowid, obra, exemplar, posicao, comentario
-  FROM acervo_view
+  FROM acervo_facil
   WHERE $restricoes;
 EOT;
         // for debug purpose --> $text = $sql."\n";
@@ -135,7 +136,7 @@ EOT;
     case 'GETALL': // TODO: eliminar este trecho se não utilizado
       $text = '';
       $result = $db->query(
-        'SELECT code, obra || " (" || exemplar || " - " || posicao || ")" FROM acervo_view'
+        'SELECT code, obra || " (" || exemplar || " - " || posicao || ")" FROM acervo_facil'
         );
       if ($row = $result->fetchArray(SQLITE3_NUM)) {
         $text .= join('|', $row);

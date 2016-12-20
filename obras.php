@@ -41,8 +41,8 @@ EOT
 
     case 'GETREC':
       $result = $db->query(<<<EOT
-  SELECT code, titulo, ifnull(autor||' - '||espirito, autor), genero
-  FROM obras_view
+  SELECT code, titulo, autor, genero
+  FROM obras_facil
   WHERE rowid == {$_GET['recnumber']};
 EOT
       );
@@ -63,7 +63,7 @@ EOT
         $sql = <<<EOT
   PRAGMA foreign_keys = ON;
   PRAGMA recursive_triggers = ON;
-  UPDATE obras
+  UPDATE obras_facil
     SET code=$code, titulo=$titulo, autor=$autor, genero=$genero
   WHERE rowid == {$_GET['recnumber']};
 EOT;
@@ -71,7 +71,7 @@ EOT;
         $sql = <<<EOT
   PRAGMA foreign_keys = ON;
   PRAGMA recursive_triggers = ON;
-  INSERT INTO obras SELECT $code, $titulo, $autor, $genero;
+  INSERT INTO obras_facil SELECT $code, $titulo, $autor, $genero;
 EOT;
       }
       if ($db->exec($sql)) {
@@ -105,8 +105,8 @@ EOT;
         $restricoes = join(' AND ', $constraints);
         // montagem do sql da pesquisa
         $sql = <<<EOT
-  SELECT rowid, code, titulo, ifnull(autor||' - '||espirito, autor) AS autor, genero
-  FROM obras_view
+  SELECT rowid, code, titulo, autor, genero
+  FROM obras_facil
   WHERE $restricoes;
 EOT;
         // for debug purpose --> $text = $sql."\n";

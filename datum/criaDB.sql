@@ -36,6 +36,11 @@ drop view if exists disponiveis_acervo;
 drop view if exists emprestados;
 drop view if exists atrasados;
 drop view if exists count_emprestados;
+drop view if exists obras_view;
+drop view if exists obras_facil;
+drop view if exists acervo_facil;
+drop view if exists emprestimos_easy;
+drop view if exists emprestimos_facil;
 
 CREATE TABLE IF NOT EXISTS autores (
   --
@@ -195,12 +200,12 @@ CREATE TABLE IF NOT EXISTS obras (
           CHECK(trim(titulo) <> ""),
 
   autor   TEXT                     --> valor coincidente com um dos valores
-                                   --> de código de autor na tabela "autores"
+          NOT NULL                 --> de código de autor na tabela "autores"
           REFERENCES autores(code)
             ON UPDATE CASCADE ON DELETE RESTRICT,
 
   genero  TEXT                    --> valor coincidente com um dos valores
-                                  --> de código de gênero na tabela "generos"
+          NOT NULL                --> de código de gênero na tabela "generos"
           REFERENCES generos(code)
             ON UPDATE CASCADE ON DELETE RESTRICT
 );
@@ -254,11 +259,35 @@ CREATE VIEW IF NOT EXISTS obras_view AS
   ORDER BY obras.titulo;
 
 CREATE VIEW IF NOT EXISTS obras_facil AS
-  SELECT obras.code, obras.titulo,
+  SELECT obras.rowid, obras.code, obras.titulo,
     ifnull(autores.nome||' & '||autores.espirito, autores.nome) AS autor,
     generos.nome AS genero
   FROM obras JOIN autores ON obras.autor == autores.code
     JOIN generos ON obras.genero == generos.code;
+
+CREATE TRIGGER obras_facil_t0 INSTEAD OF INSERT ON obras_facil
+BEGIN
+  INSERT INTO obras SELECT
+    NEW.code,
+    NEW.titulo,
+    (SELECT code FROM autores WHERE autor == NEW.autor),
+    (SELECT code FROM generos WHERE genero == NEW.genero);
+END;
+
+CREATE TRIGGER obras_facil_t1 INSTEAD OF UPDATE ON obras_facil
+BEGIN
+  UPDATE obras SET
+    code=NEW.code,
+    titulo=NEW.titulo,
+    autor=(SELECT code FROM autores WHERE nome == NEW.autor),
+    genero=(SELECT code FROM generos WHERE nome == NEW.genero)
+  WHERE rowid == OLD.rowid;
+END;
+
+CREATE TRIGGER obras_facil_t2 INSTEAD OF DELETE ON obras_facil
+BEGIN
+  DELETE FROM obras WHERE rowid == OLD.rowid;
+END;
 
 CREATE TABLE IF NOT EXISTS acervo (
   --
@@ -266,7 +295,7 @@ CREATE TABLE IF NOT EXISTS acervo (
   --
 
   obra        TEXT                   --> valor coincidente com um dos valores
-                                     --> de código de obra na tabela "obras"
+              NOT NULL               --> de código de obra na tabela "obras"
               REFERENCES obras(code)
                 ON UPDATE CASCADE ON DELETE RESTRICT,
 
@@ -324,8 +353,38 @@ CREATE VIEW IF NOT EXISTS acervo_view AS
   FROM acervo JOIN obras ON acervo.obra == obras.code;
 
 CREATE VIEW IF NOT EXISTS acervo_facil AS
-  SELECT obra, exemplar, posicao, comentario, titulo, autor, genero
+  SELECT acervo.rowid,
+    obras_facil.code AS code,
+    obras_facil.titulo AS obra,
+    obras_facil.autor,
+    exemplar,
+    posicao,
+    comentario
   FROM acervo JOIN obras_facil ON acervo.obra == obras_facil.code;
+
+CREATE TRIGGER acervo_facil_t0 INSTEAD OF INSERT ON acervo_facil
+BEGIN
+  INSERT INTO acervo SELECT
+    (SELECT code FROM obras WHERE titulo == NEW.obra),
+    NEW.exemplar,
+    NEW.posicao,
+    NEW.comentario;
+END;
+
+CREATE TRIGGER acervo_facil_t1 INSTEAD OF UPDATE ON acervo_facil
+BEGIN
+  UPDATE acervo SET
+    obra=(SELECT code FROM obras WHERE titulo == NEW.obra),
+    exemplar=NEW.exemplar,
+    posicao=NEW.posicao,
+    comentario=NEW.comentario
+  WHERE rowid == OLD.rowid;
+END;
+
+CREATE TRIGGER acervo_facil_t2 INSTEAD OF DELETE ON acervo_facil
+BEGIN
+  DELETE FROM acervo WHERE rowid == OLD.rowid;
+END;
 
 CREATE TABLE IF NOT EXISTS bibliotecarios (
   --
@@ -591,17 +650,22 @@ CREATE VIEW emprestimos_easy AS
 -- localizadas em pt-BR
 --
 CREATE VIEW IF NOT EXISTS emprestimos_facil AS
-  SELECT emprestimos.rowid AS rowid, bibliotecarios.nome AS bibliotecario,
+  SELECT emprestimos.rowid AS rowid,
+    bibliotecarios.nome AS bibliotecario,
     strftime("%d-%m-%Y %H:%M", data_emprestimo) AS data_emprestimo,
     strftime("%d-%m-%Y %H:%M", data_devolucao) AS data_devolucao,
-    leitores.nome AS leitor, titulo AS obra,
-    autor, emprestimos.exemplar AS exemplar, posicao,
-    emprestimos.comentario AS comentario
+    leitores.nome AS leitor,
+    acervo_facil.obra,
+    acervo_facil.autor,
+    acervo_facil.exemplar,
+    acervo_facil.posicao,
+    emprestimos.comentario
   FROM emprestimos
     JOIN bibliotecarios ON (emprestimos.bibliotecario == bibliotecarios.code)
     JOIN leitores ON (emprestimos.leitor == leitores.code)
-    JOIN acervo_facil AS af ON (emprestimos.obra == af.obra
-      AND emprestimos.exemplar == af.exemplar);
+    JOIN acervo_facil ON (
+      emprestimos.obra == acervo_facil.code
+      AND emprestimos.exemplar == acervo_facil.exemplar);
 
 --
 -- conveniência para inserção de registros na tabela 'emprestimos' com
