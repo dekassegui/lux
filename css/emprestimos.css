@@ -1,10 +1,3 @@
 section { overflow: auto; }
-
-#data_emprestimo, #data_devolucao { width: 280px; }
+#data_emprestimo, #data_devolucao { width: 240px; border-color: #fcc; }
 #bibliotecario, #leitor, #obra, #exemplar, #comentario { width: 440px; }
-
-label em {
-  color: black;
-  font-style: normal;
-  text-shadow: 1px 0px 1px #f3f3f3;
-}

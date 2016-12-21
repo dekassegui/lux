@@ -1,17 +1,10 @@
-body {
-  min-width: 485px;
-  font-size: 17.75pt;
-}
-section {
-  width: 485px;
-}
-input#code {
-  width: 200px;
-}
-input#nome, input#telefone, input#email {
-  width: 480px;
-}
+body { min-width: 485px; }
+section { width: 485px; }
+input#code { width: 200px; }
+input#nome, input#telefone, input#email { width: 480px; }
 input#telefone:invalid, input#email:invalid {
   color: white;
   background-color: red;
 }
+div#cmd p input { width: 117px; }
+div#cmd * + p input { width: 157px; }

@@ -1,13 +1,9 @@
-body {
-  min-width: 485px;
-  font-size: 17.75pt;
-}
-section {
-  width: 485px;
-}
-input#obra, input#comentario {
-  width: 480px;
-}
-input#exemplar, input#posicao {
-  width: 200px;
-}
+body { min-width: 485px; }
+
+section { width: 485px; }
+
+input#obra, input#comentario { width: 480px; }
+input#exemplar, input#posicao { width: 200px; }
+
+div#cmd p input { width: 117px; }
+div#cmd * + p input { width: 157px; }

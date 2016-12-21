@@ -1,0 +1,150 @@
+body {
+  padding: 10px;
+  font: 400 normal 18pt "Open Sans", sans-serif;
+  color: #676767;
+  background-color: #f0fcff;
+}
+section, body:not([id]) aside { margin-top: 2.25em; }
+body:not([id]) section, body:not([id]) aside {
+  display: inline-block;
+  float: left;
+}
+body:not([id]) section { margin-right: 10px; margin-bottom: 1em; }
+@media (max-width: 1000px), (max-device-with: 1000px) {
+  body:not([id]) aside { margin-top: 0; margin-bottom: 1em; }
+}
+
+body:not([id]) section > div { margin-top: .75em; padding: 1px; }
+body:not([id]) * + label { margin-top: .25em; }
+body:not([id]) div#fields input { display: block; margin-top: .125em; }
+
+h1 {
+  font: 700 normal 1.25em serif;
+  line-height: 1.6em;
+  font-variant: small-caps;
+  letter-spacing: .03125em;
+  text-align: center;
+  text-transform: capitalize;
+  text-shadow: 2px 2px 4px #777;
+  color: darkblue;
+}
+header {
+  display: block;
+  width: 100%;
+  height: 2em;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  background-color: #cfd;
+  border-bottom: solid 1px #cec;
+  opacity: .85;
+  box-shadow: 0 0 2px 2px rgba(0, 0, 0, .2);
+}
+h2 { display: none; visibility: hidden; }
+
+label { display: inline-block; }
+label em {
+  color: black;
+  font-style: normal;
+  text-shadow: 1px 0px 1px #f3f3f3;
+}
+
+input[type="text"], input[type="tel"], input[type="email"] {
+  padding: 2px 5px;
+  font: 400 100% 'Droid Sans Mono', 'Courier New', monospace;
+  line-height: 160%;
+  text-overflow: ellipsis;
+  color: mediumblue;
+  background-color: #ffffe0;
+  border: solid 1px #ccc;
+  border-radius: 5px;
+  box-shadow: none;
+  /* configura uso de "transition" */
+  -webkit-transition: color .5s, background-color .5s, border-color .5s, box-shadow .5s;
+  -webkit-transition-timing-function: linear;
+  transition: color .5s, background-color .5s, border-color .5s, box-shadow .5s;
+  transition-timing-function: linear;
+}
+input[type="text"][readonly], input[type="tel"][readonly], input[type="email"][readonly] { color: black; }
+input[type="text"]:focus, input[type="tel"]:focus, input[type="email"]:focus, input#counter:focus {
+  color: darkblue;
+  background-color: white;
+  border-color: #9E9;
+  box-shadow: 0px 0px 2px #ccc;
+}
+input[list]:focus { border-color: #c9f; }
+
+input#counter {
+  width: 2.5em;
+  text-align: center;
+  color: black;
+  background-color: #f6fcff;
+}
+input#counter:disabled {
+  border-color: transparent;
+  background-color: transparent;
+}
+input#amount {
+  width: 2.5em;
+  text-align: left;
+  color: black;
+  background-color: transparent;
+  border-color: transparent;
+}
+
+input[type="button"] {
+  display: inline;
+  float: left;
+  font-size: 78%;
+  line-height: 160%;
+  color: black;
+  /* configura uso de "transition" */
+  -webkit-transition: color .5s;
+  -webkit-transition-timing-function: linear;
+  transition: color .5s;
+  transition-timing-function: linear;
+}
+input[type="button"]:hover, input[type="button"]:focus { color: red; }
+input[type="button"]:disabled { color: #b9b9b9; }
+
+div#cmd p { overflow: auto; }
+div#cmd * + p { margin-top: .125em; }
+div#cmd p * + input { margin-left: 5px; }
+
+#newBtn.disabled, #searchBtn.disabled, #updateBtn.disabled, #delBtn.disabled {
+  color: dodgerblue;
+}
+
+textarea {
+  width: 100%;      /* assume a dimensão do parent element */
+  padding: 2px 5px;
+  font: 400 100% 'Droid Sans Mono', 'Courier New', monospace;
+  line-height: 160%;
+  color: black;
+  background-color: #f6fcff;
+  border: solid 1px #ccc;
+  border-radius: 5px;
+  box-shadow: none;
+  /* configura uso de "transition" */
+  -webkit-transition: color .5s, background-color .5s, box-shadow .5s;
+  -webkit-transition-timing-function: linear;
+  transition: color .5s, background-color .5s, box-shadow .5s;
+  transition-timing-function: linear;
+}
+textarea:focus {
+  color: darkblue;
+  background-color: white;
+  border-color: #9cf;
+  box-shadow: 0px 0px 2px #ccc;
+}
+textarea.empty { font-style: italic; color: #99c; }
+
+footer { margin-top: .5em; }
+footer p {
+  text-align: center;
+  font: 400 italic 45% serif;
+  line-height: 125%;
+  letter-spacing: .0375em;
+  color: black;
+}
+body:not([id]) footer { display: none; visibility: hidden; }
