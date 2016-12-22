@@ -45,7 +45,7 @@
    * (2) separador da data  (4) ano  (6) tempo no formato HH:MM(:SS)?
   */
   define('BR_DATETIME_REGEX_PATTERN',
-    '/^\s*(?#DATE)(\d\d)(?<separator>\D)(\d\d)(?&separator)(\d{4})(?:\s*(\s(?#TIME)(\d\d(?::\d\d){1,2}))?)\s*$/');
+    '/^\s*(?#DATE)(\d\d?)(?<separator>\D)(\d\d?)(?&separator)(\d\d(?:\d\d)?)(?:\s*(\s(?#TIME)(\d\d(?::\d\d){1,2}))?)\s*$/');
 
   /**
    * Converte string representando Date&Time pt-BR para o formato que
@@ -57,7 +57,17 @@
   */
   function toISOdate($datetime) {
     if (preg_match(BR_DATETIME_REGEX_PATTERN, $datetime, $matches)) {
-      $r = "{$matches[4]}-{$matches[3]}-{$matches[1]}";
+      $r = sprintf('%4d-%02d-%02d', ($matches[4] < 100 ? 2000+$matches[4] : $matches[4]), $matches[3], $matches[1]);
+      if (isset($matches[5])) $r .= $matches[5];
+      return $r;
+    } else {
+      return $datetime;
+    }
+  }
+
+  function normalize($datetime) {
+    if (preg_match(BR_DATETIME_REGEX_PATTERN, $datetime, $matches)) {
+      $r = sprintf('%02d-%02d-%4d', $matches[1], $matches[3], ($matches[4] < 100 ? 2000+$matches[4] : $matches[4]));
       if (isset($matches[5])) $r .= $matches[5];
       return $r;
     } else {

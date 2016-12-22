@@ -64,8 +64,8 @@ EOT
       // TODO: what happens when a legal reader is changed to an illegal?
       //
       $bibliotecario = chk($_GET['bibliotecario']);
-      $data_emprestimo = chk($_GET['data_emprestimo']);
-      $data_devolucao = chk($_GET['data_devolucao']);
+      $data_emprestimo = chk(normalize($_GET['data_emprestimo']));
+      $data_devolucao = chk(normalize($_GET['data_devolucao']));
       $leitor = chk($_GET['leitor']);
       $obra = chk($_GET['obra']);
       $exemplar = chk($_GET['exemplar']);
@@ -129,7 +129,7 @@ EOT;
     case 'SEARCH':
       $constraints = buildConstraints(
         array('data_emprestimo', 'data_devolucao', 'bibliotecario', 'leitor',
-          'obra', 'exemplar', 'comentario'));
+          'obra', 'autor', 'exemplar', 'posicao', 'comentario'));
       $text = '';
       // requisita a pesquisa se a montagem foi bem sucedida
       if (count($constraints) > 0) {
@@ -137,9 +137,9 @@ EOT;
         // montagem do sql da pesquisa
         $sql = <<<EOT
   SELECT rowid, data_emprestimo, data_devolucao, bibliotecario, leitor, obra,
-    exemplar, comentario
+    autor, exemplar, posicao, comentario
   FROM emprestimos_facil
-  WHERE $restricoes;
+  WHERE $restricoes ORDER BY rowid;
 EOT;
         // for debug purpose --> $text = $sql."\n";
         // consulta o DB

@@ -119,10 +119,15 @@ window.addEventListener('load',
 
     function setInputsReadonly(boolValue) {
       // declara os valores do atributo readonly dos inputs de campos..
-      fields.forEach(
-        function (input, index) {
-          if (index != 5 && index != 7) input.readOnly = boolValue;
-        });
+      if (boolValue) {
+        fields.forEach(function (input, index) { input.readOnly = true; });
+      } else {
+        var ok = searchBtn.classList.contains('disabled');
+        fields.forEach(
+          function (input, index) {
+            if ((index != 5 && index != 7) || ok) input.readOnly = false;
+          });
+      }
     }
 
     function update() {

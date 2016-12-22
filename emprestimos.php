@@ -60,8 +60,8 @@ EOT
 
     case 'INSERT':
     case 'UPDATE':
-      $data_emprestimo = chk($_GET['data_emprestimo']);
-      $data_devolucao = chk($_GET['data_devolucao']);
+      $data_emprestimo = chk(normalize($_GET['data_emprestimo']));
+      $data_devolucao = chk(normalize($_GET['data_devolucao']));
       $bibliotecario = chk($_GET['bibliotecario']);
       $leitor = chk($_GET['leitor']);
       $obra = chk($_GET['obra']);
@@ -137,9 +137,9 @@ EOT;
         // montagem do sql da pesquisa
         $sql = <<<EOT
   SELECT rowid, data_emprestimo, data_devolucao, bibliotecario, leitor, obra,
-    exemplar, comentario
+    autor, exemplar, posicao, comentario
   FROM emprestimos_facil
-  WHERE $restricoes;
+  WHERE $restricoes ORDER BY rowid;
 EOT;
         // for debug purpose --> $text = $sql."\n";
         // consulta o DB
