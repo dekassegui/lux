@@ -142,6 +142,7 @@ EOT;
   WHERE $restricoes ORDER BY rowid;
 EOT;
         // for debug purpose --> $text = $sql."\n";
+        //$text = $sql."\n";
         // consulta o DB
         $result = $db->query($sql);
         // montagem da lista de resultados
@@ -153,6 +154,8 @@ EOT;
         } else {
           $text = "Warning: No data found to satisfy search:\n$sql";
         }
+      } else {
+        $text = 'Warning: Parâmetros insuficientes para montagem das restrições de pesquisa.';
       }
       echo $text;
       break;

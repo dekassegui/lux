@@ -153,6 +153,8 @@ EOT;
         } else {
           $text = "Warning: No data found to satisfy search:\n$sql";
         }
+      } else {
+        $text = 'Warning: Parâmetros insuficientes para montagem das restrições de pesquisa.';
       }
       echo $text;
       break;
