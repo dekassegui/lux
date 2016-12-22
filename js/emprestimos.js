@@ -30,6 +30,7 @@ window.addEventListener('load',
       function (iD) {
         jQuery(iD).datepicker({
           language: 'pt-BR',
+          dateFormat: 'dd-mm-yyyy',
           navTitles: {
             days: 'MM - <i>yyyy</i>',
             months: 'yyyy',
@@ -38,8 +39,10 @@ window.addEventListener('load',
           timepicker: true,
           todayButton: new Date(),
           clearButton: true,
+          keyboardNav: false,
           onShow: function (dp, animationCompleted) {
-            // impede abertura do datepicker se o input é readonly
+            // esconde o datepicker se a animação recém iniciou e se o
+            // input é readonly :: evita corrupção da data apresentada
             if (!animationCompleted && dp.el.readOnly) dp.hide();
           }
         });

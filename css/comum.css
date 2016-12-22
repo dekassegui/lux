@@ -19,13 +19,15 @@ body:not([id]) * + label { margin-top: .25em; }
 body:not([id]) div#fields input { display: block; margin-top: .125em; }
 
 h1 {
-  font: 700 normal 1.25em serif;
+  font: 300 normal 1.25em "Open Sans", sans-serif;
+  text-shadow: 1px 0px 1px #676767;
+  /* font: 700 normal 1.25em "Droid Serif", serif; */
   line-height: 1.6em;
   font-variant: small-caps;
-  letter-spacing: .03125em;
+  letter-spacing: .0625em /* .03125em */;
   text-align: center;
   text-transform: capitalize;
-  text-shadow: 2px 2px 4px #777;
+  /* text-shadow: 2px 2px 4px #777; */
   color: darkblue;
 }
 header {
