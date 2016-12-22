@@ -36,10 +36,8 @@ drop view if exists disponiveis_acervo;
 drop view if exists emprestados;
 drop view if exists atrasados;
 drop view if exists count_emprestados;
-drop view if exists obras_view;
 drop view if exists obras_facil;
 drop view if exists acervo_facil;
-drop view if exists emprestimos_easy;
 drop view if exists emprestimos_facil;
 
 CREATE TABLE IF NOT EXISTS autores (
@@ -252,15 +250,9 @@ BEGIN
     WHERE titulo == new.titulo;
 END;
 
-CREATE VIEW IF NOT EXISTS obras_view AS
-  SELECT obras.rowid, obras.code, obras.titulo, obras.autor AS autor_code, autores.nome AS autor, autores.espirito, obras.genero AS genero_code, generos.nome AS genero
-  FROM obras JOIN autores ON (obras.autor == autores.code)
-    JOIN generos ON (obras.genero == generos.code)
-  ORDER BY obras.titulo;
-
 CREATE VIEW IF NOT EXISTS obras_facil AS
   SELECT obras.rowid, obras.code, obras.titulo,
-    ifnull(autores.nome||' & '||autores.espirito, autores.nome) AS autor,
+    ifnull(autores.nome||' + '||autores.espirito, autores.nome) AS autor,
     generos.nome AS genero
   FROM obras JOIN autores ON obras.autor == autores.code
     JOIN generos ON obras.genero == generos.code;
@@ -270,8 +262,8 @@ BEGIN
   INSERT INTO obras SELECT
     NEW.code,
     NEW.titulo,
-    (SELECT code FROM autores WHERE autor == NEW.autor),
-    (SELECT code FROM generos WHERE genero == NEW.genero);
+    (SELECT code FROM autores WHERE nome == NEW.autor),
+    (SELECT code FROM generos WHERE nome == NEW.genero);
 END;
 
 CREATE TRIGGER obras_facil_t1 INSTEAD OF UPDATE ON obras_facil
@@ -347,10 +339,6 @@ CREATE INDEX acervo_obra_ndx ON acervo(obra);
 --
 CREATE VIEW IF NOT EXISTS conta_obras_acervo AS
   SELECT obra, count(1) AS N FROM acervo GROUP BY obra ORDER BY obra;
-
-CREATE VIEW IF NOT EXISTS acervo_view AS
-  SELECT acervo.rowid, code, titulo AS obra, exemplar, posicao, comentario
-  FROM acervo JOIN obras ON acervo.obra == obras.code;
 
 CREATE VIEW IF NOT EXISTS acervo_facil AS
   SELECT acervo.rowid,
@@ -623,26 +611,6 @@ BEGIN
     RAISE(ABORT, "O leitor não pode emprestar mais de um exemplar da mesma obra")
   END;
 END;
-
---
--- THIS VIEW IS DEPRECATED as will be any view with sufix 'easy'
---
-CREATE VIEW emprestimos_easy AS
-  SELECT emprestimos.rowid as rowid,
-    strftime("%d-%m-%Y %H:%M:%S", data_emprestimo) AS data_emprestimo,
-    strftime("%d-%m-%Y %H:%M:%S", data_devolucao) AS data_devolucao,
-    emprestimos.bibliotecario AS bibliotecario_code,
-    bibliotecarios.nome AS bibliotecario,
-    emprestimos.leitor AS leitor_code,
-    leitores.nome AS leitor,
-    emprestimos.obra AS obra_code,
-    obras.titulo AS obra,
-    exemplar,
-    comentario
-  FROM emprestimos
-    JOIN bibliotecarios ON (emprestimos.bibliotecario == bibliotecarios.code)
-    JOIN leitores ON (emprestimos.leitor == leitores.code)
-    JOIN obras ON (emprestimos.obra == obras.code);
 
 --
 -- conveniência para exibir registros da tabela 'emprestimos' com valores

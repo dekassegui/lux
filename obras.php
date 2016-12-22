@@ -71,7 +71,7 @@ EOT;
         $sql = <<<EOT
   PRAGMA foreign_keys = ON;
   PRAGMA recursive_triggers = ON;
-  INSERT INTO obras_facil SELECT $code, $titulo, $autor, $genero;
+  INSERT INTO obras_facil SELECT 'dummy_rowid', $code, $titulo, $autor, $genero;
 EOT;
       }
       if ($db->exec($sql)) {
