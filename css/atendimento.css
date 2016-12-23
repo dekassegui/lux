@@ -1,9 +1,9 @@
-div { padding: 1px; }
+div, section > div:first-child > p { padding: 1px; }
 
 section > div { margin-top: 1em; overflow: auto; }
 
 section > div:first-child { width: 800px; margin: 0 auto 0 auto; }
-section > div:first-child > p span + span { float: right; }
+section > div:first-child > p span + span { float: right; margin-right: 12px; }
 section > div > div { display: inline; float: left; }
 
 div#fields {
@@ -15,9 +15,9 @@ div#fields {
 }
 div#fields > div { display: inline; float: left; }
 div#fields > div:nth-child(2) { margin-left: .25em; }
-div#fields > div:nth-child(3) { clear: left; }
+div#fields > div:last-child { clear: left; }
 
-div#fields > div * + label, div#fields > div span label { margin-top: .1875em; }
+div#fields > div * + label, div#fields > div span label { margin-top: .15em; }
 
 div#fields > div:nth-child(2) > span {
   display: inline-block;

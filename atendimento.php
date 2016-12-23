@@ -142,7 +142,6 @@ EOT;
   WHERE $restricoes ORDER BY rowid;
 EOT;
         // for debug purpose --> $text = $sql."\n";
-        //$text = $sql."\n";
         // consulta o DB
         $result = $db->query($sql);
         // montagem da lista de resultados

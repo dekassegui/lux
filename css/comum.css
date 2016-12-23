@@ -37,6 +37,7 @@ header {
   position: fixed;
   top: 0px;
   left: 0px;
+  z-index: 1000;
   background-color: #cfd;
   border-bottom: solid 1px #cec;
   opacity: .85;
@@ -45,11 +46,6 @@ header {
 h2 { display: none; visibility: hidden; }
 
 label { display: inline-block; }
-label em {
-  color: black;
-  font-style: normal;
-  text-shadow: 1px 0px 1px #f3f3f3;
-}
 
 input[type="text"], input[type="tel"], input[type="email"] {
   padding: 2px 5px;

@@ -250,6 +250,10 @@ BEGIN
     WHERE titulo == new.titulo;
 END;
 
+--
+-- Conveniência para tornar o acesso à tabela 'obras' amigável, substituindo
+-- códigos mnemônicos por seus valores associados.
+--
 CREATE VIEW IF NOT EXISTS obras_facil AS
   SELECT obras.rowid, obras.code, obras.titulo,
     ifnull(autores.nome||' + '||autores.espirito, autores.nome) AS autor,
@@ -340,6 +344,10 @@ CREATE INDEX acervo_obra_ndx ON acervo(obra);
 CREATE VIEW IF NOT EXISTS conta_obras_acervo AS
   SELECT obra, count(1) AS N FROM acervo GROUP BY obra ORDER BY obra;
 
+--
+-- Conveniência para tornar o acesso à tabela 'acervo' amigável, substituindo
+-- códigos mnemônicos por seus valores associados.
+--
 CREATE VIEW IF NOT EXISTS acervo_facil AS
   SELECT acervo.rowid,
     obras_facil.code AS code,

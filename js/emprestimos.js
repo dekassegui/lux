@@ -266,7 +266,7 @@ window.addEventListener('load',
         updateBtn.classList.add('disabled');
         disableButtons();
         setInputsReadonly(false);
-        fields[0].focus();
+        fields[fields[1].value.length > 0 ? 0 : 1].focus();
       }, true);
 
     delBtn.addEventListener('click',

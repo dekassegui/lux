@@ -65,6 +65,15 @@
     }
   }
 
+  /**
+   * Normaliza string representando Date&Time pt-BR para facilitar
+   * conversão como representação de Date&Time no ISO-8601.
+   *
+   * @param $datetime String representando Date&Time no formato pt-BR.
+   * @return String resultante da normalização ou o parâmetro original se
+   *                não identificado como representação de Date&Time no
+   *                formato pt-BR.
+  */
   function normalize($datetime) {
     if (preg_match(BR_DATETIME_REGEX_PATTERN, $datetime, $matches)) {
       $r = sprintf('%02d-%02d-%4d', $matches[1], $matches[3], ($matches[4] < 100 ? 2000+$matches[4] : $matches[4]));

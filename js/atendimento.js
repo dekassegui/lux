@@ -119,15 +119,9 @@ window.addEventListener('load',
 
     function setInputsReadonly(boolValue) {
       // declara os valores do atributo readonly dos inputs de campos..
-      if (boolValue) {
-        fields.forEach(function (input, index) { input.readOnly = true; });
-      } else {
-        var ok = searchBtn.classList.contains('disabled');
-        fields.forEach(
-          function (input, index) {
-            if ((index != 5 && index != 7) || ok) input.readOnly = false;
-          });
-      }
+      (boolValue || searchBtn.classList.contains('disabled') ?
+        [0, 1, 2, 3, 4, 5, 6, 7, 8] : [0, 1, 2, 3, 4, 6, 8]).forEach(
+          function (index) { fields[index].readOnly = boolValue; });
     }
 
     function update() {
@@ -260,7 +254,7 @@ window.addEventListener('load',
         updateBtn.classList.add('disabled');
         disableButtons();
         setInputsReadonly(false);
-        fields[1].focus();
+        fields[fields[2].value.length > 0 ? 0 : 2].focus();
       }, true);
 
     delBtn.addEventListener('click',
@@ -321,7 +315,6 @@ window.addEventListener('load',
           };
           par.push('?action=INSERT');
           addDataFields();
-          console.log(par.join(""));
 
         } else if (searchBtn.classList.contains('disabled')) {
 
