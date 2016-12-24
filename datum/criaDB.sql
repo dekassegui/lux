@@ -621,6 +621,20 @@ BEGIN
 END;
 
 --
+-- Prefixa comentário com mensagem sobre a data de expiração do empréstimo.
+--
+CREATE TRIGGER IF NOT EXISTS addComment AFTER INSERT ON emprestimos
+WHEN new.data_devolucao isnull
+BEGIN
+  UPDATE emprestimos SET comentario=(
+    SELECT strftime('Emprestado até %d-%m-%Y.', new.data_emprestimo, prazo)
+        AS expiration_msg FROM config
+  )
+  WHERE data_emprestimo == new.data_emprestimo AND leitor == new.leitor
+    AND obra == new.obra AND exemplar == new.exemplar;
+END;
+
+--
 -- conveniência para exibir registros da tabela 'emprestimos' com valores
 -- correspondentes aos respectivos códigos em suas tabelas e datas
 -- localizadas em pt-BR

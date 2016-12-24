@@ -97,12 +97,13 @@ EOT;
       // tenta executar a requisição
       if ($db->exec($sql)) {
         rebuildTable($db);
+        $d = toISOdate(substr($data_emprestimo, 1, strlen($data_emprestimo)-2));
         $sql = <<<EOT
   SELECT rowid
   FROM emprestimos_facil
   WHERE
     --> the above is a nixtime comparison of ISO-8601 dates
-    strftime('%s', substr(data_emprestimo, 7, 4)||'-'||substr(data_emprestimo, 4, 2)||'-'||substr(data_emprestimo, 1, 2)||substr(data_emprestimo, 11)) == strftime('%s', substr($data_emprestimo, 7, 4)||'-'||substr($data_emprestimo, 4, 2)||'-'||substr($data_emprestimo, 1, 2)||substr($data_emprestimo, 11))
+    strftime('%s', substr(data_emprestimo, 7, 4)||'-'||substr(data_emprestimo, 4, 2)||'-'||substr(data_emprestimo, 1, 2)||substr(data_emprestimo, 11)) == strftime('%s', '$d')
     AND leitor == $leitor
     AND obra == $obra
     AND exemplar == $exemplar;
