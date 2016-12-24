@@ -7,14 +7,16 @@
  *
  *  + Sob desenvolvimento desde 12 de novembro de 2016.
  *
- *  =========================================================================
- *  Este software é de Domínio Público, sem restrição de uso comercial, pois:
+ *  ===========================================================================
+ *
+ *   Este software é de Domínio Público, sem restrição de uso comercial, pois:
  *
  *     "Compartilhar é uma das melhores formas de reduzir desigualdades".
  *
- *        Concepção: Aguinaldo Antonietto
- *  Desenvolvimento: Antonio Sergio Ando
- *  =========================================================================
+ *         Concepção: Aguinaldo Antonietto
+ *   Desenvolvimento: Antonio Sergio Ando
+ *
+ *  ===========================================================================
 */
 
 PRAGMA FOREIGN_KEYS = OFF;  --> inabilita integridade referencial
@@ -31,6 +33,7 @@ drop table if exists acervo;
 drop table if exists bibliotecarios;
 drop table if exists leitores;
 drop table if exists emprestimos;
+drop table if exists weekdays;
 drop view if exists conta_obras_acervo;
 drop view if exists disponiveis_acervo;
 drop view if exists emprestados;
@@ -164,21 +167,15 @@ CREATE TABLE IF NOT EXISTS generos (
 INSERT OR IGNORE INTO generos VALUES
   ("EST", "Estudos"), ("MSG", "Mensagens"), ("ROM", "Romance");
 
-/* CREATE TRIGGER generos_t1 BEFORE DELETE ON generos
+CREATE TRIGGER generos_t1 BEFORE DELETE ON generos
 BEGIN
-  --
-  -- Não permite eliminar registros da tabela.
-  --
   SELECT raise(ABORT, "Não delete registros desta tabela.");
 END;
 
 CREATE TRIGGER generos_t2 BEFORE UPDATE ON generos
 BEGIN
-  --
-  -- Não permite modificar registros da tabela.
-  --
   SELECT raise(ABORT, "Não edite registros desta tabela.");
-END; */
+END;
 
 CREATE TABLE IF NOT EXISTS obras (
   --
@@ -539,6 +536,53 @@ BEGIN
   SELECT raise(ABORT, "Não delete registros desta tabela.");
 END;
 
+CREATE TABLE IF NOT EXISTS weekdays (
+  ---
+  --- dias da semana para cálculo das datas limites de empréstimos
+  ---
+
+  number        INTEGER   --> número do dia conforme padrão ISO-8601
+                NOT NULL
+                PRIMARY KEY
+                CHECK(number BETWEEN 0 AND 6),
+
+  dayname       TEXT      --> nome do dia da semana conforme conveniência
+                NOT NULL
+                COLLATE NOCASE
+                UNIQUE
+                CHECK(trim(dayname) <> ''),
+
+  shortDayname  TEXT      --> nome abreviado do dia da semana
+                NOT NULL
+                COLLATE NOCASE
+                UNIQUE
+                CHECK(trim(dayname) <> ''),
+
+  allowed       BOOLEAN   --> indicador da disponibilidade do dia tal que:
+                NOT NULL  --> 0 === FALSE e 1 === TRUE
+                DEFAULT 0
+                CHECK(allowed IS 0 OR allowed IS 1)
+);
+
+--
+-- preenchimento da tabela com com nomes dos dias em pt-BR e valores
+-- arbitrários de disponibilidade
+--
+INSERT OR REPLACE INTO weekdays VALUES (0, 'Domingo', 'dom', 0),
+  (1, 'Segunda', 'seg', 1), (2, 'Terça', 'ter', 1), (3, 'Quarta', 'qua', 1),
+  (4, 'Quinta', 'qui', 1), (5, 'Sexta', 'sex', 0), (6, 'Sábado', 'sáb', 0);
+
+CREATE TRIGGER IF NOT EXISTS weekdays_t0 BEFORE DELETE ON weekdays
+BEGIN
+  SELECT raise(ABORT, 'Exclusão de registros comprometerá a funcionalidade');
+END;
+
+CREATE TRIGGER IF NOT EXISTS weekdays_t1 BEFORE UPDATE OF number, dayname,
+  shortDayname ON weekdays
+BEGIN
+  SELECT raise(ABORT, 'Alteração desta coluna comprometerá a funcionalidade');
+END;
+
 CREATE TABLE IF NOT EXISTS emprestimos (
   --
   -- a única operação registrada nesse DB
@@ -621,14 +665,43 @@ BEGIN
 END;
 
 --
--- Prefixa comentário com mensagem sobre a data de expiração do empréstimo.
+-- Disponibiliza a data limite do empréstimo, calculada conforme o prazo
+-- e restrita aos dias úteis da semana, isto é; dias em que a biblioteca
+-- está disponível ao público.
 --
-CREATE TRIGGER IF NOT EXISTS addComment AFTER INSERT ON emprestimos
+CREATE TRIGGER IF NOT EXISTS addExpiration AFTER INSERT ON emprestimos
 WHEN new.data_devolucao isnull
 BEGIN
   UPDATE emprestimos SET comentario=(
-    SELECT strftime('Emprestado até %d-%m-%Y.', new.data_emprestimo, prazo)
-        AS expiration_msg FROM config
+    SELECT 'Emprestado até ' || (
+      -- requisita o nome do dia da semana correspondente a 'data limite'
+      SELECT shortDayname FROM weekdays
+      WHERE number == cast(strftime('%w', expiration) AS INTEGER)
+    ) || (
+      -- formata a 'data limite' como conveniência ao usuário final
+      SELECT strftime(' %d-%m-%Y.', expiration)
+    ) FROM (
+      SELECT (
+        -- calcula a data limite 'de facto'
+        SELECT CASE WHEN (
+          -- verifica o indicador de disponibilidade do dia da semana
+          -- para o dia da data candidata
+          SELECT allowed FROM weekdays WHERE number == wday
+        ) THEN (
+          SELECT expDate  --> data candidata é válida
+        ) ELSE (
+          SELECT date(expDate, 'weekday 1') --> inválida, então calcula
+        ) END                               --> sua próxima segunda-feira
+      ) AS expiration
+      FROM (
+        -- calcula a data candidata a 'data limite' e seu respectivo
+        -- número de dia da semana, conforme prazo arbitrário
+        SELECT expDate, cast(strftime('%w', expDate) AS INTEGER) AS wday
+        FROM (
+          SELECT date(new.data_emprestimo, prazo) AS expDate FROM config
+        )
+      )
+    )
   )
   WHERE data_emprestimo == new.data_emprestimo AND leitor == new.leitor
     AND obra == new.obra AND exemplar == new.exemplar;
