@@ -10,7 +10,7 @@ body:not([id]) section, body:not([id]) aside {
   float: left;
 }
 body:not([id]) section { margin-right: 10px; margin-bottom: 1em; }
-@media screen (max-width: 1000px), (max-device-with: 1000px) {
+@media screen and (max-width: 1000px) {
   body:not([id]) aside { margin-top: 0; margin-bottom: 1em; }
 }
 

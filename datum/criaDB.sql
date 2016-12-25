@@ -540,10 +540,19 @@ CREATE TABLE IF NOT EXISTS weekdays (
   --- dias da semana para cálculo das datas limites de empréstimos
   ---
 
-  dayNumber     INTEGER   --> número do dia conforme padrão ISO-8601
+  dayNumber     INTEGER   --> número do dia :: padrão ISO-8601
                 NOT NULL
                 PRIMARY KEY
                 CHECK(dayNumber BETWEEN 0 AND 6),
+
+  allowed       BOOLEAN   --> indicador da disponibilidade do dia tal que:
+                NOT NULL  --> 0 === FALSE e 1 === TRUE
+                DEFAULT 0
+                CHECK(allowed IS 0 OR allowed IS 1),
+
+  surrogate     INTEGER   --> número do dia na indisponibilidade
+                NOT NULL
+                CHECK(surrogate BETWEEN 0 AND 6),
 
   dayName       TEXT      --> nome do dia da semana conforme conveniência
                 NOT NULL
@@ -555,21 +564,21 @@ CREATE TABLE IF NOT EXISTS weekdays (
                 NOT NULL
                 COLLATE NOCASE
                 UNIQUE
-                CHECK(trim(dayName) <> ''),
-
-  allowed       BOOLEAN   --> indicador da disponibilidade do dia tal que:
-                NOT NULL  --> 0 === FALSE e 1 === TRUE
-                DEFAULT 0
-                CHECK(allowed IS 0 OR allowed IS 1)
+                CHECK(trim(dayName) <> '')
 );
 
 --
 -- preenchimento da tabela com com nomes dos dias em pt-BR e valores
--- arbitrários de disponibilidade
+-- arbitrários de disponibilidade e surrogate
 --
-INSERT OR REPLACE INTO weekdays VALUES (0, 'Domingo', 'dom', 0),
-  (1, 'Segunda', 'seg', 1), (2, 'Terça', 'ter', 1), (3, 'Quarta', 'qua', 1),
-  (4, 'Quinta', 'qui', 1), (5, 'Sexta', 'sex', 0), (6, 'Sábado', 'sáb', 0);
+INSERT OR REPLACE INTO weekdays VALUES
+  (0, 0, 1, 'Domingo', 'dom'),  -- domingo --> segunda
+  (1, 1, 1, 'Segunda', 'seg'),  -- segunda --> segunda
+  (2, 0, 3, 'Terça',   'ter'),  -- terça   --> quarta
+  (3, 1, 3, 'Quarta',  'qua'),  -- quarta  --> quarta
+  (4, 1, 4, 'Quinta',  'qui'),  -- quinta  --> quinta
+  (5, 0, 1, 'Sexta',   'sex'),  -- sexta   --> segunda
+  (6, 0, 1, 'Sábado',  'sáb');  -- sábado  --> segunda
 
 CREATE TRIGGER weekdays_t0 BEFORE DELETE ON weekdays
 BEGIN
@@ -677,20 +686,21 @@ BEGIN
       SELECT dayName FROM weekdays
       WHERE dayNumber == cast(strftime('%w', expiration) AS INTEGER)
     ) || (
-      -- formata a 'data limite' como conveniência ao usuário final
+      -- formata a 'data limite' conveniente ao usuário final
       SELECT strftime(' %d-%m-%Y.', expiration)
     ) FROM (
       SELECT (
         -- calcula a data limite 'de facto'
         SELECT CASE WHEN (
-          -- verifica o indicador de disponibilidade do dia da semana
-          -- para o dia da data candidata
+          -- testa disponibilidade do dia da semana da data candidata
           SELECT allowed FROM weekdays WHERE dayNumber == wday
         ) THEN (
-          SELECT expDate  --> data candidata é válida
+          SELECT expDate  --> data candidata disponível
         ) ELSE (
-          SELECT date(expDate, 'weekday 1') --> se inválida então calcula
-        ) END                               --> sua próxima segunda-feira
+          -- data candidata indisponível --> calcula dia substituto
+          SELECT date(expDate, 'weekday ' ||
+            (SELECT surrogate FROM weekdays WHERE dayNumber == wday))
+        ) END
       ) AS expiration
       FROM (
         -- calcula a data candidata a 'data limite' e seu respectivo
