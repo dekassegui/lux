@@ -164,9 +164,11 @@
         $constraints[] = $negate."$name LIKE '$needle'";
 
       // checa comparação com NULL
-      } else if (strtoupper($needle) == 'NULL') {
+      } else if (preg_match('/((?:IS|NOT|)NULL)/i', $needle, $matches)) {
 
-        $constraints[] = $negate."$name ISNULL";
+        $op = strtoupper($matches[1]);
+        if ($op == 'NULL') $op = 'ISNULL';
+        $constraints[] = $negate."$name $op";
 
       // default :: comparação simples
       } else {

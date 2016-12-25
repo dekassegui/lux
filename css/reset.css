@@ -32,13 +32,6 @@ html {
 
 a { text-decoration: none; }
 
-/* -- fontes disponibilizadas localmente
-@font-face {
-  font-family: Arizonia;
-  font-style: normal;
-  font-weight: 400;
-  src: local('Arizonia'), local('Arizonia-Regular'), url('font/Arizonia-Regular.ttf') format('truetype');
-}
 @font-face {
   font-family: 'Droid Serif';
   font-style: normal;
@@ -110,4 +103,4 @@ a { text-decoration: none; }
   font-style: italic;
   font-weight: 700;
   src: local('Open Sans Bold Italic'), local('OpenSans-BoldItalic'), url('font/OpenSans-Bold.ttf') format('truetype');
-} -- */
+}

@@ -5,7 +5,7 @@
  *  + Programado para uso via SQLite na versão 3.7.13 ou acima.
  *  + Independe de extensões, mas recomendamos uso de REGEX.
  *
- *  + Sob desenvolvimento desde 12 de novembro de 2016.
+ *  + Sob constante desenvolvimento desde 12 de novembro de 2016.
  *
  *  ===========================================================================
  *
@@ -25,23 +25,25 @@ PRAGMA RECURSIVE_TRIGGERS = ON; --> habilita recursividade dos gatilhos
 
 BEGIN TRANSACTION;
 
-drop table if exists config;
-drop table if exists autores;
-drop table if exists generos;
-drop table if exists obras;
-drop table if exists acervo;
-drop table if exists bibliotecarios;
-drop table if exists leitores;
-drop table if exists emprestimos;
-drop table if exists weekdays;
-drop view if exists conta_obras_acervo;
-drop view if exists disponiveis_acervo;
-drop view if exists emprestados;
-drop view if exists atrasados;
-drop view if exists count_emprestados;
-drop view if exists obras_facil;
-drop view if exists acervo_facil;
-drop view if exists emprestimos_facil;
+DROP TABLE IF EXISTS config;
+DROP TABLE IF EXISTS autores;
+DROP TABLE IF EXISTS generos;
+DROP TABLE IF EXISTS obras;
+DROP TABLE IF EXISTS acervo;
+DROP TABLE IF EXISTS bibliotecarios;
+DROP TABLE IF EXISTS leitores;
+DROP TABLE IF EXISTS emprestimos;
+DROP TABLE IF EXISTS weekdays;
+DROP VIEW IF EXISTS conta_obras_acervo;
+DROP VIEW IF EXISTS disponiveis_acervo;
+DROP VIEW IF EXISTS emprestados;
+DROP VIEW IF EXISTS atrasados;
+DROP VIEW IF EXISTS count_emprestados;
+DROP VIEW IF EXISTS obras_facil;
+DROP VIEW IF EXISTS obras_emprestadas;
+DROP VIEW IF EXISTS acervo_facil;
+DROP VIEW IF EXISTS emprestimos_facil;
+DROP VIEW IF EXISTS exemplares_disponiveis;
 
 CREATE TABLE IF NOT EXISTS autores (
   --
@@ -248,8 +250,8 @@ BEGIN
 END;
 
 --
--- Conveniência para tornar o acesso à tabela 'obras' amigável, substituindo
--- códigos mnemônicos por seus valores associados.
+-- Conveniência para tornar o acesso à tabela 'obras' amigável,
+-- substituindo códigos mnemônicos por seus valores associados.
 --
 CREATE VIEW IF NOT EXISTS obras_facil AS
   SELECT obras.rowid, obras.code, obras.titulo,
@@ -342,8 +344,8 @@ CREATE VIEW IF NOT EXISTS conta_obras_acervo AS
   SELECT obra, count(1) AS N FROM acervo GROUP BY obra ORDER BY obra;
 
 --
--- Conveniência para tornar o acesso à tabela 'acervo' amigável, substituindo
--- códigos mnemônicos por seus valores associados.
+-- Conveniência para tornar o acesso à tabela 'acervo' amigável,
+-- substituindo códigos mnemônicos por seus valores associados.
 --
 CREATE VIEW IF NOT EXISTS acervo_facil AS
   SELECT acervo.rowid,
@@ -530,10 +532,7 @@ INSERT OR IGNORE INTO config DEFAULT VALUES;
 
 CREATE TRIGGER config_t0 BEFORE DELETE ON config
 BEGIN
-  --
-  -- Não permite eliminar registros da tabela.
-  --
-  SELECT raise(ABORT, "Não delete registros desta tabela.");
+  SELECT raise(ABORT, "Não delete o único registro desta tabela.");
 END;
 
 CREATE TABLE IF NOT EXISTS weekdays (
@@ -541,22 +540,22 @@ CREATE TABLE IF NOT EXISTS weekdays (
   --- dias da semana para cálculo das datas limites de empréstimos
   ---
 
-  number        INTEGER   --> número do dia conforme padrão ISO-8601
+  dayNumber     INTEGER   --> número do dia conforme padrão ISO-8601
                 NOT NULL
                 PRIMARY KEY
-                CHECK(number BETWEEN 0 AND 6),
+                CHECK(dayNumber BETWEEN 0 AND 6),
 
-  dayname       TEXT      --> nome do dia da semana conforme conveniência
+  dayName       TEXT      --> nome do dia da semana conforme conveniência
                 NOT NULL
                 COLLATE NOCASE
                 UNIQUE
-                CHECK(trim(dayname) <> ''),
+                CHECK(trim(dayName) <> ''),
 
   shortDayname  TEXT      --> nome abreviado do dia da semana
                 NOT NULL
                 COLLATE NOCASE
                 UNIQUE
-                CHECK(trim(dayname) <> ''),
+                CHECK(trim(dayName) <> ''),
 
   allowed       BOOLEAN   --> indicador da disponibilidade do dia tal que:
                 NOT NULL  --> 0 === FALSE e 1 === TRUE
@@ -572,12 +571,12 @@ INSERT OR REPLACE INTO weekdays VALUES (0, 'Domingo', 'dom', 0),
   (1, 'Segunda', 'seg', 1), (2, 'Terça', 'ter', 1), (3, 'Quarta', 'qua', 1),
   (4, 'Quinta', 'qui', 1), (5, 'Sexta', 'sex', 0), (6, 'Sábado', 'sáb', 0);
 
-CREATE TRIGGER IF NOT EXISTS weekdays_t0 BEFORE DELETE ON weekdays
+CREATE TRIGGER weekdays_t0 BEFORE DELETE ON weekdays
 BEGIN
   SELECT raise(ABORT, 'Exclusão de registros comprometerá a funcionalidade');
 END;
 
-CREATE TRIGGER IF NOT EXISTS weekdays_t1 BEFORE UPDATE OF number, dayname,
+CREATE TRIGGER weekdays_t1 BEFORE UPDATE OF dayNumber, dayName,
   shortDayname ON weekdays
 BEGIN
   SELECT raise(ABORT, 'Alteração desta coluna comprometerá a funcionalidade');
@@ -642,7 +641,7 @@ CREATE INDEX leitor_ndx ON emprestimos(leitor);
 --
 -- check-up sequencial das restrições de empréstimo
 --
-CREATE TRIGGER IF NOT EXISTS kashite BEFORE INSERT ON emprestimos
+CREATE TRIGGER kashite BEFORE INSERT ON emprestimos
 BEGIN
   SELECT CASE WHEN EXISTS(SELECT 1 FROM config, emprestimos WHERE
     (leitor == new.leitor) AND data_devolucao ISNULL AND
@@ -669,14 +668,14 @@ END;
 -- e restrita aos dias úteis da semana, isto é; dias em que a biblioteca
 -- está disponível ao público.
 --
-CREATE TRIGGER IF NOT EXISTS addExpiration AFTER INSERT ON emprestimos
+CREATE TRIGGER addExpiration AFTER INSERT ON emprestimos
 WHEN new.data_devolucao isnull
 BEGIN
   UPDATE emprestimos SET comentario=(
     SELECT 'Emprestado até ' || (
       -- requisita o nome do dia da semana correspondente a 'data limite'
-      SELECT shortDayname FROM weekdays
-      WHERE number == cast(strftime('%w', expiration) AS INTEGER)
+      SELECT dayName FROM weekdays
+      WHERE dayNumber == cast(strftime('%w', expiration) AS INTEGER)
     ) || (
       -- formata a 'data limite' como conveniência ao usuário final
       SELECT strftime(' %d-%m-%Y.', expiration)
@@ -686,11 +685,11 @@ BEGIN
         SELECT CASE WHEN (
           -- verifica o indicador de disponibilidade do dia da semana
           -- para o dia da data candidata
-          SELECT allowed FROM weekdays WHERE number == wday
+          SELECT allowed FROM weekdays WHERE dayNumber == wday
         ) THEN (
           SELECT expDate  --> data candidata é válida
         ) ELSE (
-          SELECT date(expDate, 'weekday 1') --> inválida, então calcula
+          SELECT date(expDate, 'weekday 1') --> se inválida então calcula
         ) END                               --> sua próxima segunda-feira
       ) AS expiration
       FROM (
@@ -794,16 +793,30 @@ CREATE VIEW IF NOT EXISTS atrasados AS
 CREATE VIEW IF NOT EXISTS obras_emprestadas AS
   SELECT obra, count(1) AS N FROM emprestados GROUP BY obra ORDER BY obra;
 
+--
+-- listagem dos exemplares disponíveis para empréstimo
+--
 CREATE VIEW IF NOT EXISTS disponiveis_acervo AS
   SELECT *
   FROM acervo
   WHERE NOT EXISTS (
-      SELECT 1
-      FROM emprestimos
-      WHERE data_devolucao isnull
-        AND emprestimos.obra == acervo.obra
-        AND emprestimos.exemplar == acervo.exemplar
-    );
+    SELECT 1
+    FROM emprestimos
+    WHERE data_devolucao isnull
+      AND emprestimos.obra == acervo.obra
+      AND emprestimos.exemplar == acervo.exemplar
+  );
+
+--
+-- listagem 'conveniente' dos exemplares disponíveis para empréstimo
+--
+CREATE VIEW IF NOT EXISTS exemplares_disponiveis AS
+  SELECT obra, titulo, ifnull(autores.nome||espirito, autores.nome) AS autores,
+    generos.nome AS genero, exemplar, posicao, comentario
+  FROM disponiveis_acervo
+    JOIN obras ON disponiveis_acervo.obra == obras.code
+    JOIN generos ON obras.genero == generos.code
+    JOIN autores ON obras.autor == autores.code;
 
 COMMIT;
 

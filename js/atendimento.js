@@ -254,7 +254,7 @@ window.addEventListener('load',
         updateBtn.classList.add('disabled');
         disableButtons();
         setInputsReadonly(false);
-        fields[fields[2].value.length > 0 ? 0 : 2].focus();
+        fields[/* fields[2].value.length > 0 ? 0 : 2 */ 0 ].focus();
       }, true);
 
     delBtn.addEventListener('click',
@@ -271,7 +271,7 @@ window.addEventListener('load',
         disableButtons();
         setInputsValues();
         setInputsReadonly(false);
-        fields[1].focus();
+        fields[/* 1 */ 0 ].focus();
       }, true);
 
     newBtn.addEventListener('click',
@@ -405,7 +405,7 @@ window.addEventListener('load',
                   var j = text.indexOf('|');
                   option.setAttribute("code", text.substring(0, j));
                   option.value = text.substring(j+1);
-                  datalist.append(option);
+                  datalist.appendChild(option);
                 }
               );
             }
