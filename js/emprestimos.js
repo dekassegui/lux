@@ -189,9 +189,10 @@ window.addEventListener('load',
           ev = ev || event;
           // cancela o evento se a tecla pressionada não for digito entre
           // 0 e 9 (inclusive as do Numpad), Enter, Tab, Del, Backspace,
-          // Left, Right, Home, End e Escape
+          // Left, Right, Home, End, Escape e Ctrl-Z
           var c = ev.keyCode;
           if ((c < 48 || c > 57) && (c < 96 || c > 105)
+            && !(c == 90 && ev.ctrlKey)
             && (binarySearch([8, 9, 13, 27, 35, 36, 37, 39, 46], c) == -1)) {
             ev.preventDefault();
           } else if (c == 27) { // <Escape> desfaz edição

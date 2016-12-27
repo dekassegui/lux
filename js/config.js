@@ -9,35 +9,40 @@ window.addEventListener('load',
     // URI do script "server side" que atende requisições ao DB
     var uri = location.href.replace("html", "php");
 
-    var prazo = $('prazo'),
-        pendencias = $('pendencias'),
-        fieldsets = $$('div#weekdays > fieldset');
+    var emprestimos = $$('div#emprestimos input');
+
+    var fieldsets = $$('div#weekdays > fieldset');
 
     var dayNames = $$('datalist#days option').map(
         function (option) { return option.value; }
       );
 
-    var loadData = function () {
+    function loadData() {
       var xhr = new XMLHttpRequest();
       xhr.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
           var rows = this.responseText.split(/\n|\r|\r\n/g);
           var values = rows.shift().split('|');
-          prazo.value = values[0];
-          prazo.setAttribute("valor", values[0]);
-          pendencias.value = values[1];
-          pendencias.setAttribute("valor", values[1]);
+          emprestimos.forEach(
+            function (input, index) {
+              input.value = values[index];
+              input.setAttribute("valor", values[index]);
+            });
           rows.forEach(
             function (row) {
               values = row.split('|');
-              var dayNumber = parseInt(values[0]),
-                allowed = parseInt(values[1]),
-                surrogate = parseInt(values[2]);
-              var inputs = fieldsets[dayNumber].querySelectorAll('input');
-              inputs[0].checked = inputs[1].readOnly = (allowed == 1);
-              inputs[0].setAttribute("valor", allowed);
-              inputs[1].value = dayNames[surrogate];
-              inputs[1].setAttribute("valor", dayNames[surrogate]);
+              var dayNumber = parseInt(values[0]);
+              var allowed = parseInt(values[1]);
+              var surrogate = parseInt(values[2]);
+              // fieldset -> label -> input[type="checkbox"]
+              var t = fieldsets[dayNumber].children[1].firstElementChild;
+              t.checked = (allowed == 1);
+              t.setAttribute("valor", allowed);
+              // label -> label -> input[type="text"]
+              t = t.parentElement.nextElementSibling.firstElementChild;
+              t.readOnly = (allowed == 1);
+              t.value = dayNames[surrogate];
+              t.setAttribute("valor", dayNames[surrogate]);
             });
         };
       }
@@ -47,30 +52,41 @@ window.addEventListener('load',
 
     $('updateBtn').onclick = function saveData() {
       var par = '';
-      [prazo, pendencias].forEach(
+      // agrega dados da tabela 'config' :: prazo e pendências
+      emprestimos.forEach(
         function (input) {
           par += '&' + input.id + '=' + encodeURIComponent(input.value);
         });
+      // agrega dados da tabela 'weekdays' :: dia, disponibilidade e substituto
       fieldsets.forEach(
         function (fieldset, index) {
+          // identifica o dia da semana pelo número de acesso
           par += '&weekday' + index;
-          var datum = [fieldset.querySelector('legend').textContent];
-          var inputs = fieldset.querySelectorAll('input');
-          datum.push(inputs[0].checked ? 1 : 0);
-          datum.push(inputs[1].value);
+          // legend
+          var t = fieldset.firstElementChild;
+          // nome do dia da semana
+          var datum = [t.textContent];
+          // label -> input[type="checkbox"]
+          t = t.nextElementSibling.firstElementChild;
+          // disponibilidade de serviço no dia da semana
+          datum.push(t.checked ? 1 : 0);
+          // label -> label -> input[type="text"]
+          t = t.parentElement.nextElementSibling.firstElementChild;
+          // nome do dia substituto
+          datum.push(t.value);
           par += '=' + encodeURIComponent(datum.join('|'));
         });
       var xhr = new XMLHttpRequest();
       xhr.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
-          //
+          alert(this.responseText);
         };
       }
-      xhr.open("GET", uri + '?action=SAVEREC' + par, true);
+      xhr.open("GET", uri + '?action=UPDATE' + par, true);
       xhr.send();
     };
 
-    [prazo, pendencias].forEach(
+    emprestimos.forEach(
       function (input) {
 
         input.addEventListener('keydown',
@@ -89,7 +105,7 @@ window.addEventListener('load',
           }, true);
 
         input.addEventListener('blur',
-          // executa contra-medida se conteúdo está vazio ao perder o foco
+          // restaura valor original se sair da edição com string vazia
           function (ev) {
             var t = (ev || event).target;
             if (t.value.length == 0) t.value = t.getAttribute("valor");
@@ -97,13 +113,13 @@ window.addEventListener('load',
 
       });
 
-    $$('#weekdays fieldset').forEach(
+    fieldsets.forEach(
       function (fieldset) {
-        var input = fieldset.children[1].firstElementChild;
-        input.onchange = function (ev) {
-          var t = (ev || event).target;
-          var c = t.parentElement.nextElementSibling.firstElementChild;
-          c.readOnly = t.checked;
+        fieldset.children[1].firstElementChild.onchange = function (ev) {
+          // altera "readonly" de "cousin" element quando "checked"
+          var elm = (ev || event).target;
+          var cousin = elm.parentElement.nextElementSibling.firstElementChild;
+          cousin.readOnly = elm.checked;
         }
       });
 

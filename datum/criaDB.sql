@@ -518,7 +518,8 @@ CREATE TABLE IF NOT EXISTS config (
               NOT NULL                  --> conforme funções Date&Time do
                                         --> SQLite
               CHECK(
-                lower(prazo) glob "+[0-9][0-9] days"),
+                (lower(prazo) glob "+[0-9][0-9] days")
+                AND (cast(prazo AS integer) > 0)),
 
   pendencias  INTEGER                   --> quantidade máxima de livros que
               DEFAULT 3                 --> podem ser emprestados a qualquer

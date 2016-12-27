@@ -24,7 +24,7 @@
       <fieldset>
         <legend>Empréstimos</legend>
         <p>
-          <label>prazo: <input type="number" id="prazo" min="1" tabindex="1"> dias</label>
+          <label title="número de dias concedidos por exemplar emprestado">prazo: <input type="number" id="prazo" min="1" tabindex="1"> dias</label>
         </p>
         <p>
           <label title="máxima quantidade de exemplares por leitor">pendências: <input type="number" id="pendencias" min="1" tabindex="2"></label>
@@ -37,9 +37,9 @@
       <fieldset>
         <legend>Domingo</legend>
 
-        <label>disponível <input type="checkbox" value="0"></label>
+        <label title="indicador da disponibilidade de atendimento neste dia da semana">disponível <input type="checkbox" value="0"></label>
 
-        <label>substituto: <input type="text" list="days"></label>
+        <label title="dia da semana para devolução postergada, devido a indisponibilidade de atendimento neste dia da semana">substituto: <input type="text" list="days"></label>
 
         <datalist id="days">
           <option>domingo</option>
@@ -115,9 +115,9 @@
 
   </section>
 
-  <!-- <footer>
+  <footer>
     <p>Software Livre para<br>bibliotecas de casas Espíritas.</p>
-  </footer> -->
+  </footer>
 
 </body>
 </html>
