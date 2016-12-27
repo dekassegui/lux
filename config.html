@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Lux - Configuração</title>
+<meta http-equiv="expires" content="0"/>
+<meta http-equiv="pragma" content="no-cache"/>
+<link href="css/reset.css" rel="stylesheet" type="text/css" media="screen">
+<link href="css/config.css" rel="stylesheet" type="text/css" media="screen">
+<script src="js/utils.js"></script>
+<script src="js/config.js"></script>
+</head>
+<body>
+
+  <header>
+    <h1>Lux - Configuração</h1>
+  </header>
+
+  <section>
+
+    <h2>Configuração</h2>
+
+    <div id="emprestimos">
+      <fieldset>
+        <legend>Empréstimos</legend>
+        <p>
+          <label>prazo: <input type="number" id="prazo" min="1" tabindex="1"> dias</label>
+        </p>
+        <p>
+          <label title="máxima quantidade de exemplares por leitor">pendências: <input type="number" id="pendencias" min="1" tabindex="2"></label>
+        </p>
+      </fieldset>
+    </div>
+
+    <div id="weekdays">
+
+      <fieldset>
+        <legend>Domingo</legend>
+
+        <label>disponível <input type="checkbox" value="0"></label>
+
+        <label>substituto: <input type="text" list="days"></label>
+
+        <datalist id="days">
+          <option>domingo</option>
+          <option>segunda</option>
+          <option>terça</option>
+          <option>quarta</option>
+          <option>quinta</option>
+          <option>sexta</option>
+          <option>sábado</option>
+        </datalist>
+
+      </fieldset>
+
+      <fieldset>
+        <legend>Segunda</legend>
+
+        <label>disponível <input type="checkbox" value="0"></label>
+
+        <label>substituto: <input type="text" list="days"></label>
+
+      </fieldset>
+
+      <fieldset>
+        <legend>Terça</legend>
+
+        <label>disponível <input type="checkbox" value="0"></label>
+
+        <label>substituto: <input type="text" list="days"></label>
+
+      </fieldset>
+
+      <fieldset>
+        <legend>Quarta</legend>
+
+        <label>disponível <input type="checkbox" value="0"></label>
+
+        <label>substituto: <input type="text" list="days"></label>
+
+      </fieldset>
+
+      <fieldset>
+        <legend>Quinta</legend>
+
+        <label>disponível <input type="checkbox" value="0"></label>
+
+        <label>substituto: <input type="text" list="days"></label>
+
+      </fieldset>
+
+      <fieldset>
+        <legend>Sexta</legend>
+
+        <label>disponível <input type="checkbox" value="0"></label>
+
+        <label>substituto: <input type="text" list="days"></label>
+
+      </fieldset>
+
+      <fieldset>
+        <legend>Sábado</legend>
+
+        <label>disponível <input type="checkbox" value="0"></label>
+
+        <label>substituto: <input type="text" list="days"></label>
+
+      </fieldset>
+
+    </div>
+
+    <div id="commands">
+      <input type="button" id="updateBtn" value="Atualizar">
+    </div>
+
+  </section>
+
+  <!-- <footer>
+    <p>Software Livre para<br>bibliotecas de casas Espíritas.</p>
+  </footer> -->
+
+</body>
+</html>
