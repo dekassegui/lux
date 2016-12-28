@@ -17,6 +17,10 @@ window.addEventListener('load',
         function (option) { return option.value; }
       );
 
+    function cousin(element) {
+      return element.parentElement.nextElementSibling.firstElementChild;
+    }
+
     function loadData() {
       var xhr = new XMLHttpRequest();
       xhr.onreadystatechange = function () {
@@ -39,7 +43,7 @@ window.addEventListener('load',
               t.checked = (allowed == 1);
               t.setAttribute("valor", allowed);
               // label -> label -> input[type="text"]
-              t = t.parentElement.nextElementSibling.firstElementChild;
+              t = cousin(t);
               t.readOnly = (allowed == 1);
               t.value = dayNames[surrogate];
               t.setAttribute("valor", dayNames[surrogate]);
@@ -71,7 +75,7 @@ window.addEventListener('load',
           // disponibilidade de serviço no dia da semana
           datum.push(t.checked ? 1 : 0);
           // label -> label -> input[type="text"]
-          t = t.parentElement.nextElementSibling.firstElementChild;
+          t = cousin(t);
           // nome do dia substituto
           datum.push(t.value);
           par += '=' + encodeURIComponent(datum.join('|'));
@@ -80,6 +84,7 @@ window.addEventListener('load',
       xhr.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
           alert(this.responseText);
+          if (this.responseText.startsWith('Error')) loadData();
         };
       }
       xhr.open("GET", uri + '?action=UPDATE' + par, true);
@@ -115,12 +120,20 @@ window.addEventListener('load',
 
     fieldsets.forEach(
       function (fieldset) {
-        fieldset.children[1].firstElementChild.onchange = function (ev) {
+        // fieldset -> label -> input[type="checkbox"]
+        var input = fieldset.children[1].firstElementChild;
+        input.onchange = function (ev) {
           // altera "readonly" de "cousin" element quando "checked"
-          var elm = (ev || event).target;
-          var cousin = elm.parentElement.nextElementSibling.firstElementChild;
-          cousin.readOnly = elm.checked;
-        }
+          var input = (ev || event).target;
+          var c = cousin(input);
+          c.readOnly = input.checked;
+        };
+        // label -> label -> input[type="text"]
+        input = cousin(input);
+        input.onblur = function (ev) {
+          var t = (ev || event).target;
+          if (t.value.length == 0) t.value = t.getAttribute("valor");
+        };
       });
 
     loadData.apply(this);

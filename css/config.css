@@ -2,7 +2,7 @@ body {
   padding: 10px;
   font: 400 normal 18pt "Open Sans", sans-serif;
   color: #676767;
-  background-color: #f0fcff;
+  background-color: /* #f0fcff */ honeydew;
 }
 header {
   display: block;
@@ -41,7 +41,7 @@ legend {
   text-shadow: 1px 0 1px #ccc;
   background-color: #f0fcff;
 }
-label[title] { cursor: help; color: slateblue; }
+label[title] { color: darkslategray; }
 section {
   display: block;
   width: 800px;

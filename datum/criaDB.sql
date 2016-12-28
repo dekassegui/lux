@@ -592,6 +592,20 @@ BEGIN
   SELECT raise(ABORT, 'Alteração desta coluna comprometerá a funcionalidade');
 END;
 
+CREATE TRIGGER weekdays_t2 AFTER UPDATE OF allowed ON weekdays
+WHEN NOT EXISTS(
+  SELECT 1 FROM weekdays WHERE allowed AND (dayNumber BETWEEN 1 AND 5))
+BEGIN
+  SELECT RAISE(ABORT, 'Nenhum dia da semana estará disponível entre a segunda e sexta.');
+END;
+
+CREATE TRIGGER weekdays_t3 AFTER UPDATE OF surrogate ON weekdays
+WHEN NOT NEW.allowed AND
+  NOT (SELECT allowed FROM weekdays WHERE dayNumber == NEW.surrogate)
+BEGIN
+  SELECT RAISE(ABORT, 'Dia da semana é inválido como substituto.');
+END;
+
 CREATE TABLE IF NOT EXISTS emprestimos (
   --
   -- a única operação registrada nesse DB

@@ -44,62 +44,75 @@
       // formata o valor da coluna 'prazo' conforme usado na tabela
       $prazo = sprintf('+%02d days', $_GET['prazo']);
       $pendencias = $_GET['pendencias'];
-      $sql = "UPDATE config SET prazo='$prazo', pendencias=$pendencias;";
-      if (!$db->exec($sql)) {
-        echo 'Error: '.$db->lastErrorMsg();
-        break;
-      }
+      $sql = "UPDATE config SET prazo='$prazo', pendencias=$pendencias";
 
-      // Atualização dos 7 (sete) registros da tabela 'weekdays'.
+      if ($db->exec($sql)) {
 
-      // 'prepared statement' para atualização dos registros
-      $sql = "UPDATE weekdays SET allowed=:allowed, surrogate=:surrogate
-              WHERE upper(dayName) == upper(:dayName)";
+        // Atualização dos 7 (sete) registros da tabela 'weekdays'.
 
-      if ($statement = $db->prepare($sql))
-      {
-        // nomes das colunas envolvidas na atualização, na ordem de
-        // montagem da string de parâmetros enviada pelo script cliente
-        $fields = array('dayName', 'allowed', 'surrogate');
+        // 'prepared statement' para atualização dos registros
+        $sql = "UPDATE weekdays SET allowed=:allowed, surrogate=:surrogate
+                WHERE upper(dayName) == upper(:dayName)";
 
-        $dias = array(0 => 'domingo', 1 => 'segunda', 2 => 'terça',
-                3 => 'quarta', 4 => 'quinta', 5 => 'sexta', 6 => 'sábado');
+        if ($statement = $db->prepare($sql)) {
 
-        foreach ($dias as $numeroDia => $nomeDia)
-        {
-          // reinicia o 'prepared statement' a partir da segunda iteração
-          if ($numeroDia > 0) $statement->reset();
+          // nomes das colunas envolvidas na atualização, na ordem de
+          // montagem da string de parâmetros enviada pelo script cliente
+          $fields = array('dayName', 'allowed', 'surrogate');
 
-          // extrai os valores das colunas envolvidas na atualização
-          $datum = aexplode('|', $_GET["weekday$numeroDia"], $fields);
+          $dias = array(0 => 'domingo', 1 => 'segunda', 2 => 'terça',
+                  3 => 'quarta', 4 => 'quinta', 5 => 'sexta', 6 => 'sábado');
 
-          $statement->bindValue(':allowed',
-            $datum['allowed'],
-            SQLITE3_INTEGER);
+          $ok = true;   // status esperado ao final das iterações
 
-          // atribui 'numeroDia' do 'nomeDia' correspondente ao nome do dia
-          // substituto, extraído da UI e enviado pelo script cliente
-          $statement->bindValue(':surrogate',
-            array_search(strtolower(trim($datum['surrogate'])), $dias),
-            SQLITE3_INTEGER);
+          foreach ($dias as $numeroDia => $nomeDia) {
 
-          $statement->bindValue(':dayName',
-            $datum['dayName'],
-            SQLITE3_TEXT);
+            // reinicia o 'prepared statement' a partir da segunda iteração
+            if ($numeroDia > 0) $statement->reset();
 
-          if ($statement->execute() === FALSE) {
-            echo 'Error: '.$db->lastErrorMsg();
-            break;
+            // extrai os valores das colunas envolvidas na atualização
+            $datum = aexplode('|', $_GET["weekday$numeroDia"], $fields);
+
+            $statement->bindValue(':allowed',
+              $datum['allowed'],
+              SQLITE3_INTEGER);
+
+            // atribui 'numeroDia' do 'nomeDia' correspondente ao nome do dia
+            // substituto, extraído da UI e enviado pelo script cliente
+            $statement->bindValue(':surrogate',
+              array_search(strtolower(trim($datum['surrogate'])), $dias),
+              SQLITE3_INTEGER);
+
+            $statement->bindValue(':dayName',
+              $datum['dayName'],
+              SQLITE3_TEXT);
+
+            if ($statement->execute() === FALSE) {
+              echo 'Error: '.$db->lastErrorMsg();
+              $ok = false;
+              break;
+            }
+
           }
+
+          $statement->close();  // libera memória utilizada
+
+          if ($ok) echo 'Sucesso!';
+
+        } else {
+
+          echo 'Error: '.$db->lastErrorMsg();
+
         }
 
       } else {
+
         echo 'Error: '.$db->lastErrorMsg();
-        break;
+
       }
 
-      echo 'Sucesso!';
       break;
+
   }
 
   $db->close();
