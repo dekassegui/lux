@@ -22,24 +22,25 @@
 
     <div id="emprestimos">
       <fieldset>
-        <legend>Empréstimos</legend>
+
         <p>
           <label title="número de dias concedidos por exemplar emprestado">prazo: <input type="number" id="prazo" min="1" tabindex="1"> dias</label>
         </p>
+
         <p>
           <label title="máxima quantidade de exemplares por leitor">pendências: <input type="number" id="pendencias" min="1" tabindex="2"></label>
         </p>
+
       </fieldset>
     </div>
 
     <div id="weekdays">
 
       <fieldset>
-        <legend>Domingo</legend>
 
-        <label title="indicador da disponibilidade de atendimento neste dia da semana">disponível <input type="checkbox" value="0"></label>
+        <label title="indicador da disponibilidade de atendimento no domingo">domingo <input type="checkbox" value="0"></label>
 
-        <label title="dia da semana para devolução postergada, devido a indisponibilidade de atendimento neste dia da semana">substituto: <input type="text" list="days"></label>
+        <label title="dia para devolução se o atendimento for indisponível no domingo">substituto: <input type="text" list="days"></label>
 
         <datalist id="days">
           <option>domingo</option>
@@ -54,54 +55,48 @@
       </fieldset>
 
       <fieldset>
-        <legend>Segunda</legend>
 
-        <label>disponível <input type="checkbox" value="0"></label>
-
-        <label>substituto: <input type="text" list="days"></label>
-
-      </fieldset>
-
-      <fieldset>
-        <legend>Terça</legend>
-
-        <label>disponível <input type="checkbox" value="0"></label>
+        <label>segunda <input type="checkbox" value="0"></label>
 
         <label>substituto: <input type="text" list="days"></label>
 
       </fieldset>
 
       <fieldset>
-        <legend>Quarta</legend>
 
-        <label>disponível <input type="checkbox" value="0"></label>
-
-        <label>substituto: <input type="text" list="days"></label>
-
-      </fieldset>
-
-      <fieldset>
-        <legend>Quinta</legend>
-
-        <label>disponível <input type="checkbox" value="0"></label>
+        <label>terça <input type="checkbox" value="0"></label>
 
         <label>substituto: <input type="text" list="days"></label>
 
       </fieldset>
 
       <fieldset>
-        <legend>Sexta</legend>
 
-        <label>disponível <input type="checkbox" value="0"></label>
+        <label>quarta <input type="checkbox" value="0"></label>
 
         <label>substituto: <input type="text" list="days"></label>
 
       </fieldset>
 
       <fieldset>
-        <legend>Sábado</legend>
 
-        <label>disponível <input type="checkbox" value="0"></label>
+        <label>quinta <input type="checkbox" value="0"></label>
+
+        <label>substituto: <input type="text" list="days"></label>
+
+      </fieldset>
+
+      <fieldset>
+
+        <label>sexta <input type="checkbox" value="0"></label>
+
+        <label>substituto: <input type="text" list="days"></label>
+
+      </fieldset>
+
+      <fieldset>
+
+        <label>sábado <input type="checkbox" value="0"></label>
 
         <label>substituto: <input type="text" list="days"></label>
 

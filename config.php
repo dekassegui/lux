@@ -39,7 +39,7 @@
 
     case 'UPDATE':
 
-      // Atualização do único registro da tabela 'config'.
+      // -- Atualização do único registro da tabela 'config'.
 
       // formata o valor da coluna 'prazo' conforme usado na tabela
       $prazo = sprintf('+%02d days', $_GET['prazo']);
@@ -48,66 +48,51 @@
 
       if ($db->exec($sql)) {
 
-        // Atualização dos 7 (sete) registros da tabela 'weekdays'.
+        // -- Atualização dos 7 (sete) registros da tabela 'weekdays'.
 
         // 'prepared statement' para atualização dos registros
         $sql = "UPDATE weekdays SET allowed=:allowed, surrogate=:surrogate
-                WHERE upper(dayName) == upper(:dayName)";
+                WHERE dayNumber == :dayNumber";
 
         if ($statement = $db->prepare($sql)) {
 
           // nomes das colunas envolvidas na atualização, na ordem de
           // montagem da string de parâmetros enviada pelo script cliente
-          $fields = array('dayName', 'allowed', 'surrogate');
-
-          $dias = array(0 => 'domingo', 1 => 'segunda', 2 => 'terça',
-                  3 => 'quarta', 4 => 'quinta', 5 => 'sexta', 6 => 'sábado');
+          $fields = array('dayNumber', 'allowed', 'surrogate');
 
           $ok = true;   // status esperado ao final das iterações
 
-          foreach ($dias as $numeroDia => $nomeDia) {
+          for ($numeroDia=0; $ok AND ($numeroDia < 7); ++$numeroDia) {
 
             // reinicia o 'prepared statement' a partir da segunda iteração
             if ($numeroDia > 0) $statement->reset();
 
             // extrai os valores das colunas envolvidas na atualização
-            $datum = aexplode('|', $_GET["weekday$numeroDia"], $fields);
+            $datum = aexplode('|', $_GET["DIA$numeroDia"], $fields);
 
-            $statement->bindValue(':allowed',
-              $datum['allowed'],
-              SQLITE3_INTEGER);
-
-            // atribui 'numeroDia' do 'nomeDia' correspondente ao nome do dia
-            // substituto, extraído da UI e enviado pelo script cliente
-            $statement->bindValue(':surrogate',
-              array_search(strtolower(trim($datum['surrogate'])), $dias),
-              SQLITE3_INTEGER);
-
-            $statement->bindValue(':dayName',
-              $datum['dayName'],
-              SQLITE3_TEXT);
+            foreach ($fields as $f)
+              $statement->bindValue(":$f", $datum["$f"], SQLITE3_INTEGER);
 
             if ($statement->execute() === FALSE) {
-              echo 'Error: '.$db->lastErrorMsg();
               $ok = false;
-              break;
+              echo 'Error 03: '.$db->lastErrorMsg()."\nDBG > $numeroDia";
             }
 
           }
 
           $statement->close();  // libera memória utilizada
 
-          if ($ok) echo 'Sucesso!';
+          if ($ok) echo 'Atualização bem sucedida!';
 
         } else {
 
-          echo 'Error: '.$db->lastErrorMsg();
+          echo 'Error 02: '.$db->lastErrorMsg();
 
         }
 
       } else {
 
-        echo 'Error: '.$db->lastErrorMsg();
+        echo 'Error 01: '.$db->lastErrorMsg();
 
       }
 
