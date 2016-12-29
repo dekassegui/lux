@@ -41,52 +41,72 @@
 
       // -- Atualização do único registro da tabela 'config'.
 
-      // formata o valor da coluna 'prazo' conforme usado na tabela
-      $prazo = sprintf('+%02d days', $_GET['prazo']);
-      $pendencias = $_GET['pendencias'];
-      $sql = "UPDATE config SET prazo='$prazo', pendencias=$pendencias";
+      if (isset($_GET['CFG'])) {
+        $datum = aexplode('|', $_GET['CFG'], ['prazo', 'pendencias']);
+        // formata o valor da coluna 'prazo' conforme usado na tabela
+        $sql = 'UPDATE config SET prazo="'
+          .sprintf('+%02d days', $datum['prazo'])
+          .'", pendencias='.$datum['pendencias'];
+      }
 
-      if ($db->exec($sql)) {
+      if (!isset($sql) || $db->exec($sql)) {
 
         // -- Atualização dos 7 (sete) registros da tabela 'weekdays'.
 
-        // 'prepared statement' para atualização dos registros
-        $sql = "UPDATE weekdays SET allowed=:allowed, surrogate=:surrogate
-                WHERE dayNumber == :dayNumber";
+        for ($numeroDia=0; ($numeroDia < 7) && !isset($_GET["DIA$numeroDia"]);
+             ++$numeroDia);
 
-        if ($statement = $db->prepare($sql)) {
+        if ($numeroDia < 7) {
 
-          // nomes das colunas envolvidas na atualização, na ordem de
-          // montagem da string de parâmetros enviada pelo script cliente
-          $fields = array('dayNumber', 'allowed', 'surrogate');
+          // 'prepared statement' para atualização dos registros
+          $sql = "UPDATE weekdays SET allowed=:allowed, surrogate=:surrogate
+                  WHERE dayNumber == :dayNumber";
 
-          $ok = true;   // status esperado ao final das iterações
+          if ($statement = $db->prepare($sql)) {
 
-          for ($numeroDia=0; $ok AND ($numeroDia < 7); ++$numeroDia) {
+            // nomes das colunas envolvidas na atualização, na ordem de
+            // montagem da string de parâmetros enviada pelo script cliente
+            $fields = array('dayNumber', 'allowed', 'surrogate');
 
-            // reinicia o 'prepared statement' a partir da segunda iteração
-            if ($numeroDia > 0) $statement->reset();
+            $ok = true;   // status esperado ao final das iterações
 
-            // extrai os valores das colunas envolvidas na atualização
-            $datum = aexplode('|', $_GET["DIA$numeroDia"], $fields);
+            for ($numeroDia=0, $n=0; $ok AND ($numeroDia < 7); ++$numeroDia) {
 
-            foreach ($fields as $f)
-              $statement->bindValue(":$f", $datum["$f"], SQLITE3_INTEGER);
+              if (!isset($_GET["DIA$numeroDia"])) continue;
 
-            if ($statement->execute() === FALSE) {
-              $ok = false;
-              echo 'Error 03: '.$db->lastErrorMsg()."\nDBG > $numeroDia";
+              // reinicia o 'prepared statement' a partir da segunda iteração
+              if (++$n > 1) $statement->reset();
+
+              // extrai os valores das colunas envolvidas na atualização
+              $datum = aexplode('|', $_GET["DIA$numeroDia"], $fields);
+
+              foreach ($fields as $f)
+                $statement->bindValue(":$f", $datum["$f"], SQLITE3_INTEGER);
+
+              if ($statement->execute() === FALSE) {
+                $ok = false;
+                echo 'Error 03: '.$db->lastErrorMsg()."\nDBG > $numeroDia";
+              }
+
             }
+
+            $statement->close();  // libera memória utilizada
+
+            if ($ok) echo 'Atualização bem sucedida!';
+
+          } else {
+
+            echo 'Error 02: '.$db->lastErrorMsg();
 
           }
 
-          $statement->close();  // libera memória utilizada
-
-          if ($ok) echo 'Atualização bem sucedida!';
-
         } else {
 
-          echo 'Error 02: '.$db->lastErrorMsg();
+          if (isset($_GET['CFG'])) {
+            echo 'Atualização parcial bem sucedida!';
+          } else {
+            echo 'Nenhuma atualização realizada.';
+          }
 
         }
 

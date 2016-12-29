@@ -34,55 +34,64 @@ window.addEventListener('load',
             });
           rows.forEach(
             function (row) {
-              values = row.split('|');
-              var dayNumber = parseInt(values[0]);
-              var allowed = parseInt(values[1]);
-              var surrogate = parseInt(values[2]);
+              values = row.split('|').map(function (x) { return parseInt(x) });
+              var dayNumber = values[0];
+              var allowed = values[1];
+              var surrogate = values[2];
               var input = weekdays[dayNumber];
-              input.checked = (allowed == 1);
+              input.checked = !!allowed;
               input.setAttribute("valor", allowed);
               input = cousin(input);
-              input.readOnly = (allowed == 1);
+              input.readOnly = !!allowed;
               input.value = dayNames[surrogate];
               input.setAttribute("valor", dayNames[surrogate]);
             });
-        };
-      }
+        }
+      };
       xhr.open("GET", uri + '?action=GETREC', true);
       xhr.send();
-    };
+    }
 
     $('updateBtn').onclick = function saveData() {
       var par = '';
-      // agrega parâmetros para cálculo das datas limite :: prazo e pendências
-      emprestimos.forEach(
-        function (input) {
-          par += '&' + input.id + '=' + encodeURIComponent(input.value);
-        });
-      // agrega parâmetros de cada dia da semana
-      weekdays.forEach(
-        function (input, numeroDiaDaSemana) {
-          var datum = [
-            numeroDiaDaSemana,      // número do dia da semana
-            input.checked ? 1 : 0,  // disponibilidade de atendimento no dia
-            dayNames.indexOf(       // número do dia substituto
-              cousin(input).value.trim().toLowerCase())];
-          par += '&DIA' + numeroDiaDaSemana + '='
-                 + encodeURIComponent(datum.join('|'));
-        });
-      var xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-          alert(this.responseText);
-          if (this.responseText.startsWith('Error')) loadData();
-        };
+      // tenta agregar parâmetros para cálculo de datas limite
+      if (emprestimos.some(el => el.getAttribute("valor") != el.value)) {
+        var datum = emprestimos.map(function (input) { return input.value; });
+        par += '&CFG=' + datum.join('|');
       }
-      xhr.open("GET", uri + '?action=UPDATE' + par, true);
-      xhr.send();
+      // tenta agregar parâmetros de dias da semana
+      for (var numeroDiaDaSemana=0; numeroDiaDaSemana<7; ++numeroDiaDaSemana) {
+        var input = weekdays[numeroDiaDaSemana];
+        var $checked = !!parseInt(input.getAttribute("valor"));
+        var c = cousin(input);
+        var $dayName = c.getAttribute("valor");
+        var dayName = c.value.trim().toLowerCase();
+        // testa se parâmetros foram modificados
+        if ((input.checked != $checked) || (dayName != $dayName)) {
+          var datum = [
+            numeroDiaDaSemana,          // número do dia da semana
+            input.checked ? 1 : 0,      // disponibilidade de atendimento
+            dayNames.indexOf(dayName)]; // número do dia substituto
+          par += '&DIA' + numeroDiaDaSemana + '=' + datum.join('|');
+        }
+      }
+      if (par.length > 0) {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+          if (this.readyState == 4 && this.status == 200) {
+            alert(this.responseText);
+            loadData();
+          }
+        };
+        xhr.open("GET", uri + '?action=UPDATE' + par, true);
+        xhr.send();
+      } else {
+        alert('Atualização desnecessária.');
+      }
     };
 
     // restaura valor original se sair da edição com string vazia
-    function lostFocus(ev) {
+    function onLostFocus(ev) {
       var t = (ev || event).target;
       if (t.value.length == 0) t.value = t.getAttribute("valor");
     }
@@ -90,7 +99,7 @@ window.addEventListener('load',
     // cancela o evento se a tecla pressionada não for digito entre
     // 0 e 9 (inclusive as do Numpad), Enter, Tab, Del, Backspace,
     // Left, Right, Home, End, Escape e Ctrl-Z
-    function chkKeyDown(ev) {
+    function onKeyDown(ev) {
       ev = ev || event;
       var c = ev.keyCode;
       if ((c < 48 || c > 57) && (c < 96 || c > 105)
@@ -103,33 +112,33 @@ window.addEventListener('load',
 
     emprestimos.forEach(
       function (input) {
-        input.addEventListener('keydown', chkKeyDown, true);
-        input.onblur = lostFocus;
+        input.addEventListener('keydown', onKeyDown, true);
+        input.onblur = onLostFocus;
       });
 
     // altera "readonly" de "cousin" element quando "checked"
-    function chgCheckBox(ev) {
+    function onChgCheckBox(ev) {
       var input = (ev || event).target;
       cousin(input).readOnly = input.checked;
     }
 
     weekdays.forEach(
       function (input, index) {
-        input.onchange = chgCheckBox;
+        input.onchange = onChgCheckBox;
         var c = cousin(input);
-        c.onblur = lostFocus;
-        if (index == 0) {
-          localStorage.setItem("msg1",
-            input.parentElement.title.replace('no domingo', ''));
-          localStorage.setItem("msg2",
-            c.parentElement.title.replace('no domingo', ''));
-        } else {
+        c.onblur = onLostFocus;
+        if (index > 0) {
           var sufixo = ((index < 6) ? 'na ' : 'no ') + dayNames[index];
-          input.parentElement.title = localStorage.getItem("msg1") + sufixo;
-          c.parentElement.title = localStorage.getItem("msg2") + sufixo;
+          input.parentElement.title = localStorage.cfg1 + sufixo;
+          c.parentElement.title = localStorage.cfg2 + sufixo;
+        } else if (!localStorage.cfg1 || !localStorage.cfg2) {
+          localStorage.cfg1 = input.parentElement.title.replace('no domingo', '');
+          localStorage.cfg2 = c.parentElement.title.replace('no domingo', '');
         }
       });
 
-    loadData.apply(this);
+    loadData.apply();
 
   }, true);
+
+//window.onunload = function () { localStorage.clear(); }

@@ -100,14 +100,8 @@ input#updateBtn:focus { color: dodgerblue; }
 footer { margin-top: 1em; }
 footer p {
   text-align: center;
-  font: 400 italic 55% serif;
+  font: 400 italic 60% serif;
   line-height: 125%;
   letter-spacing: .0375em;
   color: darkslateblue;
-  cursor: default;
-  -webkit-transition: color 1s;
-  -webkit-transition-timing-function: ease-in;
-  transition: color 1s;
-  transition-timing-function: ease-in;
 }
-footer p:hover { color: darkorchid; }
