@@ -33,7 +33,6 @@ DROP TABLE IF EXISTS acervo;
 DROP TABLE IF EXISTS bibliotecarios;
 DROP TABLE IF EXISTS leitores;
 DROP TABLE IF EXISTS emprestimos;
-DROP TABLE IF EXISTS weekdays;
 DROP VIEW IF EXISTS conta_obras_acervo;
 DROP VIEW IF EXISTS disponiveis_acervo;
 DROP VIEW IF EXISTS emprestados;
@@ -526,6 +525,11 @@ CREATE TABLE IF NOT EXISTS config (
               NOT NULL                  --> leitor
               CHECK(pendencias > 0),
 
+  weekdays    INTEGER                   --> bitmask dos dias da semana
+              DEFAULT 26                --> com atendimento ao público
+              NOT NULL
+              CHECK(weekdays BETWEEN 1 AND 128),
+
   CONSTRAINT registro_unico_chk CHECK(ROWID < 2)  --> único registro
 );
 
@@ -534,69 +538,6 @@ INSERT OR IGNORE INTO config DEFAULT VALUES;
 CREATE TRIGGER config_t0 BEFORE DELETE ON config
 BEGIN
   SELECT raise(ABORT, "Não delete o único registro desta tabela.");
-END;
-
-CREATE TABLE IF NOT EXISTS weekdays (
-  ---
-  --- dias da semana para cálculo das datas limites de empréstimos
-  ---
-
-  dayNumber     INTEGER   --> número do dia :: padrão ISO-8601
-                NOT NULL
-                PRIMARY KEY
-                CHECK(dayNumber BETWEEN 0 AND 6),
-
-  allowed       BOOLEAN   --> indicador da disponibilidade do dia tal que:
-                NOT NULL  --> 0 === FALSE e 1 === TRUE
-                DEFAULT 0
-                CHECK(allowed IS 0 OR allowed IS 1),
-
-  surrogate     INTEGER   --> número do dia na indisponibilidade
-                NOT NULL
-                CHECK(surrogate BETWEEN 0 AND 6),
-
-  dayName       TEXT      --> nome do dia da semana conforme conveniência
-                NOT NULL
-                COLLATE NOCASE
-                UNIQUE
-                CHECK(trim(dayName) <> ''),
-
-  shortDayname  TEXT      --> nome abreviado do dia da semana
-                NOT NULL
-                COLLATE NOCASE
-                UNIQUE
-                CHECK(trim(dayName) <> '')
-);
-
---
--- preenchimento da tabela com com nomes dos dias em pt-BR e valores
--- arbitrários de disponibilidade e surrogate
---
-INSERT OR REPLACE INTO weekdays VALUES
-  (0, 0, 1, 'Domingo', 'dom'),  -- domingo --> segunda
-  (1, 1, 1, 'Segunda', 'seg'),  -- segunda --> segunda
-  (2, 0, 3, 'Terça',   'ter'),  -- terça   --> quarta
-  (3, 1, 3, 'Quarta',  'qua'),  -- quarta  --> quarta
-  (4, 1, 4, 'Quinta',  'qui'),  -- quinta  --> quinta
-  (5, 0, 1, 'Sexta',   'sex'),  -- sexta   --> segunda
-  (6, 0, 1, 'Sábado',  'sáb');  -- sábado  --> segunda
-
-CREATE TRIGGER weekdays_t0 BEFORE DELETE ON weekdays
-BEGIN
-  SELECT raise(ABORT, 'Exclusão de registros comprometerá a funcionalidade');
-END;
-
-CREATE TRIGGER weekdays_t1 BEFORE UPDATE OF dayNumber, dayName,
-  shortDayname ON weekdays
-BEGIN
-  SELECT raise(ABORT, 'Alteração desta coluna comprometerá a funcionalidade');
-END;
-
-CREATE TRIGGER weekdays_t2 AFTER UPDATE OF allowed ON weekdays
-WHEN NOT EXISTS(
-  SELECT 1 FROM weekdays WHERE allowed AND (dayNumber BETWEEN 1 AND 5))
-BEGIN
-  SELECT RAISE(ABORT, 'Nenhum dia da semana estará disponível entre a segunda e sexta.');
 END;
 
 CREATE TABLE IF NOT EXISTS emprestimos (
@@ -691,8 +632,11 @@ BEGIN
   UPDATE emprestimos SET comentario=(
     SELECT 'Emprestado até ' || (
       -- requisita o nome do dia da semana correspondente a 'data limite'
-      SELECT dayName FROM weekdays
-      WHERE dayNumber == cast(strftime('%w', expiration) AS INTEGER)
+      SELECT CASE cast(strftime('%w', expiration) AS INTEGER)
+        WHEN 0 THEN 'Domingo' WHEN 1 THEN 'Segunda' WHEN 2 THEN 'Terça'
+        WHEN 3 THEN 'Quarta'  WHEN 4 THEN 'Quinta'  WHEN 5 THEN 'Sexta'
+        ELSE 'Sábado'
+      END
     ) || (
       -- formata a 'data limite' conveniente ao usuário final
       SELECT strftime(' %d-%m-%Y.', expiration)
@@ -701,13 +645,41 @@ BEGIN
         -- calcula a data limite 'de facto'
         SELECT CASE WHEN (
           -- testa disponibilidade do dia da semana da data candidata
-          SELECT allowed FROM weekdays WHERE dayNumber == wday
+          SELECT (weekdays >> wday) & 1 FROM config
         ) THEN (
           SELECT expDate  --> data candidata disponível
         ) ELSE (
           -- data candidata indisponível --> calcula dia substituto
-          SELECT date(expDate, 'weekday ' ||
-            (SELECT surrogate FROM weekdays WHERE dayNumber == wday))
+          SELECT MIN(
+            (SELECT CASE WHEN wday<>0 AND weekdays&1
+              THEN DATE(expDate, 'weekday 0')
+              ELSE '9999-99-99'
+             END),
+            (SELECT CASE WHEN wday<>1 AND weekdays&2
+              THEN DATE(expDate, 'weekday 1')
+              ELSE '9999-99-99'
+             END),
+            (SELECT CASE WHEN wday<>2 AND weekdays&4
+              THEN DATE(expDate, 'weekday 2')
+              ELSE '9999-99-99'
+             END),
+            (SELECT CASE WHEN wday<>3 AND weekdays&8
+              THEN DATE(expDate, 'weekday 3')
+              ELSE '9999-99-99'
+             END),
+            (SELECT CASE WHEN wday<>4 AND weekdays&16
+              THEN DATE(expDate, 'weekday 4')
+              ELSE '9999-99-99'
+             END),
+            (SELECT CASE WHEN wday<>5 AND weekdays&32
+              THEN DATE(expDate, 'weekday 5')
+              ELSE '9999-99-99'
+             END),
+            (SELECT CASE WHEN wday<>6 AND weekdays&64
+              THEN DATE(expDate, 'weekday 6')
+              ELSE '9999-99-99'
+             END)
+          ) FROM config
         ) END
       ) AS expiration
       FROM (
