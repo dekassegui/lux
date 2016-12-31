@@ -53,6 +53,9 @@
 
         // -- Atualização dos 7 (sete) registros da tabela 'weekdays'.
 
+        // loop para verificar se foi requisitada alguma atualização de
+        // 'dia da semana', confirmada quando o número de iterações é
+        //  menor que 7 (sete)
         for ($numeroDia=0; ($numeroDia < 7) && !isset($_GET["DIA$numeroDia"]);
              ++$numeroDia);
 
