@@ -35,12 +35,17 @@ fieldset {
   box-shadow: 0 0 3px 3px antiquewhite;
 }
 label {
+  letter-spacing: .03125em;
   -webkit-transition: color 1s;
   -webkit-transition-timing-function: linear;
   transition: color 1s;
   transition-timing-function: linear;
 }
-label:hover { color: chocolate;}
+label:hover { color: black; }
+label.modified {
+  color: black;
+  text-shadow: 1px 0px 1px #ccc;
+}
 section {
   display: block;
   width: 500px;
@@ -60,10 +65,11 @@ div#emprestimos fieldset { padding: .0625em .75em .75em .75em; }
 div#weekdays { float: right; }
 div#weekdays fieldset { text-align: right; }
 div#weekdays label {
-  margin: .5em 1em 0 1em;
+  margin: .5em 1em 0em 1em;
   display: block;
 }
-div#weekdays label:last-child { margin-bottom: .75em; }
+div#weekdays label:first-child { margin-top: .875em; }
+div#weekdays label:last-child { margin-bottom: 1.125em; }
 
 input[type="number"] {
   padding: 2px 5px;
@@ -105,7 +111,14 @@ input#updateBtn {
 input#updateBtn:hover { color: red; }
 input#updateBtn:focus { color: dodgerblue; }
 
-footer { margin-top: 2em; }
+footer {
+  display: block;
+  width: 100%;
+  height: 2em;
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+}
 footer p {
   text-align: center;
   font: 400 italic 55% serif;

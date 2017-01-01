@@ -527,8 +527,9 @@ CREATE TABLE IF NOT EXISTS config (
 
   weekdays    INTEGER                   --> bitmask dos dias da semana
               DEFAULT 26                --> com atendimento ao público
-              NOT NULL
-              CHECK(weekdays BETWEEN 1 AND 128),
+              NOT NULL,
+
+  CONSTRAINT one_or_more_weekday CHECK(weekdays BETWEEN 1 AND 128),
 
   CONSTRAINT registro_unico_chk CHECK(ROWID < 2)  --> único registro
 );
