@@ -2,7 +2,6 @@
  * Este script é parte do projeto LUX, software livre para bibliotecas de
  * casas Espíritas, em desenvolvimento desde 12/11/2016.
 */
-
 window.addEventListener('load',
   function () {
 
@@ -68,8 +67,15 @@ window.addEventListener('load',
 
       var inputs = $$('div#weekdays input');
 
-      var value;
+      var value;  // storage do valor (integer) "reduzido" da máscara
 
+      /**
+       * Testa o status de "bit" componente do valor reduzido da máscara.
+       *
+       * @param n Integer primitivo, número de ordem do bit a testar,
+       *          da direita para a esquerda.
+       * @return Boolean, "true" se o bit está ativo, senão "false".
+      */
       function chkBit(n) { return !!((value >> n) & 1); }
 
       function onChange(ev) {
@@ -89,6 +95,12 @@ window.addEventListener('load',
         }
       };
 
+      /**
+       * Calcula o valor "reduzido" da máscara representando status
+       * dos inputs dos "dias da semana".
+       *
+       * @return Integer primitivo, valor "reduzido" da máscara.
+      */
       this.getValue = function () {
         return inputs.reduce(
           function (acc, input, index) {
@@ -106,6 +118,7 @@ window.addEventListener('load',
     })();
 
     $('updateBtn').onclick = function () {
+      // requisita atualização se e somente se algum input foi modificado
       if ($$("label").some(el => el.classList.contains("modified"))) {
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
@@ -122,6 +135,8 @@ window.addEventListener('load',
       }
     };
 
+    // carrega configuração arbitrária, i.e.: conjunto de parâmetros
+    // para cálculo de datas limite e validação de empréstimos
     function loadConfig() {
       var xhr = new XMLHttpRequest();
       xhr.onreadystatechange = function () {
@@ -129,9 +144,9 @@ window.addEventListener('load',
           // monta o array dos valores :: [prazo, pendencias, weekdays]
           // particionando a string container dos dados requisitados
           var values = this.responseText.split('|');
-          // preenche valores dos parâmetros numéricos
+          // preenche inputs dos parâmetros numéricos
           KASHITE.setValues(values);
-          // preenche valores dos 'dias da semana'
+          // preenche inputs dos 'dias da semana'
           MASK.setValue(parseInt(values[2]));
         }
       };

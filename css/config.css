@@ -46,6 +46,7 @@ label.modified {
   color: black;
   text-shadow: 1px 0px 1px #ccc;
 }
+label.modified:hover { color: #930; }
 section {
   display: block;
   width: 500px;

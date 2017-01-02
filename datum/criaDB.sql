@@ -510,26 +510,28 @@ END;
 CREATE TABLE IF NOT EXISTS config (
   --
   -- conjunto de parâmetros das restrições de empréstimos
+  -- e cálculo das 'datas limite' para devolução
   --
 
   prazo       TEXT                      --> expressão para cálculo da data
               DEFAULT "+60 days"        --> limite de devolução de livros
-              NOT NULL                  --> conforme funções Date&Time do
+              NOT NULL,                 --> conforme funções Date&Time do
                                         --> SQLite
-              CHECK(
-                (lower(prazo) glob "+[0-9][0-9] days")
-                AND (cast(prazo AS integer) > 0)),
 
   pendencias  INTEGER                   --> quantidade máxima de livros que
               DEFAULT 3                 --> podem ser emprestados a qualquer
-              NOT NULL                  --> leitor
-              CHECK(pendencias > 0),
+              NOT NULL,                 --> leitor
 
   weekdays    INTEGER                   --> bitmask dos dias da semana
               DEFAULT 26                --> com atendimento ao público
               NOT NULL,
 
-  CONSTRAINT one_or_more_weekday CHECK(weekdays BETWEEN 1 AND 128),
+  CONSTRAINT prazo_chk CHECK((lower(prazo) glob "+[0-9][0-9] days")
+                             AND (cast(prazo AS integer) > 0)),
+
+  CONSTRAINT pendencias_chk CHECK(pendencias > 0),
+
+  CONSTRAINT weekdays_chk CHECK(weekdays BETWEEN 1 AND 128),
 
   CONSTRAINT registro_unico_chk CHECK(ROWID < 2)  --> único registro
 );
@@ -686,9 +688,11 @@ BEGIN
       FROM (
         -- calcula a data candidata a 'data limite' e seu respectivo
         -- número de dia da semana, conforme prazo arbitrário
-        SELECT expDate, cast(strftime('%w', expDate) AS INTEGER) AS wday
+        SELECT substr(rawDate,2) AS expDate,
+               cast(substr(rawDate,1,1) AS INTEGER) AS wday
         FROM (
-          SELECT date(new.data_emprestimo, prazo) AS expDate FROM config
+          SELECT strftime('%w%Y-%m-%d', new.data_emprestimo, prazo) AS rawDate
+          FROM config
         )
       )
     )

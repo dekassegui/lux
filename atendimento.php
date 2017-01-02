@@ -21,7 +21,7 @@
    * @param $db Handle do database container da tabela.
   */
   function rebuildTable($db) {
-    $db->exec(<<<EOT
+    if ($db->exec(<<<EOT
   PRAGMA foreign_keys = OFF;
   BEGIN TRANSACTION;
   DROP TABLE IF EXISTS t;
@@ -38,7 +38,11 @@
   PRAGMA foreign_keys = ON;
   -- VACUUM;
 EOT
-    );
+    )) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   switch ($_GET['action']) {
@@ -96,9 +100,9 @@ EOT;
       }
       // tenta executar a requisição
       if ($db->exec($sql)) {
-        rebuildTable($db);
-        $d = toISOdate(substr($data_emprestimo, 1, strlen($data_emprestimo)-2));
-        $sql = <<<EOT
+        if (rebuildTable($db)) {
+          $d = toISOdate(substr($data_emprestimo, 1, strlen($data_emprestimo)-2));
+          $sql = <<<EOT
   SELECT rowid
   FROM emprestimos_facil
   WHERE
@@ -108,7 +112,11 @@ EOT;
     AND obra == $obra
     AND exemplar == $exemplar;
 EOT;
-        echo $db->querySingle($sql);
+          echo $db->querySingle($sql);
+        } else {
+          // TODO -- estudar e implementar solução do big do prazo curto
+          echo "1";
+        }
       } else {
         echo 'Error: '.$db->lastErrorMsg();
       }
