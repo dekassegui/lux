@@ -5,9 +5,15 @@
 window.addEventListener('load',
   function () {
 
-    // URI do script "server side" que atende requisições ao DB
+    /**
+     * URI do script "server side" que atende requisições ao DB.
+    */
     var uri = location.href.replace("html", "php");
 
+    /**
+     * Gestor dos inputs dos parâmetros numéricos para cálculo de
+     * "datas limite" e validação dos empréstimos.
+    */
     var KASHITE = (function () {
 
       var inputs = $$('div#emprestimos input');
@@ -63,18 +69,22 @@ window.addEventListener('load',
 
     })();
 
+    /**
+     * Gestor dos inputs da máscara de bits que representa o status
+     * de atendimento nos "dias da semana".
+    */
     var MASK = (function () {
 
       var inputs = $$('div#weekdays input');
 
-      var value;  // storage do valor (integer) "reduzido" da máscara
+      var value;  /* valor reduzido da máscara de bits */
 
       /**
        * Testa o status de "bit" componente do valor reduzido da máscara.
        *
        * @param n Integer primitivo, número de ordem do bit a testar,
        *          da direita para a esquerda.
-       * @return Boolean, "true" se o bit está ativo, senão "false".
+       * @return Boolean, "true" se o bit está ligado, senão "false".
       */
       function chkBit(n) { return !!((value >> n) & 1); }
 
@@ -96,10 +106,9 @@ window.addEventListener('load',
       };
 
       /**
-       * Calcula o valor "reduzido" da máscara representando status
-       * dos inputs dos "dias da semana".
+       * Calcula o valor reduzido da máscara.
        *
-       * @return Integer primitivo, valor "reduzido" da máscara.
+       * @return Integer primitivo, valor reduzido da máscara.
       */
       this.getValue = function () {
         return inputs.reduce(
@@ -117,8 +126,12 @@ window.addEventListener('load',
 
     })();
 
-    $('updateBtn').onclick = function () {
-      // requisita atualização se e somente se algum input foi modificado
+    /**
+     * Salva a configuração, enviando os valores dos parâmetros e
+     * valor reduzido da máscara ao script "server side".
+    */
+    $('updateBtn').onclick = function saveConfig() {
+      // testa (short circuit) se algum input/label foi modificado
       if ($$("label").some(el => el.classList.contains("modified"))) {
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
@@ -135,8 +148,9 @@ window.addEventListener('load',
       }
     };
 
-    // carrega configuração arbitrária, i.e.: conjunto de parâmetros
-    // para cálculo de datas limite e validação de empréstimos
+    /**
+     * Carrega configuração requisitada ao script "server side".
+    */
     function loadConfig() {
       var xhr = new XMLHttpRequest();
       xhr.onreadystatechange = function () {

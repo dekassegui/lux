@@ -37,9 +37,9 @@
       $c = array();
       $e = array();
       if ($new['prazo'] <> int($old['prazo'])) {
-        // contagem dos empréstimos que estarão em atraso
-        // se houver modificação, exceto os que já estão
-        $sql = "select count() from emprestimos, config, (select date('now', 'localtime') as hoje) where data_devolucao isnull and (date(data_emprestimo, prazo) >= hoje) and (date(data_emprestimo, '+{$new['prazo']} days') < hoje)";
+        // contagem dos empréstimos que estarão em atraso se houver
+        // modificação, exceto os que já estavam atrasados
+        $sql = "SELECT count() FROM emprestimos, config, (SELECT date('now', 'localtime') AS hoje) WHERE data_devolucao isnull AND (date(data_emprestimo, prazo) >= hoje) AND (date(data_emprestimo, '+{$new['prazo']} days') < hoje)";
         $n = $db->querySingle($sql);
         if ($n == 0) {
           $c[] = sprintf('prazo="+%02d days"', $new['prazo']);
@@ -76,7 +76,8 @@
       if (count($c) > 0) {
         $sql = 'UPDATE config SET '.join(', ', $c);
         if ($db->exec($sql)) {
-          $msg = 'Atualização bem sucedida!';
+          $msg = 'Atualização '.((count($c) < 3) ? 'parcial' : '')
+            .' bem sucedida!';
         } else {
           $msg = 'Error: '.$db->lastErrorMsg();
         }
