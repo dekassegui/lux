@@ -32,7 +32,8 @@
         {
           $buffer .= "Parâmetro \"$parName\" atualizado com sucesso.";
         } else {
-          $buffer .= 'Erro: '.$db->lastErrorMsg();
+          $buffer .= "Erro na atualização de \"$parName\": "
+                        .$db->lastErrorMsg();
         }
       }
       echo $buffer;

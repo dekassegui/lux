@@ -2,6 +2,12 @@
  * Este script é parte do projeto LUX, software livre para bibliotecas de
  * casas Espíritas, em desenvolvimento desde 12/11/2016.
 */
+
+/**
+ * Listener que ativa comandos para controle "full time" do aplicativo
+ * para gestão da tabela de configuração dos empréstimos no projeto LUX,
+ * até o fim do seu "life cycle", indiferente a 'reloads' do documento.
+*/
 window.addEventListener('load',
   function () {
 
@@ -11,10 +17,10 @@ window.addEventListener('load',
     var uri = location.href.replace("html", "php");
 
     /**
-     * Gestor dos inputs dos parâmetros numéricos para cálculo de
-     * "datas limite" e validação dos empréstimos.
+     * Gestor dos inputs dos parâmetros numéricos para cálculo
+     * de "datas limite" e validação dos empréstimos.
     */
-    var KASHITE = (function () {
+    var BANGO = (function () {
 
       var inputs = $$('div#emprestimos input');
 
@@ -70,8 +76,8 @@ window.addEventListener('load',
     })();
 
     /**
-     * Gestor dos inputs da máscara de bits que representa o status
-     * de atendimento nos "dias da semana".
+     * Gestor dos inputs da máscara de bits que representa
+     * o status de atendimento nos "dias da semana".
     */
     var MASK = (function () {
 
@@ -97,6 +103,12 @@ window.addEventListener('load',
         }
       }
 
+      /**
+       * Checa os inputs conforme status de cada bit componente
+       * do valor reduzido da máscara.
+       *
+       * @param Integer primitivo, valor reduzido da máscara.
+      */
       this.setValue = function (aValue) {
         value = aValue;
         for (var j=0; j<7; ++j) {
@@ -127,8 +139,8 @@ window.addEventListener('load',
     })();
 
     /**
-     * Salva a configuração, enviando os valores dos parâmetros e
-     * valor reduzido da máscara ao script "server side".
+     * Salva a configuração, enviando os valores dos parâmetros
+     * e valor reduzido da máscara ao script "server side".
     */
     $('updateBtn').onclick = function saveConfig() {
       // testa (short circuit) se algum input/label foi modificado
@@ -141,7 +153,7 @@ window.addEventListener('load',
           }
         };
         xhr.open("GET", uri + '?action=UPDATE&CFG='
-          + KASHITE.getValues() + '|' + MASK.getValue(), true);
+          + BANGO.getValues() + '|' + MASK.getValue(), true);
         xhr.send();
       } else {
         alert('Atualização desnecessária.');
@@ -159,7 +171,7 @@ window.addEventListener('load',
           // particionando a string container dos dados requisitados
           var values = this.responseText.split('|');
           // preenche inputs dos parâmetros numéricos
-          KASHITE.setValues(values);
+          BANGO.setValues(values);
           // preenche inputs dos 'dias da semana'
           MASK.setValue(parseInt(values[2]));
         }

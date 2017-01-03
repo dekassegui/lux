@@ -544,24 +544,18 @@ BEGIN
   SELECT raise(ABORT, "Não delete o único registro desta tabela.");
 END;
 
-CREATE TRIGGER config_t1 BEFORE UPDATE OF prazo ON config
-WHEN new.prazo notnull AND EXISTS(
-  SELECT 1
-  FROM (SELECT date('now', 'localtime') AS hoje), emprestimos
-  WHERE data_devolucao isnull AND NOT date(data_emprestimo, old.prazo) < hoje
-    AND date(data_emprestimo, new.prazo) < hoje)
+CREATE TRIGGER config_t1 BEFORE UPDATE OF prazo, pendencias ON config
 BEGIN
-  SELECT raise(ABORT, '1+ empréstimo se tornarão "em atraso".');
-END;
-
-CREATE TRIGGER config_t2 BEFORE UPDATE OF pendencias ON config
-WHEN new.pendencias notnull and EXISTS(
-  SELECT count() AS n
-  FROM emprestimos
-  WHERE data_devolucao isnull
-  GROUP BY leitor HAVING n > new.pendencias)
-BEGIN
-  SELECT raise(ABORT, '1+ leitor terão emprestado mais que o permitido.');
+  SELECT CASE WHEN new.prazo notnull AND EXISTS(
+    SELECT 1 FROM (SELECT date('now', 'localtime') AS hoje), emprestimos
+    WHERE data_devolucao isnull AND date(data_emprestimo, old.prazo) >= hoje
+      AND date(data_emprestimo, new.prazo) < hoje) THEN
+    RAISE(ABORT, '1+ empréstimos se tornarão "em atraso".')
+  WHEN new.pendencias notnull and EXISTS(
+    SELECT count() AS n FROM emprestimos WHERE data_devolucao isnull
+    GROUP BY leitor HAVING n > new.pendencias) THEN
+    RAISE(ABORT, '1+ leitores terão emprestado mais que o permitido.')
+  END;
 END;
 
 CREATE VIEW config_facil AS

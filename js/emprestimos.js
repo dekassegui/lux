@@ -316,12 +316,18 @@ window.addEventListener('load',
                 print('> Inserção mal sucedida.');
                 print(this.responseText);
               } else {
-                // atualiza inputs do índice/quantidade de registros
                 amount.value = ++numRecs;
-                counter.value = indexRec = parseInt(this.responseText);
+                indexRec = parseInt(this.responseText);
+                update();
                 counter.maxLength = amount.value.length;
-                // habilita botões de navegação & comando
-                cancelBtn.click();
+                counter.disabled = false;
+                commandButtons.forEach(
+                  function (el) {
+                    el.disabled = false;
+                    el.classList.remove('disabled');
+                  });
+                setDisabled(actionButtons, true);
+                setInputsReadonly(true);
                 print('> Inserção bem sucedida.');
               }
             }
