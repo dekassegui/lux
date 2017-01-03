@@ -43,6 +43,7 @@ DROP VIEW IF EXISTS obras_emprestadas;
 DROP VIEW IF EXISTS acervo_facil;
 DROP VIEW IF EXISTS emprestimos_facil;
 DROP VIEW IF EXISTS exemplares_disponiveis;
+DROP VIEW IF EXISTS config_facil;
 
 CREATE TABLE IF NOT EXISTS autores (
   --
@@ -541,6 +542,38 @@ INSERT OR IGNORE INTO config DEFAULT VALUES;
 CREATE TRIGGER config_t0 BEFORE DELETE ON config
 BEGIN
   SELECT raise(ABORT, "Não delete o único registro desta tabela.");
+END;
+
+CREATE TRIGGER config_t1 BEFORE UPDATE OF prazo ON config
+WHEN new.prazo notnull AND EXISTS(
+  SELECT 1
+  FROM (SELECT date('now', 'localtime') AS hoje), emprestimos
+  WHERE data_devolucao isnull AND NOT date(data_emprestimo, old.prazo) < hoje
+    AND date(data_emprestimo, new.prazo) < hoje)
+BEGIN
+  SELECT raise(ABORT, '1+ empréstimo se tornarão "em atraso".');
+END;
+
+CREATE TRIGGER config_t2 BEFORE UPDATE OF pendencias ON config
+WHEN new.pendencias notnull and EXISTS(
+  SELECT count() AS n
+  FROM emprestimos
+  WHERE data_devolucao isnull
+  GROUP BY leitor HAVING n > new.pendencias)
+BEGIN
+  SELECT raise(ABORT, '1+ leitor terão emprestado mais que o permitido.');
+END;
+
+CREATE VIEW config_facil AS
+  SELECT cast(prazo AS INTEGER) AS prazo, pendencias, weekdays FROM config;
+
+--
+-- conveniência para facilitar a atualização da coluna 'prazo'
+--
+CREATE TRIGGER config_facil_t0 INSTEAD OF UPDATE ON config_facil
+BEGIN
+  UPDATE config SET prazo=("+" || cast(new.prazo AS INTEGER) || " days"),
+    pendencias=new.pendencias, weekdays=new.weekdays;
 END;
 
 CREATE TABLE IF NOT EXISTS emprestimos (
