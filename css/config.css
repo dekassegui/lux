@@ -35,7 +35,7 @@ fieldset {
   box-shadow: 0 0 3px 3px antiquewhite;
 }
 label {
-  letter-spacing: .03125em;
+  letter-spacing: .015625em;
   -webkit-transition: color 1s;
   -webkit-transition-timing-function: linear;
   transition: color 1s;

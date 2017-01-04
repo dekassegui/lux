@@ -6,6 +6,15 @@
 
   require 'utils.php';
 
+  define('EASYQUERY', 'SELECT prazo, pendencias, weekdays FROM config_facil');
+
+  function translate($s) {
+    if (strpos($s, 'weekdays_chk') !== FALSE) {
+      return 'Não haveria dia da semana para atendimento ao público.';
+    }
+    return $s;
+  }
+
   $db = new SQLite3(DB_FILENAME) or die('Unable to open database');
 
   switch ($_GET['action']) {
@@ -13,8 +22,7 @@
     case 'GETREC':
 
       // requisita parâmetros para cálculo dos empréstimos e datas limite
-      $result = $db->query(
-        'SELECT prazo, pendencias, weekdays FROM config_facil;');
+      $result = $db->query(EASYQUERY);
       $values = $result->fetchArray(SQLITE3_NUM);
       echo $values[0].'|'.$values[1].'|'.$values[2];
       break;
@@ -23,30 +31,25 @@
 
       $fields = array('prazo', 'pendencias', 'weekdays');
 
-      $result = $db->query(
-        'SELECT prazo, pendencias, weekdays FROM config_facil;');
+      $result = $db->query(EASYQUERY);
       $current = $result->fetchArray(SQLITE3_ASSOC);
 
-      $buffer = '';
+      $buffer = array();
       foreach (aexplode('|', $_GET['CFG'], $fields) as $parName=>$value)
       {
-        if (strlen($buffer) > 0) $buffer .= "\n\n";
+        if ($current[$parName] == $value) continue;
 
-        if ($current[$parName] == $value) {
+        if ($db->exec("UPDATE config_facil SET $parName=".$value)) {
 
-          $buffer .= "Desnecessário atualizar \"$parName\".";
-
-        } else if ($db->exec("UPDATE config_facil SET $parName=".$value)) {
-
-          $buffer .= "Parâmetro \"$parName\" atualizado com sucesso.";
+          $buffer[] = "Parâmetro '$parName' atualizado com sucesso.";
 
         } else {
 
-          $buffer .= "Erro na atualização de \"$parName\": "
-                        .$db->lastErrorMsg();
+          $buffer[] = "Erro ao atualizar '$parName': "
+            .translate( $db->lastErrorMsg() );
         }
       }
-      echo $buffer;
+      echo join("\n", $buffer);
       break;
 
   }

@@ -24,7 +24,8 @@ window.addEventListener('load',
 
       var button = $("updateBtn");
 
-      var labels = $$("div#emprestimos label, div#weekdays label");
+      var lists = $$("div#emprestimos label, div#weekdays label").map(
+        function (label) { return label.classList; });
 
       this.setCallback = function (callback) { button.onclick = callback; };
 
@@ -33,7 +34,7 @@ window.addEventListener('load',
       };
 
       this.update = function () {
-        setDisabled( !labels.some(el => el.classList.contains("modified")) );
+        setDisabled( !lists.some(list => list.contains("modified")) );
       };
 
       return this;
@@ -185,38 +186,32 @@ window.addEventListener('load',
       xhr.send();
     }
 
-    /**
-     * Salva a configuração, enviando os valores dos parâmetros
-     * e valor reduzido da máscara ao script "server side".
-    */
-    function saveConfig() {
-      var xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-          var text = '<div class="info">' + this.responseText.split(/\n+/g)
-              .map(function (txt) {
-                  return '<p>' + txt.replace(/"([^"]+)"/g,
-                    '<strong>$1</strong>') + '</p>';
-                })
-              .join("") + '</div>';
-          swal({
-            title: null,
-            text: text,
-            html: true,
-            type: "info",
-            confirmButtonText: "Fechar",
-            allowEscapeKey: true,
-            allowOutsideClick: true
-          });
-          loadConfig();
-        }
-      };
-      xhr.open("GET", uri + '?action=UPDATE&CFG='
-        + BANGO.getValues() + '|' + MASK.getValue(), true);
-      xhr.send();
-    }
-
-    ACTION.setCallback(saveConfig);
+    ACTION.setCallback(
+      /**
+       * Salva a configuração, enviando os valores dos parâmetros
+       * e valor reduzido da máscara ao script "server side".
+      */
+      function /* saveConfig */ () {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+          if (this.readyState == 4 && this.status == 200) {
+            var text = "<p>" + this.responseText
+              .replace(/(['"])([^'"]+)\1/g, "<strong>$2</strong>")
+              .replace(/\n/g, "</p><p>") + "</p>";
+            swal({
+                html: true,
+                title: null,
+                text: text,
+                confirmButtonText: "Fechar",
+                confirmButtonColor: "#ff9900",
+                allowEscapeKey: true,
+              }, loadConfig);
+          }
+        };
+        xhr.open("GET", uri + '?action=UPDATE&CFG='
+          + BANGO.getValues() + '|' + MASK.getValue(), true);
+        xhr.send();
+      });
 
     loadConfig();
 

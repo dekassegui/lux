@@ -1,22 +1,22 @@
-.sweet-overlay { background-color: transparent !important; }
+.sweet-overlay { background-color: transparent; }
 .sweet-alert {
-  background-color: black !important;
-  border: solid 1px #fee;
-  box-shadow: 0 0 5px 5px #fcc;
-  opacity: .77;
+  background-color: black;
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  box-shadow: 0 0 5px 5px rgba(255, 153, 0, .85);
+  opacity: .67;
 }
-.sweet-alert fieldset { display: none; visibility: hidden !important; }
+.sweet-alert p {
+  font-size: .9em;
+  font-weight: 600;
+  letter-spacing: .05em;
+  color: #fb0;
+}
+.sweet-alert p + p { margin-top: 1em; }
+.sweet-alert p > strong { color: white; }
+.sweet-alert fieldset { display: none; visibility: hidden; }
 button.confirm {
+  font-size: .75em;
+  letter-spacing: .05em;
   color: black !important;
-  background-color: #fcc !important;
-  transition: background-color .5s ease-in;
 }
-button.confirm:hover { background-color: #fbb !important; }
-.info { margin-bottom: 1em; }
-.info > p {
-  font: 400 normal 1.1em "Open Sans", sans-serif !important;
-  letter-spacing: .03125em;
-  color: #fee !important;
-}
-.info > p + p { margin-top: 1em; }
-.info > p > strong { font-weight: 600; }
