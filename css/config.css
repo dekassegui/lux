@@ -111,6 +111,7 @@ input#updateBtn {
 }
 input#updateBtn:hover { color: red; }
 input#updateBtn:focus { color: dodgerblue; }
+input#updateBtn:disabled { color: #bbb; }
 
 footer {
   display: block;

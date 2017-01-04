@@ -17,6 +17,30 @@ window.addEventListener('load',
     var uri = location.href.replace("html", "php");
 
     /**
+     * Encapsulamento de propriedades e métodos agregados ao único
+     * elemento do tipo button que dispara a atualização.
+    */
+    var ACTION = (function () {
+
+      var button = $("updateBtn");
+
+      var labels = $$("div#emprestimos label, div#weekdays label");
+
+      this.setCallback = function (callback) { button.onclick = callback; };
+
+      this.setDisabled = function (value) {
+        button.disabled = (value === undefined) ? true : value;
+      };
+
+      this.update = function () {
+        setDisabled( !labels.some(el => el.classList.contains("modified")) );
+      };
+
+      return this;
+
+    })();
+
+    /**
      * Gestor dos inputs dos parâmetros numéricos para cálculo
      * de "datas limite" e validação dos empréstimos.
     */
@@ -51,6 +75,7 @@ window.addEventListener('load',
         } else {
           t.parentElement.classList.remove("modified");
         }
+        ACTION.update();
       }
 
       this.setValues = function (aValues) {
@@ -101,6 +126,7 @@ window.addEventListener('load',
         } else {
           t.parentElement.classList.remove("modified");
         }
+        ACTION.update();
       }
 
       /**
@@ -139,34 +165,13 @@ window.addEventListener('load',
     })();
 
     /**
-     * Salva a configuração, enviando os valores dos parâmetros
-     * e valor reduzido da máscara ao script "server side".
-    */
-    $('updateBtn').onclick = function saveConfig() {
-      // testa (short circuit) se algum input/label foi modificado
-      if ($$("label").some(el => el.classList.contains("modified"))) {
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function () {
-          if (this.readyState == 4 && this.status == 200) {
-            alert(this.responseText);
-            loadConfig();
-          }
-        };
-        xhr.open("GET", uri + '?action=UPDATE&CFG='
-          + BANGO.getValues() + '|' + MASK.getValue(), true);
-        xhr.send();
-      } else {
-        alert('Atualização desnecessária.');
-      }
-    };
-
-    /**
      * Carrega configuração requisitada ao script "server side".
     */
     function loadConfig() {
       var xhr = new XMLHttpRequest();
       xhr.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
+          ACTION.setDisabled();
           // monta o array dos valores :: [prazo, pendencias, weekdays]
           // particionando a string container dos dados requisitados
           var values = this.responseText.split('|');
@@ -179,6 +184,39 @@ window.addEventListener('load',
       xhr.open("GET", uri + '?action=GETREC', true);
       xhr.send();
     }
+
+    /**
+     * Salva a configuração, enviando os valores dos parâmetros
+     * e valor reduzido da máscara ao script "server side".
+    */
+    function saveConfig() {
+      var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          var text = '<div class="info">' + this.responseText.split(/\n+/g)
+              .map(function (txt) {
+                  return '<p>' + txt.replace(/"([^"]+)"/g,
+                    '<strong>$1</strong>') + '</p>';
+                })
+              .join("") + '</div>';
+          swal({
+            title: null,
+            text: text,
+            html: true,
+            type: "info",
+            confirmButtonText: "Fechar",
+            allowEscapeKey: true,
+            allowOutsideClick: true
+          });
+          loadConfig();
+        }
+      };
+      xhr.open("GET", uri + '?action=UPDATE&CFG='
+        + BANGO.getValues() + '|' + MASK.getValue(), true);
+      xhr.send();
+    }
+
+    ACTION.setCallback(saveConfig);
 
     loadConfig();
 

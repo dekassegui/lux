@@ -23,15 +23,25 @@
 
       $fields = array('prazo', 'pendencias', 'weekdays');
 
+      $result = $db->query(
+        'SELECT prazo, pendencias, weekdays FROM config_facil;');
+      $current = $result->fetchArray(SQLITE3_ASSOC);
+
       $buffer = '';
       foreach (aexplode('|', $_GET['CFG'], $fields) as $parName=>$value)
       {
         if (strlen($buffer) > 0) $buffer .= "\n\n";
 
-        if ($db->exec("UPDATE config_facil SET $parName=".$value))
-        {
+        if ($current[$parName] == $value) {
+
+          $buffer .= "Desnecessário atualizar \"$parName\".";
+
+        } else if ($db->exec("UPDATE config_facil SET $parName=".$value)) {
+
           $buffer .= "Parâmetro \"$parName\" atualizado com sucesso.";
+
         } else {
+
           $buffer .= "Erro na atualização de \"$parName\": "
                         .$db->lastErrorMsg();
         }

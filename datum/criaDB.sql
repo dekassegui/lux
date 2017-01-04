@@ -550,7 +550,7 @@ BEGIN
     SELECT 1 FROM (SELECT date('now', 'localtime') AS hoje), emprestimos
     WHERE data_devolucao isnull AND date(data_emprestimo, old.prazo) >= hoje
       AND date(data_emprestimo, new.prazo) < hoje) THEN
-    RAISE(ABORT, '1+ empréstimos se tornarão "em atraso".')
+    RAISE(ABORT, '1+ empréstimos estarão "em atraso".')
   WHEN new.pendencias notnull and EXISTS(
     SELECT count() AS n FROM emprestimos WHERE data_devolucao isnull
     GROUP BY leitor HAVING n > new.pendencias) THEN
