@@ -4,10 +4,10 @@
   -webkit-border-radius: 10px;
   border-radius: 10px;
   box-shadow: 0 0 5px 5px rgba(255, 153, 0, .85);
-  opacity: .67;
+  opacity: .7;
 }
 .sweet-alert p {
-  font-size: .9em;
+  font-size: .95em;
   font-weight: 600;
   letter-spacing: .05em;
   color: #fb0;

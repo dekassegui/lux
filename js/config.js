@@ -22,20 +22,18 @@ window.addEventListener('load',
     */
     var ACTION = (function () {
 
-      var button = $("updateBtn");
+      var N, button = $("updateBtn");
 
-      var lists = $$("div#emprestimos label, div#weekdays label").map(
-        function (label) { return label.classList; });
+      function start() { N = 0; button.disabled = true; }
 
-      this.setCallback = function (callback) { button.onclick = callback; };
-
-      this.setDisabled = function (value) {
-        button.disabled = (value === undefined) ? true : value;
+      this.setCallback = function (callback) {
+        button.addEventListener('click', callback, true);
+        button.addEventListener('click', start, true);
       };
 
-      this.update = function () {
-        setDisabled( !lists.some(list => list.contains("modified")) );
-      };
+      this.update = function (b) { button.disabled = !!!(b ? ++N : --N); };
+
+      start();
 
       return this;
 
@@ -71,12 +69,14 @@ window.addEventListener('load',
 
       function onChange(ev) {
         var t = ev.target;
+        var a = t.parentElement.classList.contains("modified");
         if (t.getAttribute("valor") != t.value) {
           t.parentElement.classList.add("modified");
+          if (!a) ACTION.update(true);
         } else {
           t.parentElement.classList.remove("modified");
+          if (a) ACTION.update(false);
         }
-        ACTION.update();
       }
 
       this.setValues = function (aValues) {
@@ -121,13 +121,13 @@ window.addEventListener('load',
       function chkBit(n) { return !!((value >> n) & 1); }
 
       function onChange(ev) {
-        var t = ev.target;
-        if (chkBit(parseInt(t.getAttribute("index"))) != t.checked) {
+        var b, t = ev.target;
+        if (b = (chkBit(parseInt(t.getAttribute("index"))) != t.checked)) {
           t.parentElement.classList.add("modified");
         } else {
           t.parentElement.classList.remove("modified");
         }
-        ACTION.update();
+        ACTION.update(b);
       }
 
       /**
@@ -172,7 +172,6 @@ window.addEventListener('load',
       var xhr = new XMLHttpRequest();
       xhr.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
-          ACTION.setDisabled();
           // monta o array dos valores :: [prazo, pendencias, weekdays]
           // particionando a string container dos dados requisitados
           var values = this.responseText.split('|');
@@ -197,6 +196,7 @@ window.addEventListener('load',
           if (this.readyState == 4 && this.status == 200) {
             var text = "<p>" + this.responseText
               .replace(/(['"])([^'"]+)\1/g, "<strong>$2</strong>")
+              .replace(/:\s*/g, ":<br>")
               .replace(/\n/g, "</p><p>") + "</p>";
             swal({
                 html: true,

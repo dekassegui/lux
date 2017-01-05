@@ -34,6 +34,13 @@ fieldset {
   border-radius: 5px;
   box-shadow: 0 0 3px 3px antiquewhite;
 }
+fieldset > * { /* evita seleção de texto ao clicar no canvas */
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
 label {
   letter-spacing: .015625em;
   -webkit-transition: color 1s;
@@ -59,6 +66,30 @@ section > div {
   padding: 3px;
 }
 
+input[type="number"] {
+  width: 70px;
+  padding: 2px 5px;
+  font: 400 100% 'Droid Sans Mono', 'Courier New', monospace;
+  line-height: 160%;
+  text-align: center;
+  text-overflow: ellipsis;
+  color: black;
+  background-color: #ffffe0;
+  border: solid 1px #ccc;
+  border-radius: 5px;
+  box-shadow: none;
+  -webkit-transition: color .5s, background-color .5s, border-color .5s, box-shadow .5s;
+  -webkit-transition-timing-function: ease-in;
+  transition: color .5s, background-color .5s, border-color .5s, box-shadow .5s;
+  transition-timing-function: ease-in;
+}
+input[type="number"]:focus {
+  color: mediumblue;
+  background-color: white;
+  box-shadow: 0px 0px 1px 1px #ddd;
+}
+input[type="number"]:invalid { color: white; background-color: red; }
+
 div#emprestimos p { margin-top: .5em; }
 div#emprestimos p + p { margin-top: .75em; }
 div#emprestimos fieldset { padding: .0625em .75em .75em .75em; }
@@ -71,31 +102,6 @@ div#weekdays label {
 }
 div#weekdays label:first-child { margin-top: .875em; }
 div#weekdays label:last-child { margin-bottom: 1.125em; }
-
-input[type="number"] {
-  padding: 2px 5px;
-  font: 400 100% 'Droid Sans Mono', 'Courier New', monospace;
-  line-height: 160%;
-  text-overflow: ellipsis;
-  color: black;
-  background-color: #ffffe0;
-  border: solid 1px #ccc;
-  border-radius: 5px;
-  box-shadow: none;
-  -webkit-transition: color .5s, background-color .5s, border-color .5s, box-shadow .5s;
-  -webkit-transition-timing-function: ease-in;
-  transition: color .5s, background-color .5s, border-color .5s, box-shadow .5s;
-  transition-timing-function: ease-in;
-}
-input[type="number"] { width: 70px; text-align: center; }
-input[type="number"]:focus {
-  color: mediumblue;
-  background-color: white;
-  box-shadow: 0px 0px 1px 1px #ddd;
-}
-input[list] { border-color: #ccf; }
-input[list][readonly] { color: #ccc; font-style: italic; border-color: #ddf; }
-input[type="number"]:invalid { color: white; background-color: red; }
 
 div#commands { clear: left; margin-top: 1.5em; }
 input#updateBtn {
