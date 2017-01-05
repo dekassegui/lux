@@ -205,8 +205,7 @@ window.addEventListener('load',
       function () {
         var valor = parseInt(counter.value);  // aborta edição pendente do
         if (0 < valor && valor <= numRecs) {  // input do índice do registro
-          indexRec = valor;                   // corrente, atualizando-o com
-          update();                           // algum valor legal
+          indexRec = valor;                   // corrente, atualizando-o
         } else {
           print('> Erro: Valor do índice do registro ilegal.');
           if (0 < indexRec && indexRec <= numRecs) {
@@ -216,8 +215,8 @@ window.addEventListener('load',
             print('> Reiniciando valor do índice do registro corrente.');
             counter.value = indexRec = 1;
           }
-          update();
         }
+        update();
       }, true);
 
     amount.addEventListener('focus', function () { this.blur(); }, true);
@@ -329,12 +328,11 @@ window.addEventListener('load',
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText.startsWith('Warning')) {
                 print('> Não há dados que satisfaçam a pesquisa.');
-                print(this.responseText);
               } else {
                 var n = this.responseText.split(/\n|\r|\r\n/g).length;
                 print(['> Sucesso, localizou ', ' registro(s):'].join(n));
-                print(this.responseText);
               }
+              print(this.responseText);
             }
           };
           par.push('?action=SEARCH');
@@ -369,7 +367,6 @@ window.addEventListener('load',
                 amount.value = --numRecs;
                 if (indexRec > numRecs) --indexRec;
                 counter.maxLength = amount.value.length;
-                update();
                 print('> Exclusão bem sucedida.');
                 cancelBtn.click();
               }

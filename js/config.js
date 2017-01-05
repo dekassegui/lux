@@ -17,23 +17,22 @@ window.addEventListener('load',
     var uri = location.href.replace("html", "php");
 
     /**
-     * Encapsulamento de propriedades e métodos agregados ao único
-     * elemento do tipo button que dispara a atualização.
+     * Gestor do botão que efetiva a atualização.
     */
-    var ACTION = (function () {
+    var BUTTON = (function () {
 
       var N, button = $("updateBtn");
 
-      function start() { N = 0; button.disabled = true; }
+      function reset() { N = 0; button.disabled = true; }
 
-      this.setCallback = function (callback) {
+      this.setOnClick = function (callback) {
         button.addEventListener('click', callback, true);
-        button.addEventListener('click', start, true);
+        button.addEventListener('click', reset, true);
       };
 
       this.update = function (b) { button.disabled = !!!(b ? ++N : --N); };
 
-      start();
+      reset();
 
       return this;
 
@@ -69,13 +68,17 @@ window.addEventListener('load',
 
       function onChange(ev) {
         var t = ev.target;
-        var a = t.parentElement.classList.contains("modified");
+        var c = t.parentElement.classList;
         if (t.getAttribute("valor") != t.value) {
-          t.parentElement.classList.add("modified");
-          if (!a) ACTION.update(true);
+          if (!c.contains("modified")) {
+            c.add("modified");
+            BUTTON.update(true);
+          }
         } else {
-          t.parentElement.classList.remove("modified");
-          if (a) ACTION.update(false);
+          if (c.contains("modified")) {
+            c.remove("modified");
+            BUTTON.update(false);
+          }
         }
       }
 
@@ -127,7 +130,7 @@ window.addEventListener('load',
         } else {
           t.parentElement.classList.remove("modified");
         }
-        ACTION.update(b);
+        BUTTON.update(b);
       }
 
       /**
@@ -166,7 +169,7 @@ window.addEventListener('load',
     })();
 
     /**
-     * Carrega configuração requisitada ao script "server side".
+     * Carrega a configuração efetiva, requisitada ao script "server side".
     */
     function loadConfig() {
       var xhr = new XMLHttpRequest();
@@ -185,10 +188,10 @@ window.addEventListener('load',
       xhr.send();
     }
 
-    ACTION.setCallback(
+    BUTTON.setOnClick(
       /**
-       * Salva a configuração, enviando os valores dos parâmetros
-       * e valor reduzido da máscara ao script "server side".
+       * Salva a configuração editada, requisitando atualização, reportando
+       * seu resultado e finalmente, recarregando a configuração efetiva.
       */
       function /* saveConfig */ () {
         var xhr = new XMLHttpRequest();

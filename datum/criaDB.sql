@@ -554,7 +554,7 @@ BEGIN
   WHEN new.pendencias notnull and EXISTS(
     SELECT count() AS n FROM emprestimos WHERE data_devolucao isnull
     GROUP BY leitor HAVING n > new.pendencias) THEN
-    RAISE(ABORT, '1+ leitores emprestariam mais que o permitido.')
+    RAISE(ABORT, '1+ leitores emprestariam mais que a quantidade máxima permitida.')
   END;
 END;
 
