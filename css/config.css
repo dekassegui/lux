@@ -103,20 +103,22 @@ div#weekdays label {
 div#weekdays label:first-child { margin-top: .875em; }
 div#weekdays label:last-child { margin-bottom: 1.125em; }
 
-div#commands { clear: left; margin-top: 1.5em; }
+div#commands { clear: left; margin-top: 3em; }
 input#updateBtn {
-  width: 140px;
-  font-size: 85%;
-  line-height: 160%;
+  width: 200px;
+  font-family: FontAwesome, "Open Sans", sans-serif;
+  font-size: 1em;
+  line-height: 1.8em;
   letter-spacing: .04em;
   color: black;
+  transform: rotate(-7deg);
   -webkit-transition: color .5s;
   -webkit-transition-timing-function: ease-in;
   transition: color .5s;
   transition-timing-function: ease-in;
 }
 input#updateBtn:hover { color: red; }
-input#updateBtn:focus { color: dodgerblue; }
+input#updateBtn:focus { color: #90c; }
 input#updateBtn:disabled { color: #bbb; }
 
 footer {
@@ -134,4 +136,8 @@ footer p {
   letter-spacing: .0375em;
   color: #999;
   text-shadow: 1px 1px 1px #bbb;
+}
+/* ajustes exclusivos para Webkit */
+@media (-webkit-min-device-pixel-ratio:0) {
+  input[type="button"] { height: 1.8em; }
 }

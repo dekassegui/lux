@@ -833,7 +833,7 @@ CREATE VIEW IF NOT EXISTS disponiveis_acervo AS
 -- listagem 'conveniente' dos exemplares disponíveis para empréstimo
 --
 CREATE VIEW IF NOT EXISTS exemplares_disponiveis AS
-  SELECT obra, titulo, ifnull(autores.nome||espirito, autores.nome) AS autores,
+  SELECT obra, titulo, ifnull(autores.nome||' + '||espirito, autores.nome) AS autores,
     generos.nome AS genero, exemplar, posicao, comentario
   FROM disponiveis_acervo
     JOIN obras ON disponiveis_acervo.obra == obras.code

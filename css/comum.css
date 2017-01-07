@@ -93,8 +93,8 @@ input#amount {
 input[type="button"] {
   display: inline;
   float: left;
-  font-size: 78%;
-  line-height: 160%;
+  font-size: 66%;
+  line-height: 200%;
   color: black;
   /* configura uso de "transition" */
   -webkit-transition: color .5s;
@@ -102,15 +102,22 @@ input[type="button"] {
   transition: color .5s;
   transition-timing-function: linear;
 }
-input[type="button"]:hover, input[type="button"]:focus { color: red; }
+input[type="button"]:hover { color: red; }
+input[type="button"]:focus { color: coral; }
 input[type="button"]:disabled { color: #b9b9b9; }
-
+input[type="button"].awesome {
+  font-family: FontAwesome, "Open Sans", sans-serif;
+}
+/* ajustes exclusivos para Webkit */
+@media (-webkit-min-device-pixel-ratio:0) {
+  input[type="button"] { height: 1.8em; }
+}
 div#cmd p { overflow: auto; }
 div#cmd * + p { margin-top: .125em; }
 div#cmd p * + input { margin-left: 5px; }
 
-#newBtn.disabled, #searchBtn.disabled, #updateBtn.disabled, #delBtn.disabled {
-  color: dodgerblue;
+#newBtn.working, #searchBtn.working, #updateBtn.working, #delBtn.working {
+  color: #90c;
 }
 
 textarea {

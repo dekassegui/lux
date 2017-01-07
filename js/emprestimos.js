@@ -70,31 +70,43 @@ window.addEventListener('load',
         saveBtn   = $('saveBtn'),
         cancelBtn = $('cancelBtn');
 
-    var mural = $('mural');  // área de notificações ao usuário
+    var MURAL = (function () {
 
-    mural.oninput = function () {
-      if (mural.textLength == 0) {
-        mural.classList.add('empty');
-      } else {
-        mural.classList.remove('empty');
-      }
-    };
+      var mural = $('mural');  // área de notificações ao usuário
 
-    // agrega 'text' como apêndice do conteúdo da textarea cujo canvas
-    // escorre até que 'text' seja visível tão ao topo quanto possível
-    function print(text) {
-      var a = mural.clientHeight,   // altura do canvas
-          b = mural.scrollHeight;   // altura do conteúdo a priori
-      if (mural.textLength > 0) {
-        mural.value = [mural.value, text].join("\n");
-      } else {
-        mural.value = text;
-        mural.oninput();
-      }
-      if (b > a) {
-        mural.scrollTop = b - parseInt(getCSSproperty(mural, 'line-height'));
-      }
-    }
+      mural.oninput = function () {
+        if (mural.textLength == 0) {
+          mural.classList.add('empty');
+        } else {
+          mural.classList.remove('empty');
+        }
+      };
+
+      // agrega 'text' como apêndice do conteúdo da textarea cujo canvas
+      // escorre até que 'text' seja visível tão ao topo quanto possível
+      this.append = function (text) {
+        var a = mural.clientHeight,   // altura do canvas
+            b = mural.scrollHeight;   // altura do conteúdo a priori
+        if (mural.textLength > 0) {
+          mural.value = [mural.value, text].join("\n");
+        } else {
+          mural.value = text;
+          mural.oninput();
+        }
+        if (b > a) {
+          mural.scrollTop = b - parseInt(getCSSproperty(mural, 'line-height'));
+        }
+      };
+
+      // inicia o mural com saudação em função da hora local
+      mural.value = ["> Boa noite!", "> Bom dia!", "> Boa tarde!"]
+        [Math.floor(new Date().getHours() / 6) % 3];
+
+      return this;
+
+    })();
+
+    function print(text) { MURAL.append(text); }
 
     var indexRec,   // índice, ou número de ordem, do registro corrente
         numRecs;    // quantidade de registros da tabela..
@@ -166,7 +178,7 @@ window.addEventListener('load',
         input.addEventListener('keydown',
           function (ev) {
             // rejeita o evento na exclusão de registros
-            if (delBtn.classList.contains('disabled')) return;
+            if (delBtn.classList.contains('working')) return;
             // testa se 'action buttons' estão habilitados
             if (actionButtons.every(item => item.disabled == false)) {
               ev = ev || event;
@@ -263,7 +275,7 @@ window.addEventListener('load',
 
     updateBtn.addEventListener('click',
       function () {
-        updateBtn.classList.add('disabled');
+        updateBtn.classList.add('working');
         disableButtons();
         setInputsReadonly(false);
         fields[fields[1].value.length > 0 ? 0 : 1].focus();
@@ -271,15 +283,15 @@ window.addEventListener('load',
 
     delBtn.addEventListener('click',
       function () {
-        delBtn.classList.add('disabled');
-        saveBtn.value = 'Confirmar';
+        delBtn.classList.add('working');
+        saveBtn.value = String.fromCodePoint(0xf164) + " Confirmar";
         disableButtons();
       }, true);
 
     searchBtn.addEventListener('click',
       function () {
-        searchBtn.classList.add('disabled');
-        saveBtn.value = 'Executar';
+        searchBtn.classList.add('working');
+        saveBtn.value = String.fromCodePoint(0xf164) + ' Executar';
         disableButtons();
         setInputsValues();
         setInputsReadonly(false);
@@ -288,7 +300,7 @@ window.addEventListener('load',
 
     newBtn.addEventListener('click',
       function () {
-        newBtn.classList.add('disabled');
+        newBtn.classList.add('working');
         disableButtons();
         setInputsValues();
         setInputsReadonly(false);
@@ -307,7 +319,7 @@ window.addEventListener('load',
         }
 
         var xhr = new XMLHttpRequest();
-        if (newBtn.classList.contains('disabled')) {
+        if (newBtn.classList.contains('working')) {
 
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
@@ -323,7 +335,7 @@ window.addEventListener('load',
                 commandButtons.forEach(
                   function (el) {
                     el.disabled = false;
-                    el.classList.remove('disabled');
+                    el.classList.remove('working');
                   });
                 setDisabled(actionButtons, true);
                 setInputsReadonly(true);
@@ -334,7 +346,7 @@ window.addEventListener('load',
           par.push('?action=INSERT');
           addDataFields();
 
-        } else if (searchBtn.classList.contains('disabled')) {
+        } else if (searchBtn.classList.contains('working')) {
 
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
@@ -350,7 +362,7 @@ window.addEventListener('load',
           par.push('?action=SEARCH');
           addDataFields();
 
-        } else if (updateBtn.classList.contains('disabled')) {
+        } else if (updateBtn.classList.contains('working')) {
 
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
@@ -368,7 +380,7 @@ window.addEventListener('load',
           par.push("?action=UPDATE&recnumber=", indexRec);
           addDataFields();
 
-        } else if (delBtn.classList.contains('disabled')) {
+        } else if (delBtn.classList.contains('working')) {
 
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
@@ -380,8 +392,8 @@ window.addEventListener('load',
                 if (indexRec > numRecs) --indexRec;
                 counter.maxLength = amount.value.length;
                 print('> Exclusão bem sucedida.');
-                cancelBtn.click();
               }
+              cancelBtn.click();
             }
           };
           par.push("?action=DELETE&recnumber=", indexRec);
@@ -397,11 +409,11 @@ window.addEventListener('load',
         commandButtons.forEach(
           function (elm) {
             elm.disabled = false;             // habilita o botão
-            elm.classList.remove('disabled'); // remove classe 'disabled'
+            elm.classList.remove('working'); // remove classe 'working'
           });
         setDisabled(actionButtons, true); // desabilita 'action buttons'
         counter.disabled = false;         // habilita edição no input..
-        saveBtn.value = 'Salvar';         // restaura o rotulo do botão
+        saveBtn.value = String.fromCodePoint(0xf164) + ' Salvar';         // restaura o rotulo do botão
         setInputsReadonly(true);          // desabilita os inputs dos..
       }, true);
 
@@ -475,7 +487,7 @@ window.addEventListener('load',
         commandButtons.forEach(
           function (btn) {
             btn.disabled = false;             // habilita o botão
-            btn.classList.remove('disabled'); // remove classe 'disabled'
+            btn.classList.remove('working'); // remove classe 'working'
           });
 
         setDisabled(actionButtons, true); // desabilita os 'action buttons'
@@ -503,10 +515,6 @@ window.addEventListener('load',
       xhr.send();
 
     }
-
-    // inicia o mural com saudação em função da hora local
-    mural.value = ["> Boa noite!", "> Bom dia!", "> Boa tarde!"]
-      [Math.floor(new Date().getHours() / 6) % 3];
 
   },
   true);
