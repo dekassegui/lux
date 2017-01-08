@@ -56,6 +56,8 @@ window.addEventListener('load',
 
       var mural = $('mural');  // área de notificações ao usuário
 
+      var lineHeight = parseInt(getCSSproperty(mural, 'line-height'));
+
       mural.oninput = function () {
         if (mural.textLength == 0) {
           mural.classList.add('empty');
@@ -67,16 +69,20 @@ window.addEventListener('load',
       // agrega 'text' como apêndice do conteúdo da textarea cujo canvas
       // escorre até que 'text' seja visível tão ao topo quanto possível
       this.append = function (text) {
-        var a = mural.clientHeight,   // altura do canvas
-            b = mural.scrollHeight;   // altura do conteúdo a priori
-        if (mural.textLength > 0) {
-          mural.value = [mural.value, text].join("\n");
+        if (text.map) {
+          text.map(append);
         } else {
-          mural.value = text;
-          mural.oninput();
-        }
-        if (b > a) {
-          mural.scrollTop = b - parseInt(getCSSproperty(mural, 'line-height'));
+          var a = mural.clientHeight,   // altura do canvas
+              b = mural.scrollHeight;   // altura do conteúdo a priori
+          if (mural.textLength > 0) {
+            mural.value = [mural.value, text].join("\n");
+          } else {
+            mural.value = text;
+            mural.oninput();
+          }
+          if (b > a) {
+            mural.scrollTop = b - lineHeight;
+          }
         }
       };
 
@@ -299,8 +305,7 @@ window.addEventListener('load',
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText.startsWith('Error')) {
-                print('> Inserção mal sucedida.');
-                print(this.responseText);
+                print(['> Inserção mal sucedida.', this.responseText]);
               } else {
                 amount.value = ++numRecs;
                 indexRec = parseInt(this.responseText);
@@ -342,8 +347,7 @@ window.addEventListener('load',
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText.startsWith('Error')) {
-                print('> Atualização mal sucedida.');
-                print(this.responseText);
+                print(['> Atualização mal sucedida.', this.responseText]);
               } else {
                 var n = parseInt(this.responseText);
                 if (n != indexRec) indexRec = n;
@@ -360,8 +364,7 @@ window.addEventListener('load',
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText.startsWith('Error')) {
-                print('> Exclusão mal sucedida.');
-                print(this.responseText);
+                print(['> Exclusão mal sucedida.', this.responseText]);
               } else {
                 amount.value = --numRecs;
                 if (indexRec > numRecs) --indexRec;

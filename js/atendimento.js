@@ -47,22 +47,24 @@ window.addEventListener('load',
       'leitor', 'obra', 'autor', 'exemplar', 'posicao', 'comentario']
         .map( function(iD) { return $(iD); } );
 
-    var firstBtn    = $('firstBtn'),  previousBtn = $('previousBtn'),
-        nextBtn     = $('nextBtn'),   lastBtn     = $('lastBtn');
+    var firstBtn = $('firstBtn'),  previousBtn = $('previousBtn'),
+        nextBtn  = $('nextBtn'),   lastBtn     = $('lastBtn');
 
-    var updateBtn = $('updateBtn'),   delBtn    = $('delBtn'),
-        searchBtn = $('searchBtn'),   newBtn    = $('newBtn'),
-        saveBtn   = $('saveBtn'),     cancelBtn = $('cancelBtn'),
-        infoBtn   = $('cmd01Btn'),    leitorBtn = $('cmd02Btn');
-
-    var actionButtons = [saveBtn, cancelBtn];
+    var updateBtn = $('updateBtn'),  delBtn    = $('delBtn'),
+        searchBtn = $('searchBtn'),  newBtn    = $('newBtn'),
+        saveBtn   = $('saveBtn'),    cancelBtn = $('cancelBtn'),
+        infoBtn   = $('cmd01Btn'),   leitorBtn = $('cmd02Btn');
 
     var commandButtons = [updateBtn, delBtn, searchBtn, newBtn, infoBtn,
       leitorBtn];
 
+    var actionButtons = [saveBtn, cancelBtn];
+
     var MURAL = (function () {
 
       var mural = $('mural');  // área de notificações ao usuário
+
+      var lineHeight = parseInt(getCSSproperty(mural, 'line-height'));
 
       mural.oninput = function () {
         if (mural.textLength == 0) {
@@ -75,16 +77,20 @@ window.addEventListener('load',
       // agrega 'text' como apêndice do conteúdo da textarea cujo canvas
       // escorre até que 'text' seja visível tão ao topo quanto possível
       this.append = function (text) {
-        var a = mural.clientHeight,   // altura do canvas
-            b = mural.scrollHeight;   // altura do conteúdo a priori
-        if (mural.textLength > 0) {
-          mural.value = [mural.value, text].join("\n");
+        if (text.map) {
+          text.map(append);
         } else {
-          mural.value = text;
-          mural.oninput();
-        }
-        if (b > a) {
-          mural.scrollTop = b - parseInt(getCSSproperty(mural, 'line-height'));
+          var a = mural.clientHeight,   // altura do canvas
+              b = mural.scrollHeight;   // altura do conteúdo a priori
+          if (mural.textLength > 0) {
+            mural.value = [mural.value, text].join("\n");
+          } else {
+            mural.value = text;
+            mural.oninput();
+          }
+          if (b > a) {
+            mural.scrollTop = b - lineHeight;
+          }
         }
       };
 
@@ -309,8 +315,7 @@ window.addEventListener('load',
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText.startsWith('Error')) {
-                print('> Inserção mal sucedida.');
-                print(this.responseText);
+                print(['> Inserção mal sucedida.', this.responseText]);
               } else {
                 amount.value = ++numRecs;
                 indexRec = parseInt(this.responseText);
@@ -352,8 +357,7 @@ window.addEventListener('load',
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText.startsWith('Error')) {
-                print('> Atualização mal sucedida.');
-                print(this.responseText);
+                print(['> Atualização mal sucedida.', this.responseText]);
               } else {
                 var n = parseInt(this.responseText);
                 if (n != indexRec) indexRec = n;
@@ -370,8 +374,7 @@ window.addEventListener('load',
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText.startsWith('Error')) {
-                print('> Exclusão mal sucedida.');
-                print(this.responseText);
+                print(['> Exclusão mal sucedida.', this.responseText]);
               } else {
                 amount.value = --numRecs;
                 if (indexRec > numRecs) --indexRec;
@@ -399,7 +402,7 @@ window.addEventListener('load',
         setDisabled(actionButtons, true);   // desabilita 'action buttons'
         counter.disabled = false;           // habilita edição no input..
         saveBtn.value = OKchar + ' Salvar'; // restaura o rotulo do botão
-        setInputsReadonly(true);            // desabilita os inputs
+        setInputsReadonly(true);            // desabilita edição dos inputs
       }, true);
 
     infoBtn.addEventListener('click',
@@ -415,7 +418,6 @@ window.addEventListener('load',
           + "reporter.php?action=INFO";
         xhr.open("GET", aUri, true);
         xhr.send();
-
       }, true);
 
     leitorBtn.addEventListener('click',
@@ -431,7 +433,6 @@ window.addEventListener('load',
           + "reporter.php?action=LEITOR";
         xhr.open("GET", aUri, true);
         xhr.send();
-
       }, true);
 
     {
