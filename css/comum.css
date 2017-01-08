@@ -103,10 +103,13 @@ input[type="button"] {
   transition-timing-function: linear;
 }
 input[type="button"]:hover { color: red; }
-input[type="button"]:focus { color: coral; }
-input[type="button"]:disabled { color: #b9b9b9; }
+input#saveBtn:hover { color: green; }
+input[type="button"]:focus { color: #90c; }
+input#saveBtn:focus { color: #06c; }
+input[type="button"]:disabled, input#saveBtn:disabled { color: #b9b9b9; }
 input[type="button"].awesome {
   font-family: FontAwesome, "Open Sans", sans-serif;
+  word-spacing: .1875em;
 }
 /* ajustes exclusivos para Webkit */
 @media (-webkit-min-device-pixel-ratio:0) {

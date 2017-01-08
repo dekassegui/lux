@@ -53,22 +53,24 @@ window.addEventListener('load',
     // URI do script "server side" que atende requisições ao DB
     var uri = location.href.replace("html", "php");
 
-    var counter = $('counter'),
-        amount  = $('amount');
+    var indexRec,                 // índice do registro corrente
+        counter = $('counter');   // input do índice do..
+
+    var numRecs,                  // quantidade de registros da tabela
+        amount  = $('amount');    // input da quantidade de..
 
     var fields = $$('section > div#fields > input');
 
-    var firstBtn    = $('firstBtn'),
-        previousBtn = $('previousBtn'),
-        nextBtn     = $('nextBtn'),
-        lastBtn     = $('lastBtn');
+    var firstBtn    = $('firstBtn'),  previousBtn = $('previousBtn'),
+        nextBtn     = $('nextBtn'),   lastBtn     = $('lastBtn');
 
-    var updateBtn = $('updateBtn'),
-        delBtn    = $('delBtn'),
-        searchBtn = $('searchBtn'),
-        newBtn    = $('newBtn'),
-        saveBtn   = $('saveBtn'),
-        cancelBtn = $('cancelBtn');
+    var updateBtn = $('updateBtn'),   delBtn    = $('delBtn'),
+        searchBtn = $('searchBtn'),   newBtn    = $('newBtn'),
+        saveBtn   = $('saveBtn'),     cancelBtn = $('cancelBtn');
+
+    var actionButtons = [saveBtn, cancelBtn];
+
+    var commandButtons = [updateBtn, delBtn, searchBtn, newBtn];
 
     var MURAL = (function () {
 
@@ -107,13 +109,6 @@ window.addEventListener('load',
     })();
 
     function print(text) { MURAL.append(text); }
-
-    var indexRec,   // índice, ou número de ordem, do registro corrente
-        numRecs;    // quantidade de registros da tabela..
-
-    var actionButtons = [saveBtn, cancelBtn];
-
-    var commandButtons = [updateBtn, delBtn, searchBtn, newBtn];
 
     function disableButtons() {
       // desabilita botões de navegação & comando
@@ -204,7 +199,7 @@ window.addEventListener('load',
           // Left, Right, Home, End, Escape e Ctrl-Z
           var c = ev.keyCode;
           if ((c < 48 || c > 57) && (c < 96 || c > 105)
-            && !(c == 90 && ev.ctrlKey)
+            && !(c == 90 && ev.ctrlKey) // NOT Ctrl-Z
             && (binarySearch([8, 9, 13, 27, 35, 36, 37, 39, 46], c) == -1)) {
             ev.preventDefault();
           } else if (c == 27) { // <Escape> desfaz edição
@@ -284,14 +279,14 @@ window.addEventListener('load',
     delBtn.addEventListener('click',
       function () {
         delBtn.classList.add('working');
-        saveBtn.value = String.fromCodePoint(0xf164) + " Confirmar";
+        saveBtn.value = OKchar + " Confirmar";
         disableButtons();
       }, true);
 
     searchBtn.addEventListener('click',
       function () {
         searchBtn.classList.add('working');
-        saveBtn.value = String.fromCodePoint(0xf164) + ' Executar';
+        saveBtn.value = OKchar + ' Executar';
         disableButtons();
         setInputsValues();
         setInputsReadonly(false);
@@ -409,12 +404,12 @@ window.addEventListener('load',
         commandButtons.forEach(
           function (elm) {
             elm.disabled = false;             // habilita o botão
-            elm.classList.remove('working'); // remove classe 'working'
+            elm.classList.remove('working');  // remove classe 'working'
           });
-        setDisabled(actionButtons, true); // desabilita 'action buttons'
-        counter.disabled = false;         // habilita edição no input..
-        saveBtn.value = String.fromCodePoint(0xf164) + ' Salvar';         // restaura o rotulo do botão
-        setInputsReadonly(true);          // desabilita os inputs dos..
+        setDisabled(actionButtons, true);   // desabilita 'action buttons'
+        counter.disabled = false;           // habilita edição no input..
+        saveBtn.value = OKchar + ' Salvar'; // restaura o rotulo do botão
+        setInputsReadonly(true);            // desabilita os inputs dos..
       }, true);
 
     {

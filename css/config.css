@@ -57,6 +57,7 @@ label.modified:hover { color: #930; }
 section {
   display: block;
   width: 500px;
+  padding:.5em;
   margin: 4em auto 0em auto;
   overflow: auto;
 }
@@ -94,7 +95,7 @@ div#emprestimos p { margin-top: .5em; }
 div#emprestimos p + p { margin-top: .75em; }
 div#emprestimos fieldset { padding: .0625em .75em .75em .75em; }
 
-div#weekdays { float: right; }
+div#weekdays { float: right; transform: rotate(3deg); }
 div#weekdays fieldset { text-align: right; }
 div#weekdays label {
   margin: .5em 1em 0em 1em;

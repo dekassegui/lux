@@ -30,26 +30,27 @@ window.addEventListener('load',
     // URI do script "server side" que atende requisições ao DB
     var uri = location.href.replace("html", "php");
 
-    var counter = $('counter'),
-        amount  = $('amount');
+    var indexRec,                 // índice do registro corrente
+        counter = $('counter');   // input do índice do..
+
+    var numRecs,                  // quantidade de registros da tabela
+        amount  = $('amount');    // input da quantidade de..
 
     var fields = $$('section > div#fields > input');
 
-    var FOCUS_NDX = (fields[0].id == "code")  // número de ordem do input
-                    ? 1 : 0;                  // focado no início de
-                                              // atualização ou pesquisa
+    // número de ordem do input a focar quando iniciar atualização ou pesquisa
+    var FOCUS_NDX = (fields[0].id == "code") ? 1 : 0;
 
-    var firstBtn    = $('firstBtn'),
-        previousBtn = $('previousBtn'),
-        nextBtn     = $('nextBtn'),
-        lastBtn     = $('lastBtn');
+    var firstBtn    = $('firstBtn'),  previousBtn = $('previousBtn'),
+        nextBtn     = $('nextBtn'),   lastBtn     = $('lastBtn');
 
-    var updateBtn = $('updateBtn'),
-        delBtn    = $('delBtn'),
-        searchBtn = $('searchBtn'),
-        newBtn    = $('newBtn'),
-        saveBtn   = $('saveBtn'),
-        cancelBtn = $('cancelBtn');
+    var updateBtn = $('updateBtn'),   delBtn    = $('delBtn'),
+        searchBtn = $('searchBtn'),   newBtn    = $('newBtn'),
+        saveBtn   = $('saveBtn'),     cancelBtn = $('cancelBtn');
+
+    var actionButtons = [saveBtn, cancelBtn];
+
+    var commandButtons = [updateBtn, delBtn, searchBtn, newBtn];
 
     var MURAL = (function () {
 
@@ -88,13 +89,6 @@ window.addEventListener('load',
     })();
 
     function print(text) { MURAL.append(text); }
-
-    var indexRec,   // índice, ou número de ordem, do registro corrente
-        numRecs;    // quantidade de registros da tabela..
-
-    var actionButtons = [saveBtn, cancelBtn];
-
-    var commandButtons = [updateBtn, delBtn, searchBtn, newBtn];
 
     function disableButtons() {
       // desabilita botões de navegação & comando
@@ -265,14 +259,14 @@ window.addEventListener('load',
     delBtn.addEventListener('click',
       function () {
         delBtn.classList.add('working');
-        saveBtn.value = String.fromCodePoint(0xf164) + " Confirmar";
+        saveBtn.value = OKchar + " Confirmar";
         disableButtons();
       }, true);
 
     searchBtn.addEventListener('click',
       function () {
         searchBtn.classList.add('working');
-        saveBtn.value = String.fromCodePoint(0xf164) + ' Executar';
+        saveBtn.value = OKchar + ' Executar';
         disableButtons();
         setInputsValues();
         setInputsReadonly(false);
@@ -392,10 +386,10 @@ window.addEventListener('load',
             elm.disabled = false;             // habilita o botão
             elm.classList.remove('working'); // remove classe 'working'
           });
-        setDisabled(actionButtons, true); // desabilita 'action buttons'
-        counter.disabled = false;         // habilita edição no input..
-        saveBtn.value = String.fromCodePoint(0xf164) + ' Salvar';         // restaura o rotulo do botão
-        setInputsReadonly(true);          // desabilita os inputs dos..
+        setDisabled(actionButtons, true);   // desabilita 'action buttons'
+        counter.disabled = false;           // habilita edição no input..
+        saveBtn.value = OKchar + ' Salvar'; // restaura o rotulo do botão
+        setInputsReadonly(true);            // desabilita os inputs dos..
       }, true);
 
     {
