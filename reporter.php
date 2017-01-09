@@ -49,18 +49,18 @@ EOT;
       }
       $result->finalize();
 
-      $sql = <<<EOT
+      $n = $db->querySingle('SELECT count(1) FROM exemplares_disponiveis');
+      if ($n > 0) {
+        if ($nrows > 0) echo "\n\n";
+        $sql = <<<EOT
   SELECT titulo, autores, genero,
     group_concat(quote(exemplar), ", ") AS exemplares, posicao
   FROM exemplares_disponiveis
   GROUP BY titulo;
 EOT;
-      $result = $db->query($sql);
-      $mrows = 0;
-      while ($result->fetchArray()) $mrows++;
-      if ($mrows > 0) {
-        if ($nrows > 0) echo "\n\n";
-        $n = $db->querySingle('SELECT count(1) FROM exemplares_disponiveis');
+        $result = $db->query($sql);
+        $mrows = 0;
+        while ($result->fetchArray()) $mrows++;
         if ($mrows > 1) {
           echo "> Há $n exemplares disponíveis de $mrows obras distintas:";
         } else {
@@ -75,19 +75,57 @@ EOT;
           echo "\n\n         Título : ".$row['titulo'];
           echo "\n  Autor&Espírito: ".$row['autores'];
           echo "\n          Gênero: ".$row['genero'];
-          echo "\n    Exemplar(es): ".$row['exemplares'];
+          if (strpos($row['exemplares'], ",") === FALSE) {
+            echo "\n        Exemplar: ".$row['exemplares'];
+          } else {
+            echo "\n      Exemplares: ".$row['exemplares'];
+          }
           echo "\n         Posição: ".$row['posicao'];
         }
+        $result->finalize();
       } else {
         echo "> Nenhum exemplar de obra alguma está disponível.\n\n";
       }
-      $result->finalize();
 
       break;
 
     case 'LEITOR':
 
-      echo "Em construção.";
+      $n = $db->querySingle('SELECT count(1) FROM atrasados');
+      if ($n > 0) {
+        echo "Leitores em débito com a biblioteca até a data de hoje:";
+        $sql = <<<EOT
+  SELECT leitor, telefone, email, titulo, exemplar,
+    strftime("%d-%m-%Y", data_emprestimo) as data_emprestimo,
+    strftime("%d-%m-%Y", data_esperada) as data_esperada,
+    dias_atraso
+  FROM (
+    SELECT leitores.nome AS leitor, leitores.telefone AS telefone,
+      leitores.email AS email, obras.titulo AS titulo, exemplar,
+      data_emprestimo, data_esperada, cast((julianday(hoje)
+        - julianday(data_esperada)) AS integer) AS dias_atraso
+    FROM (
+        SELECT atrasados.*, date(data_emprestimo, prazo) AS data_esperada,
+        date('now', 'localtime') AS hoje
+        from config, atrasados
+      ) AS x JOIN leitores ON x.leitor == leitores.code
+        JOIN obras ON x.obra == obras.code);
+EOT;
+        $result = $db->query($sql);
+        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+          echo "\n\n      Leitor: ".$row['leitor'];
+          echo "\n    Telefone: ".$row['telefone'];
+          echo "\n      e-mail: ".$row['email'];
+          echo "\n      Título: ".$row['titulo'];
+          echo "\n    Exemplar: ".$row['exemplar'];
+          echo "\n  Emprestimo: ".$row['data_emprestimo'];
+          echo "\n    Esperada: ".$row['data_esperada'];
+          echo "\n      Atraso: ".$row['dias_atraso'].' dias';
+        }
+        $result->finalize();
+      } else {
+        echo "Não há leitores em débito com a biblioteca.";
+      }
       break;
 
   }
