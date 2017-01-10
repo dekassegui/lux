@@ -527,8 +527,10 @@ CREATE TABLE IF NOT EXISTS config (
               DEFAULT 26                --> com atendimento ao público
               NOT NULL,
 
-  CONSTRAINT prazo_chk CHECK((lower(prazo) glob "+[0-9][0-9] days")
-                             AND (cast(prazo AS integer) > 0)),
+  CONSTRAINT prazo_chk CHECK(
+    ((lower(prazo) glob "+[0-9][0-9] days")
+     OR (lower(prazo) glob "+[0-9] days"))
+    AND (cast(prazo AS integer) > 0)),
 
   CONSTRAINT pendencias_chk CHECK(pendencias > 0),
 
@@ -544,18 +546,12 @@ BEGIN
   SELECT raise(ABORT, "Não delete o único registro desta tabela.");
 END;
 
-CREATE TRIGGER config_t1 BEFORE UPDATE OF prazo, pendencias ON config
+CREATE TRIGGER config_t1 BEFORE UPDATE OF pendencias ON config
+WHEN new.pendencias notnull and EXISTS(
+  SELECT count() AS n FROM emprestimos WHERE data_devolucao isnull
+  GROUP BY leitor HAVING n > new.pendencias)
 BEGIN
-  SELECT CASE WHEN new.prazo notnull AND EXISTS(
-    SELECT 1 FROM (SELECT date('now', 'localtime') AS hoje), emprestimos
-    WHERE data_devolucao isnull AND date(data_emprestimo, old.prazo) >= hoje
-      AND date(data_emprestimo, new.prazo) < hoje) THEN
-    RAISE(ABORT, '1+ empréstimos estariam "em atraso".')
-  WHEN new.pendencias notnull and EXISTS(
-    SELECT count() AS n FROM emprestimos WHERE data_devolucao isnull
-    GROUP BY leitor HAVING n > new.pendencias) THEN
-    RAISE(ABORT, '1+ leitores emprestariam mais que a quantidade máxima permitida.')
-  END;
+  SELECT RAISE(ABORT, '1+ leitores emprestariam mais que a quantidade máxima permitida.');
 END;
 
 CREATE VIEW config_facil AS
@@ -805,9 +801,23 @@ CREATE VIEW IF NOT EXISTS emprestados AS
 -- listagem de empréstimos atrasados até a data corrente
 --
 CREATE VIEW IF NOT EXISTS atrasados AS
-  SELECT emprestados.* FROM emprestados, (
-    SELECT prazo, date('now', 'localtime') AS HOJE FROM config) AS config
-  WHERE date(data_emprestimo, config.prazo) < config.HOJE;
+  SELECT emprestimos.rowid AS rowid,
+    strftime("%d-%m-%Y", data_emprestimo) AS data_emprestimo,
+    strftime("%d-%m-%Y", data_prevista) AS data_prevista,
+    leitores.nome AS leitor, leitores.telefone AS telefone,
+    leitores.email AS email, obras.titulo AS titulo, exemplar,
+    cast((julianday(hoje) - julianday(data_prevista)) AS INTEGER) AS atraso
+  FROM (SELECT date('now', 'localtime') AS hoje),
+    emprestimos JOIN (
+      SELECT rowid, substr(data_prevista,7) || substr(data_prevista,3,4)
+        || substr(data_prevista,1,2) AS data_prevista
+      FROM (SELECT rowid, substr(comentario, -11, 10) AS data_prevista
+            FROM emprestimos)
+    ) AS datas_previstas ON emprestimos.rowid == datas_previstas.rowid
+    JOIN leitores ON emprestimos.leitor == leitores.code
+    JOIN obras ON emprestimos.obra == obras.code
+  WHERE
+    data_devolucao isnull AND data_prevista < hoje;
 
 --
 -- contabiliza as quantidades de exemplares de cada obra sob empréstimo
