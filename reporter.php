@@ -6,13 +6,22 @@
 
   require 'utils.php';
 
-  setlocale(LC_ALL, "pt_BR", "pt_BR.iso-8859-1", "pt_BR.utf-8", "portuguese");
+  /**
+   * Tenta definir "locale" para português do Brasil.
+  */
+  setlocale(LC_ALL, "pt_BR", "pt_BR.utf-8", "pt_BR.iso-8859-1", "portuguese");
 
+  /**
+   * Formata e imprime cabeçalho de relatório agregando Date&Time de emissão.
+   *
+   * @param $title String container do título.
+  */
   function mkHeader($title) {
     printf("  === %s ===\n\n", mb_strtoupper($title, 'UTF8'));
-    $d = explode('|', strftime('%A|%d-%m-%Y|%H:%M|%z'));
-    printf("  Emissão: %s %s %s %s\n", ucfirst($d[0]), $d[1], $d[2],
-      $d[3] == '-0300' ? 'BRT' : 'BRST');
+    // formata Date&Time no padrão do Brasil com sufixo da região
+    $d = explode('|', strftime('%A %d-%m-%Y %H:%M|%z'));
+    printf("  Emissão: %s %s\n", ucfirst($d[0]),
+      $d[1] == '-0300' ? 'BRT' : 'BRST');
   }
 
   $db = new SQLite3(DB_FILENAME) or die('Unable to open database');
@@ -99,7 +108,7 @@ EOT;
           echo "\n         Telefone: ".$row['telefone'];
           echo "\n           e-mail: ".$row['email'];
           echo "\n           Título: ".$row['titulo'];
-          echo "\n            Autor: ".$row['autor'];
+          echo "\n   Autor&Espírito: ".$row['autor'];
           echo "\n         Exemplar: ".$row['exemplar'];
           echo "\n  Data empréstimo: ".$row['data_emprestimo'];
           echo "\n    Data prevista: ".$row['data_prevista'];

@@ -33,6 +33,7 @@ DROP TABLE IF EXISTS acervo;
 DROP TABLE IF EXISTS bibliotecarios;
 DROP TABLE IF EXISTS leitores;
 DROP TABLE IF EXISTS emprestimos;
+DROP TABLE IF EXISTS feriados;
 DROP VIEW IF EXISTS conta_obras_acervo;
 DROP VIEW IF EXISTS disponiveis_acervo;
 DROP VIEW IF EXISTS emprestados;
@@ -44,6 +45,7 @@ DROP VIEW IF EXISTS acervo_facil;
 DROP VIEW IF EXISTS emprestimos_facil;
 DROP VIEW IF EXISTS exemplares_disponiveis;
 DROP VIEW IF EXISTS config_facil;
+DROP VIEW IF EXISTS feriados_facil;
 
 CREATE TABLE IF NOT EXISTS autores (
   --
@@ -671,37 +673,53 @@ BEGIN
         -- calcula a data limite 'de facto'
         SELECT CASE WHEN (
           -- testa disponibilidade do dia da semana da data candidata
-          SELECT (weekdays >> wday) & 1 FROM config
+          (SELECT (weekdays >> wday) & 1 FROM config)
+          -- testa se a data não cai num feriado
+          AND NOT EXISTS(SELECT 1 FROM feriados WHERE data == expDate)
         ) THEN (
           SELECT expDate  --> data candidata disponível
         ) ELSE (
           -- data candidata indisponível --> calcula dia substituto
           SELECT MIN(
             (SELECT CASE WHEN wday<>0 AND weekdays&1
+              AND NOT EXISTS(SELECT 1 FROM feriados
+                             WHERE data == DATE(expDate, 'weekday 0'))
               THEN DATE(expDate, 'weekday 0')
               ELSE '9999-99-99'
              END),
             (SELECT CASE WHEN wday<>1 AND weekdays&2
+              AND NOT EXISTS(SELECT 1 FROM feriados
+                             WHERE data == DATE(expDate, 'weekday 1'))
               THEN DATE(expDate, 'weekday 1')
               ELSE '9999-99-99'
              END),
             (SELECT CASE WHEN wday<>2 AND weekdays&4
+              AND NOT EXISTS(SELECT 1 FROM feriados
+                             WHERE data == DATE(expDate, 'weekday 2'))
               THEN DATE(expDate, 'weekday 2')
               ELSE '9999-99-99'
              END),
             (SELECT CASE WHEN wday<>3 AND weekdays&8
+              AND NOT EXISTS(SELECT 1 FROM feriados
+                             WHERE data == DATE(expDate, 'weekday 3'))
               THEN DATE(expDate, 'weekday 3')
               ELSE '9999-99-99'
              END),
             (SELECT CASE WHEN wday<>4 AND weekdays&16
+              AND NOT EXISTS(SELECT 1 FROM feriados
+                             WHERE data == DATE(expDate, 'weekday 4'))
               THEN DATE(expDate, 'weekday 4')
               ELSE '9999-99-99'
              END),
             (SELECT CASE WHEN wday<>5 AND weekdays&32
+              AND NOT EXISTS(SELECT 1 FROM feriados
+                             WHERE data == DATE(expDate, 'weekday 5'))
               THEN DATE(expDate, 'weekday 5')
               ELSE '9999-99-99'
              END),
             (SELECT CASE WHEN wday<>6 AND weekdays&64
+              AND NOT EXISTS(SELECT 1 FROM feriados
+                             WHERE data == DATE(expDate, 'weekday 6'))
               THEN DATE(expDate, 'weekday 6')
               ELSE '9999-99-99'
              END)
@@ -848,6 +866,59 @@ CREATE VIEW IF NOT EXISTS exemplares_disponiveis AS
     JOIN generos ON obras.genero == generos.code
     JOIN autores ON obras.autor == autores.code;
 
+CREATE TABLE IF NOT EXISTS feriados (
+  --
+  -- feriados que afetam funcionamento da biblioteca
+  --
+
+  data        DATE          -- ISO-8601
+              NOT NULL
+              PRIMARY KEY,
+
+  comemoracao TEXT
+              NOT NULL
+              COLLATE NOCASE
+);
+
+--
+-- conveniência para apresentação das datas num formato pt-BR
+-- prefixado com nome do dia da semana por extenso
+--
+CREATE VIEW IF NOT EXISTS feriados_facil AS
+  SELECT (
+    SELECT CASE CAST(substr(rawData, 1) AS INTEGER)
+      WHEN 0 THEN 'Domingo'   WHEN 1 THEN 'Segunda'   WHEN 2 THEN 'Terça'
+      WHEN 3 THEN 'Quarta'    WHEN 4 THEN 'Quinta'    WHEN 5 THEN 'Sexta'
+      ELSE 'Sábado'
+    END
+  ) || ' ' || substr(rawData, 3) AS data, comemoracao
+  FROM (
+    SELECT strftime('%w %d-%m-%Y', data) AS rawData, comemoracao
+    FROM feriados
+    ORDER BY data ASC
+  );
+
+--
+-- conveniência para facilitar inserção de registros com data pt-BR
+--
+CREATE TRIGGER feriados_facil_t0 INSTEAD OF INSERT ON feriados_facil
+WHEN new.data glob "[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]"
+BEGIN
+  INSERT INTO feriados SELECT (SELECT substr(new.data, 7)
+    || substr(new.data, 3, 4) || substr(new.data, 1, 2)), new.comemoracao;
+END;
+
+--
+-- conveniência para facilitar atualização de registros com data pt-BR
+--
+CREATE TRIGGER feriados_facil_t1 INSTEAD OF UPDATE OF data ON feriados_facil
+WHEN new.data glob "[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]"
+BEGIN
+  UPDATE feriados SET data=(SELECT substr(new.data, 7)
+    || substr(new.data, 3, 4) || substr(new.data, 1, 2))
+  WHERE comemoracao == old.comemoracao;
+END;
+
 COMMIT;
 
 PRAGMA FOREIGN_KEYS = ON;   --> habilita integridade referencial
@@ -877,3 +948,5 @@ update t set d=null where d == "";
 update t set c=null where c == "";
 insert into emprestimos select * from t;
 drop table t;
+
+.import "feriados-2017.dat" feriados
