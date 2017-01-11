@@ -86,6 +86,8 @@ window.addEventListener('load',
         }
       };
 
+      this.isEmpty = function() { return mural.textLength == 0; };
+
       // inicia o mural com saudação em função da hora local
       mural.value = ["> Boa noite!", "> Bom dia!", "> Boa tarde!"]
         [Math.floor(new Date().getHours() / 6) % 3];

@@ -801,23 +801,21 @@ CREATE VIEW IF NOT EXISTS emprestados AS
 -- listagem de empréstimos atrasados até a data corrente
 --
 CREATE VIEW IF NOT EXISTS atrasados AS
-  SELECT emprestimos.rowid AS rowid,
-    strftime("%d-%m-%Y", data_emprestimo) AS data_emprestimo,
-    strftime("%d-%m-%Y", data_prevista) AS data_prevista,
+  SELECT emprestimos.rowid, strftime("%d-%m-%Y", data_emprestimo) AS
+    data_emprestimo, strftime("%d-%m-%Y", data_prevista) AS data_prevista,
     leitores.nome AS leitor, leitores.telefone AS telefone,
-    leitores.email AS email, obras.titulo AS titulo, exemplar,
-    cast((julianday(hoje) - julianday(data_prevista)) AS INTEGER) AS atraso
-  FROM (SELECT date('now', 'localtime') AS hoje),
-    emprestimos JOIN (
-      SELECT rowid, substr(data_prevista,7) || substr(data_prevista,3,4)
-        || substr(data_prevista,1,2) AS data_prevista
-      FROM (SELECT rowid, substr(comentario, -11, 10) AS data_prevista
-            FROM emprestimos)
+    leitores.email AS email, obras_facil.titulo AS titulo,
+    obras_facil.autor AS autor, exemplar,
+    CAST((hoje - julianday(data_prevista)) AS INTEGER) AS atraso
+  FROM emprestimos JOIN (
+      SELECT emprestimos.rowid AS rowid, julianday(hoje) AS hoje,
+        substr(comentario,-5,4) || substr(comentario,-9,4)
+          || substr(comentario,-11,2) AS data_prevista
+      FROM (SELECT date("now", "localtime") AS hoje), emprestimos
+      WHERE data_devolucao ISNULL AND data_prevista < hoje
     ) AS datas_previstas ON emprestimos.rowid == datas_previstas.rowid
     JOIN leitores ON emprestimos.leitor == leitores.code
-    JOIN obras ON emprestimos.obra == obras.code
-  WHERE
-    data_devolucao isnull AND data_prevista < hoje;
+    JOIN obras_facil ON emprestimos.obra == obras_facil.code;
 
 --
 -- contabiliza as quantidades de exemplares de cada obra sob empréstimo

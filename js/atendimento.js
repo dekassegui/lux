@@ -94,6 +94,8 @@ window.addEventListener('load',
         }
       };
 
+      this.isEmpty = function() { return mural.textLength == 0; };
+
       // inicia o mural com saudação em função da hora local
       mural.value = ["> Boa noite!", "> Bom dia!", "> Boa tarde!"]
         [Math.floor(new Date().getHours() / 6) % 3];
@@ -234,7 +236,10 @@ window.addEventListener('load',
         update();
       }, true);
 
-    amount.addEventListener('focus', function () { this.blur(); }, true);
+    [amount, infoBtn, leitorBtn].forEach(
+      function (el) {
+        el.addEventListener('focus', function () { this.blur(); });
+      }, true);
 
     firstBtn.addEventListener('click',
       function () {
@@ -410,6 +415,7 @@ window.addEventListener('load',
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
           if (this.readyState == 4 && this.status == 200) {
+            if (!MURAL.isEmpty()) print("");
             print(this.responseText);
           }
         };
@@ -425,6 +431,7 @@ window.addEventListener('load',
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
           if (this.readyState == 4 && this.status == 200) {
+            if (!MURAL.isEmpty()) print("");
             print(this.responseText);
           }
         };
