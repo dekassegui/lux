@@ -653,6 +653,7 @@ END;
 -- Disponibiliza a data limite do empréstimo, calculada conforme o prazo,
 -- restrita aos dias da semana com atendimento, i.e.: biblioteca funciona
 -- e que não sejam feriado.
+--
 CREATE TRIGGER addExpiration AFTER INSERT ON emprestimos
 WHEN new.data_devolucao isnull
 BEGIN
@@ -681,94 +682,109 @@ BEGIN
           -- data candidata indisponível --> calcula dia substituto
           SELECT MIN(
             (SELECT CASE WHEN wday<>0 AND weekdays&1
-              AND NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == DATE(expDate, 'weekday 0'))
-              THEN DATE(expDate, 'weekday 0')
-              ELSE '9999-12-31'
-             END),
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDate, 'weekday 0') AS dia)
+              )
+              ELSE NEVER END),
             (SELECT CASE WHEN wday<>1 AND weekdays&2
-              AND NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == DATE(expDate, 'weekday 1'))
-              THEN DATE(expDate, 'weekday 1')
-              ELSE '9999-12-31'
-             END),
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDate, 'weekday 1') AS dia)
+              )
+              ELSE NEVER END),
             (SELECT CASE WHEN wday<>2 AND weekdays&4
-              AND NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == DATE(expDate, 'weekday 2'))
-              THEN DATE(expDate, 'weekday 2')
-              ELSE '9999-12-31'
-             END),
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDate, 'weekday 2') AS dia)
+              )
+              ELSE NEVER END),
             (SELECT CASE WHEN wday<>3 AND weekdays&8
-              AND NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == DATE(expDate, 'weekday 3'))
-              THEN DATE(expDate, 'weekday 3')
-              ELSE '9999-12-31'
-             END),
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDate, 'weekday 3') AS dia)
+              )
+              ELSE NEVER END),
             (SELECT CASE WHEN wday<>4 AND weekdays&16
-              AND NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == DATE(expDate, 'weekday 4'))
-              THEN DATE(expDate, 'weekday 4')
-              ELSE '9999-12-31'
-             END),
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDate, 'weekday 4') AS dia)
+              )
+              ELSE NEVER END),
             (SELECT CASE WHEN wday<>5 AND weekdays&32
-              AND NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == DATE(expDate, 'weekday 5'))
-              THEN DATE(expDate, 'weekday 5')
-              ELSE '9999-12-31'
-             END),
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDate, 'weekday 5') AS dia)
+              )
+              ELSE NEVER END),
             (SELECT CASE WHEN wday<>6 AND weekdays&64
-              AND NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == DATE(expDate, 'weekday 6'))
-              THEN DATE(expDate, 'weekday 6')
-              ELSE '9999-12-31'
-             END),
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDate, 'weekday 6') AS dia)
+              )
+              ELSE NEVER END),
             --
             -- subset estendido dos dias candidatos, com offset de 7 dias,
             -- quando o único dia da semana com atendimento cai num feriado
             --
             (SELECT CASE WHEN weekdays&1
-              AND NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == DATE(expDate, '+7 days', 'weekday 0'))
-              THEN DATE(expDate, '+7 days', 'weekday 0')
-              ELSE '9999-12-31'
-             END),
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDateExt, 'weekday 0') AS dia)
+              )
+              ELSE NEVER END),
             (SELECT CASE WHEN weekdays&2
-              AND NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == DATE(expDate, '+7 days', 'weekday 1'))
-              THEN DATE(expDate, '+7 days', 'weekday 1')
-              ELSE '9999-12-31'
-             END),
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDateExt, 'weekday 1') AS dia)
+              )
+              ELSE NEVER END),
             (SELECT CASE WHEN weekdays&4
-              AND NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == DATE(expDate, '+7 days', 'weekday 2'))
-              THEN DATE(expDate, '+7 days', 'weekday 2')
-              ELSE '9999-12-31'
-             END),
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDateExt, 'weekday 2') AS dia)
+              )
+              ELSE NEVER END),
             (SELECT CASE WHEN weekdays&8
-              AND NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == DATE(expDate, '+7 days', 'weekday 3'))
-              THEN DATE(expDate, '+7 days', 'weekday 3')
-              ELSE '9999-12-31'
-             END),
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDateExt, 'weekday 3') AS dia)
+              )
+              ELSE NEVER END),
             (SELECT CASE WHEN weekdays&16
-              AND NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == DATE(expDate, '+7 days', 'weekday 4'))
-              THEN DATE(expDate, '+7 days', 'weekday 4')
-              ELSE '9999-12-31'
-             END),
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDateExt, 'weekday 4') AS dia)
+              )
+              ELSE NEVER END),
             (SELECT CASE WHEN weekdays&32
-              AND NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == DATE(expDate, '+7 days', 'weekday 5'))
-              THEN DATE(expDate, '+7 days', 'weekday 5')
-              ELSE '9999-12-31'
-             END),
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDateExt, 'weekday 5') AS dia)
+              )
+              ELSE NEVER END),
             (SELECT CASE WHEN weekdays&64
-              AND NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == DATE(expDate, '+7 days', 'weekday 6'))
-              THEN DATE(expDate, '+7 days', 'weekday 6')
-              ELSE '9999-12-31'
-             END)
-          ) FROM config
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDateExt, 'weekday 6') AS dia)
+              )
+              ELSE NEVER END)
+          ) FROM config, (SELECT DATE(expDate, "+7 days") AS expDateExt,
+                          "9999-12-31" AS NEVER)
         ) END
       ) AS expiration
       FROM (
