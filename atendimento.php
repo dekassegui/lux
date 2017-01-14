@@ -21,7 +21,7 @@
    * @param $db Handle do database container da tabela.
   */
   function rebuildTable($db) {
-    if ($db->exec(<<<EOT
+    $sql = <<<EOT
   PRAGMA foreign_keys = OFF;
   BEGIN TRANSACTION;
   DROP TABLE IF EXISTS t;
@@ -37,12 +37,8 @@
   COMMIT;
   PRAGMA foreign_keys = ON;
   -- VACUUM;
-EOT
-    )) {
-      return true;
-    } else {
-      return false;
-    }
+EOT;
+    return $db->exec($sql) ? TRUE : FALSE;
   }
 
   switch ($_GET['action']) {
@@ -73,7 +69,6 @@ EOT
       $leitor = chk($_GET['leitor']);
       $obra = chk($_GET['obra']);
       $exemplar = chk($_GET['exemplar']);
-      $comentario = chk($_GET['comentario']);
       // preparação do sql conforme tipo de requisição
       if ($_GET['action'] == 'UPDATE') {
         $sql = <<<EOT
@@ -85,36 +80,38 @@ EOT
     data_devolucao=$data_devolucao,
     leitor=$leitor,
     obra=$obra,
-    exemplar=$exemplar,
-    comentario=$comentario
+    exemplar=$exemplar
   WHERE rowid == {$_GET['recnumber']};
 EOT;
       } else {
         $sql = <<<EOT
   PRAGMA foreign_keys = ON;
   PRAGMA recursive_triggers = ON;
-  INSERT INTO emprestimos_facil
-    SELECT 'dummy_rowid', $bibliotecario, $data_emprestimo, $data_devolucao,
-      $leitor, $obra, 'dummy_autor', $exemplar, 'dummy_posicao', $comentario;
+  INSERT INTO emprestimos_facil (bibliotecario, data_emprestimo,
+    data_devolucao, leitor, obra, exemplar)
+    SELECT $bibliotecario, $data_emprestimo, $data_devolucao, $leitor, $obra,
+      $exemplar;
 EOT;
       }
-      // tenta executar a requisição
+      // requisita a atualização ou inserção
       if ($db->exec($sql)) {
         if (rebuildTable($db)) {
-          $d = toISOdate(substr($data_emprestimo, 1, strlen($data_emprestimo)-2));
+          // requisita o número de ordem do registro recém atualizado/inserido
+          $d = toISOdate(
+            substr($data_emprestimo, 1, strlen($data_emprestimo)-2));
           $sql = <<<EOT
   SELECT rowid
   FROM emprestimos_facil
   WHERE
-    --> the above is a nixtime comparison of ISO-8601 dates
-    strftime('%s', substr(data_emprestimo, 7, 4)||'-'||substr(data_emprestimo, 4, 2)||'-'||substr(data_emprestimo, 1, 2)||substr(data_emprestimo, 11)) == strftime('%s', '$d')
-    AND leitor == $leitor
-    AND obra == $obra
-    AND exemplar == $exemplar;
+    --> comparação "nixtime" de datas ISO-8601
+    strftime("%s", substr(data_emprestimo, 7, 4) || "-"
+      || substr(data_emprestimo, 4, 2) || "-"
+      || substr(data_emprestimo, 1, 2)
+      || substr(data_emprestimo, 11)) == strftime("%s", "$d")
+    AND leitor == $leitor AND obra == $obra AND exemplar == $exemplar;
 EOT;
           echo $db->querySingle($sql);
         } else {
-          // TODO -- estudar e implementar solução do big do prazo curto
           echo "1";
         }
       } else {
@@ -160,10 +157,10 @@ EOT;
             $text .= "\n".join('|', $row);
           }
         } else {
-          $text = "Warning: No data found to satisfy search:\n$sql";
+          $text = "Advertência: Não há dados que satisfaçam a requisição:\n$sql";
         }
       } else {
-        $text = 'Warning: Parâmetros insuficientes para montagem das restrições de pesquisa.';
+        $text = 'Advertência: Parâmetros insuficientes para montagem das restrições de pesquisa.';
       }
       echo $text;
       break;

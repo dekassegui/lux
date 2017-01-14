@@ -36,8 +36,7 @@
   SELECT rowid, bibliotecario, data_emprestimo, leitor, obra, autor, exemplar,
     posicao, comentario
   FROM (SELECT date('now', 'localtime') AS hoje), emprestimos_facil
-  WHERE substr(comentario, -5, 4) || substr(comentario, -9, 4)
-    || substr(comentario, -11, 2) <= hoje;
+  WHERE data_devolucao ISNULL AND data_limite <= hoje;
 EOT;
       for ($m=0, $result=$db->query($sql);
             $result->fetchArray(SQLITE3_NUM); ++$m);
@@ -111,7 +110,7 @@ EOT;
           echo "\n   Autor&Espírito: ".$row['autor'];
           echo "\n         Exemplar: ".$row['exemplar'];
           echo "\n  Data empréstimo: ".$row['data_emprestimo'];
-          echo "\n    Data prevista: ".$row['data_prevista'];
+          echo "\n      Data limite: ".$row['data_limite'];
           echo "\n           Atraso: ".$row['atraso'].' dias';
         }
         $result->finalize();
