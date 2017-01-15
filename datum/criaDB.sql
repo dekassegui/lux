@@ -264,25 +264,25 @@ CREATE VIEW IF NOT EXISTS obras_facil AS
 CREATE TRIGGER obras_facil_t0 INSTEAD OF INSERT ON obras_facil
 BEGIN
   INSERT INTO obras SELECT
-    NEW.code,
-    NEW.titulo,
-    (SELECT code FROM autores WHERE nome == NEW.autor),
-    (SELECT code FROM generos WHERE nome == NEW.genero);
+    new.code,
+    new.titulo,
+    (SELECT code FROM autores WHERE nome == new.autor),
+    (SELECT code FROM generos WHERE nome == new.genero);
 END;
 
 CREATE TRIGGER obras_facil_t1 INSTEAD OF UPDATE ON obras_facil
 BEGIN
   UPDATE obras SET
-    code=NEW.code,
-    titulo=NEW.titulo,
-    autor=(SELECT code FROM autores WHERE nome == NEW.autor),
-    genero=(SELECT code FROM generos WHERE nome == NEW.genero)
-  WHERE rowid == OLD.rowid;
+    code=new.code,
+    titulo=new.titulo,
+    autor=(SELECT code FROM autores WHERE nome == new.autor),
+    genero=(SELECT code FROM generos WHERE nome == new.genero)
+  WHERE rowid == old.rowid;
 END;
 
 CREATE TRIGGER obras_facil_t2 INSTEAD OF DELETE ON obras_facil
 BEGIN
-  DELETE FROM obras WHERE rowid == OLD.rowid;
+  DELETE FROM obras WHERE rowid == old.rowid;
 END;
 
 CREATE TABLE IF NOT EXISTS acervo (
@@ -361,25 +361,25 @@ CREATE VIEW IF NOT EXISTS acervo_facil AS
 CREATE TRIGGER acervo_facil_t0 INSTEAD OF INSERT ON acervo_facil
 BEGIN
   INSERT INTO acervo SELECT
-    (SELECT code FROM obras WHERE titulo == NEW.obra),
-    NEW.exemplar,
-    NEW.posicao,
-    NEW.comentario;
+    (SELECT code FROM obras WHERE titulo == new.obra),
+    new.exemplar,
+    new.posicao,
+    new.comentario;
 END;
 
 CREATE TRIGGER acervo_facil_t1 INSTEAD OF UPDATE ON acervo_facil
 BEGIN
   UPDATE acervo SET
-    obra=(SELECT code FROM obras WHERE titulo == NEW.obra),
-    exemplar=NEW.exemplar,
-    posicao=NEW.posicao,
-    comentario=NEW.comentario
-  WHERE rowid == OLD.rowid;
+    obra=(SELECT code FROM obras WHERE titulo == new.obra),
+    exemplar=new.exemplar,
+    posicao=new.posicao,
+    comentario=new.comentario
+  WHERE rowid == old.rowid;
 END;
 
 CREATE TRIGGER acervo_facil_t2 INSTEAD OF DELETE ON acervo_facil
 BEGIN
-  DELETE FROM acervo WHERE rowid == OLD.rowid;
+  DELETE FROM acervo WHERE rowid == old.rowid;
 END;
 
 CREATE TABLE IF NOT EXISTS bibliotecarios (
@@ -632,24 +632,21 @@ CREATE TRIGGER KASHITENAI BEFORE INSERT ON emprestimos
 BEGIN
   SELECT CASE
   WHEN EXISTS(
-      SELECT 1 FROM config, emprestimos
+      SELECT 1 FROM emprestimos
       WHERE data_devolucao ISNULL
-            AND leitor IS new.leitor
-            AND data_limite < date("now", "localtime")
+        AND leitor IS new.leitor AND data_limite < date("now", "localtime")
     )
     THEN raise(ABORT, "O leitor tem ao menos 1 empréstimo em atraso")
   WHEN EXISTS(
       SELECT 1 FROM emprestimos
       WHERE data_devolucao ISNULL
-        AND obra IS new.obra
-        AND exemplar IS new.exemplar
+        AND obra IS new.obra AND exemplar IS new.exemplar
     )
     THEN raise(ABORT, "O exemplar requisitado já está emprestado")
   WHEN (
       SELECT N >= pendencias
       FROM config, (
-        SELECT count(1) AS N
-        FROM emprestimos
+        SELECT count(1) AS N FROM emprestimos
         WHERE data_devolucao ISNULL AND leitor IS new.leitor
       )
     )
@@ -667,11 +664,9 @@ BEGIN
     )
     THEN raise(ABORT, "Todos os exemplares da obra estão emprestados")
   WHEN EXISTS(
-      SELECT 1
-      FROM emprestimos
+      SELECT 1 FROM emprestimos
       WHERE data_devolucao ISNULL
-        AND leitor IS new.leitor
-        AND obra IS new.obra
+        AND leitor IS new.leitor AND obra IS new.obra
     )
     THEN raise(ABORT,
       "O leitor não pode emprestar mais de um exemplar da mesma obra")
@@ -685,141 +680,148 @@ END;
 CREATE VIEW IF NOT EXISTS emprestimos_easy AS SELECT * FROM emprestimos;
 
 --
--- calcula e preenche a coluna "data_limite", restrita aos dias da semana
--- com atendimento, i.e.: a biblioteca funciona e que não sejam feriado
+-- Se o novo valor da coluna "data_limite" é NULL, então calcula e preenche
+-- a coluna, restrita aos dias da semana com atendimento, i.e.: a biblioteca
+-- funciona e que não sejam feriado, senão preenche a coluna com o novo valor.
 --
 CREATE TRIGGER emprestimos_easy_t0 INSTEAD OF INSERT ON emprestimos_easy
 BEGIN
   INSERT INTO emprestimos SELECT new.data_emprestimo, new.data_devolucao,
-    new.bibliotecario, new.leitor, new.obra, new.exemplar, (
-      -- Calcula a "data limite" do empréstimo conforme o prazo, restrita
-      -- aos dias da semana com atendimento, i.e.: a biblioteca funciona
-      -- e que não sejam feriado.
-      SELECT CASE WHEN (
-        -- testa disponibilidade do dia da semana da data candidata
-        (SELECT (weekdays >> wday) & 1 FROM config)
-        -- testa se a data não cai num feriado
-        AND NOT EXISTS(SELECT 1 FROM feriados WHERE data == expDate)
-      ) THEN (
-        SELECT expDate  --> data candidata disponível
-      ) ELSE (
-        -- data candidata indisponível --> calcula dia substituto
-        SELECT MIN(
-          (SELECT CASE WHEN wday<>0 AND weekdays&1
-            THEN (
-              SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == dia) THEN dia ELSE NEVER END
-              FROM (SELECT DATE(expDate, "weekday 0") AS dia)
-            )
-            ELSE NEVER END),
-          (SELECT CASE WHEN wday<>1 AND weekdays&2
-            THEN (
-              SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == dia) THEN dia ELSE NEVER END
-              FROM (SELECT DATE(expDate, "weekday 1") AS dia)
-            )
-            ELSE NEVER END),
-          (SELECT CASE WHEN wday<>2 AND weekdays&4
-            THEN (
-              SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == dia) THEN dia ELSE NEVER END
-              FROM (SELECT DATE(expDate, "weekday 2") AS dia)
-            )
-            ELSE NEVER END),
-          (SELECT CASE WHEN wday<>3 AND weekdays&8
-            THEN (
-              SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == dia) THEN dia ELSE NEVER END
-              FROM (SELECT DATE(expDate, "weekday 3") AS dia)
-            )
-            ELSE NEVER END),
-          (SELECT CASE WHEN wday<>4 AND weekdays&16
-            THEN (
-              SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == dia) THEN dia ELSE NEVER END
-              FROM (SELECT DATE(expDate, "weekday 4") AS dia)
-            )
-            ELSE NEVER END),
-          (SELECT CASE WHEN wday<>5 AND weekdays&32
-            THEN (
-              SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == dia) THEN dia ELSE NEVER END
-              FROM (SELECT DATE(expDate, "weekday 5") AS dia)
-            )
-            ELSE NEVER END),
-          (SELECT CASE WHEN wday<>6 AND weekdays&64
-            THEN (
-              SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == dia) THEN dia ELSE NEVER END
-              FROM (SELECT DATE(expDate, "weekday 6") AS dia)
-            )
-            ELSE NEVER END),
-          --
-          -- subset estendido dos dias candidatos, com offset de 7 dias,
-          -- quando o único dia da semana com atendimento cai num feriado
-          --
-          (SELECT CASE WHEN weekdays&1
-            THEN (
-              SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == dia) THEN dia ELSE NEVER END
-              FROM (SELECT DATE(expDateExt, "weekday 0") AS dia)
-            )
-            ELSE NEVER END),
-          (SELECT CASE WHEN weekdays&2
-            THEN (
-              SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == dia) THEN dia ELSE NEVER END
-              FROM (SELECT DATE(expDateExt, "weekday 1") AS dia)
-            )
-            ELSE NEVER END),
-          (SELECT CASE WHEN weekdays&4
-            THEN (
-              SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == dia) THEN dia ELSE NEVER END
-              FROM (SELECT DATE(expDateExt, "weekday 2") AS dia)
-            )
-            ELSE NEVER END),
-          (SELECT CASE WHEN weekdays&8
-            THEN (
-              SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == dia) THEN dia ELSE NEVER END
-              FROM (SELECT DATE(expDateExt, "weekday 3") AS dia)
-            )
-            ELSE NEVER END),
-          (SELECT CASE WHEN weekdays&16
-            THEN (
-              SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == dia) THEN dia ELSE NEVER END
-              FROM (SELECT DATE(expDateExt, "weekday 4") AS dia)
-            )
-            ELSE NEVER END),
-          (SELECT CASE WHEN weekdays&32
-            THEN (
-              SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == dia) THEN dia ELSE NEVER END
-              FROM (SELECT DATE(expDateExt, "weekday 5") AS dia)
-            )
-            ELSE NEVER END),
-          (SELECT CASE WHEN weekdays&64
-            THEN (
-              SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                WHERE data == dia) THEN dia ELSE NEVER END
-              FROM (SELECT DATE(expDateExt, "weekday 6") AS dia)
-            )
-            ELSE NEVER END)
-        ) FROM config, (SELECT DATE(expDate, "+7 days") AS expDateExt,
-                        "9999-12-31" AS NEVER)
-      ) END
-      FROM (
-        -- calcula a data candidata a "data limite" e seu respectivo
-        -- número de dia da semana, conforme prazo arbitrário
-        SELECT substr(rawDate,2) AS expDate,
-               CAST(substr(rawDate,1,1) AS INTEGER) AS wday
+    new.bibliotecario, new.leitor, new.obra, new.exemplar,
+    (
+      SELECT CASE WHEN new.data_limite ISNULL THEN
+      (
+        -- Calcula a "data limite" do empréstimo conforme o prazo, restrita
+        -- aos dias da semana com atendimento, i.e.: a biblioteca funciona
+        -- e que não sejam feriado.
+        SELECT CASE WHEN (
+          -- testa disponibilidade do dia da semana da data candidata
+          ((weekdays >> wday) & 1)
+          -- testa se a data não cai num feriado
+          AND NOT EXISTS(SELECT 1 FROM feriados WHERE data == expDate)
+        ) THEN (
+          expDate  --> data candidata disponível
+        ) ELSE (
+          -- data candidata indisponível --> calcula dia substituto
+          SELECT MIN(
+            (SELECT CASE WHEN wday<>0 AND weekdays&1
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDate, "weekday 0") AS dia)
+              )
+              ELSE NEVER END),
+            (SELECT CASE WHEN wday<>1 AND weekdays&2
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDate, "weekday 1") AS dia)
+              )
+              ELSE NEVER END),
+            (SELECT CASE WHEN wday<>2 AND weekdays&4
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDate, "weekday 2") AS dia)
+              )
+              ELSE NEVER END),
+            (SELECT CASE WHEN wday<>3 AND weekdays&8
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDate, "weekday 3") AS dia)
+              )
+              ELSE NEVER END),
+            (SELECT CASE WHEN wday<>4 AND weekdays&16
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDate, "weekday 4") AS dia)
+              )
+              ELSE NEVER END),
+            (SELECT CASE WHEN wday<>5 AND weekdays&32
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDate, "weekday 5") AS dia)
+              )
+              ELSE NEVER END),
+            (SELECT CASE WHEN wday<>6 AND weekdays&64
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDate, "weekday 6") AS dia)
+              )
+              ELSE NEVER END),
+            --
+            -- set complementar dos dias candidatos, com offset de 7 dias,
+            -- quando o único dia da semana com atendimento cai num feriado
+            --
+            (SELECT CASE WHEN weekdays&1
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDateExt, "weekday 0") AS dia)
+              )
+              ELSE NEVER END),
+            (SELECT CASE WHEN weekdays&2
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDateExt, "weekday 1") AS dia)
+              )
+              ELSE NEVER END),
+            (SELECT CASE WHEN weekdays&4
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDateExt, "weekday 2") AS dia)
+              )
+              ELSE NEVER END),
+            (SELECT CASE WHEN weekdays&8
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDateExt, "weekday 3") AS dia)
+              )
+              ELSE NEVER END),
+            (SELECT CASE WHEN weekdays&16
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDateExt, "weekday 4") AS dia)
+              )
+              ELSE NEVER END),
+            (SELECT CASE WHEN weekdays&32
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDateExt, "weekday 5") AS dia)
+              )
+              ELSE NEVER END),
+            (SELECT CASE WHEN weekdays&64
+              THEN (
+                SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
+                  WHERE data == dia) THEN dia ELSE NEVER END
+                FROM (SELECT DATE(expDateExt, "weekday 6") AS dia)
+              )
+              ELSE NEVER END)
+          ) FROM (SELECT DATE(expDate, "+7 days") AS expDateExt,
+                  "9999-12-31" AS NEVER)
+        ) END
         FROM (
-          SELECT strftime("%w%Y-%m-%d", NEW.data_emprestimo, prazo) AS rawDate
-          FROM config
+          -- calcula a data candidata a "data limite" e seu respectivo
+          -- número de dia da semana, conforme prazo arbitrário
+          SELECT weekdays, substr(rawDate, 2) AS expDate,
+            CAST(substr(rawDate, 1, 1) AS INTEGER) AS wday
+          FROM (
+            SELECT weekdays,
+              strftime("%w%Y-%m-%d", new.data_emprestimo, prazo) AS rawDate
+            FROM config
+          )
         )
       )
+      ELSE new.data_limite END
     );
 END;
 
@@ -860,20 +862,20 @@ CREATE VIEW IF NOT EXISTS emprestimos_facil AS
 --
 CREATE TRIGGER emprestimos_facil_t0 INSTEAD OF INSERT ON emprestimos_facil
 BEGIN
-  INSERT INTO emprestimos_easy (data_emprestimo, data_devolucao, bibliotecario,
-    leitor, obra, exemplar) SELECT
-      substr(NEW.data_emprestimo, 7, 4) || "-"
-        || substr(NEW.data_emprestimo, 4, 2) || "-"
-        || substr(NEW.data_emprestimo, 1, 2)
-        || substr(NEW.data_emprestimo, 11),
-      substr(NEW.data_devolucao, 7, 4) || "-"
-        || substr(NEW.data_devolucao, 4, 2) || "-"
-        || substr(NEW.data_devolucao, 1, 2)
-        || substr(NEW.data_devolucao, 11),
-      (SELECT code FROM bibliotecarios WHERE nome == NEW.bibliotecario),
-      (SELECT code FROM leitores WHERE nome == NEW.leitor),
-      (SELECT code FROM obras WHERE titulo == NEW.obra),
-      NEW.exemplar;
+  INSERT INTO emprestimos_easy SELECT
+    substr(new.data_emprestimo, 7, 4) || "-"
+      || substr(new.data_emprestimo, 4, 2) || "-"
+      || substr(new.data_emprestimo, 1, 2)
+      || substr(new.data_emprestimo, 11),
+    substr(new.data_devolucao, 7, 4) || "-"
+      || substr(new.data_devolucao, 4, 2) || "-"
+      || substr(new.data_devolucao, 1, 2)
+      || substr(new.data_devolucao, 11),
+    (SELECT code FROM bibliotecarios WHERE nome == new.bibliotecario),
+    (SELECT code FROM leitores WHERE nome == new.leitor),
+    (SELECT code FROM obras WHERE titulo == new.obra),
+    new.exemplar,
+    null;           --> força cálculo da "data limite" via trigger
 END;
 
 --
@@ -884,18 +886,18 @@ END;
 CREATE TRIGGER emprestimos_facil_t1 INSTEAD OF UPDATE ON emprestimos_facil
 BEGIN
   UPDATE emprestimos SET
-    data_emprestimo=substr(NEW.data_emprestimo, 7, 4) || "-"
-      || substr(NEW.data_emprestimo, 4, 2) || "-"
-      || substr(NEW.data_emprestimo, 1, 2) || substr(NEW.data_emprestimo, 11),
-    data_devolucao=substr(NEW.data_devolucao, 7, 4) || "-"
-      || substr(NEW.data_devolucao, 4, 2) || "-"
-      || substr(NEW.data_devolucao, 1, 2) || substr(NEW.data_devolucao, 11),
+    data_emprestimo=substr(new.data_emprestimo, 7, 4) || "-"
+      || substr(new.data_emprestimo, 4, 2) || "-"
+      || substr(new.data_emprestimo, 1, 2) || substr(new.data_emprestimo, 11),
+    data_devolucao=substr(new.data_devolucao, 7, 4) || "-"
+      || substr(new.data_devolucao, 4, 2) || "-"
+      || substr(new.data_devolucao, 1, 2) || substr(new.data_devolucao, 11),
     bibliotecario=(SELECT code FROM bibliotecarios
-      WHERE nome == NEW.bibliotecario),
-    leitor=(SELECT code FROM leitores WHERE nome == NEW.leitor),
-    obra=(SELECT code FROM obras WHERE titulo == NEW.obra),
-    exemplar=NEW.exemplar
-  WHERE rowid == OLD.rowid;
+      WHERE nome == new.bibliotecario),
+    leitor=(SELECT code FROM leitores WHERE nome == new.leitor),
+    obra=(SELECT code FROM obras WHERE titulo == new.obra),
+    exemplar=new.exemplar
+  WHERE rowid == old.rowid;
 END;
 
 --
@@ -903,7 +905,7 @@ END;
 --
 CREATE TRIGGER emprestimos_facil_t2 INSTEAD OF DELETE ON emprestimos_facil
 BEGIN
-  DELETE FROM emprestimos WHERE rowid == OLD.rowid;
+  DELETE FROM emprestimos WHERE rowid == old.rowid;
 END;
 
 --
@@ -991,7 +993,7 @@ CREATE VIEW IF NOT EXISTS feriados_facil AS
 -- conveniência para facilitar inserção de registros com data pt-BR
 --
 CREATE TRIGGER feriados_facil_t0 INSTEAD OF INSERT ON feriados_facil
-WHEN new.data GLOB "[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]"
+-- WHEN new.data GLOB "[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]"
 BEGIN
   INSERT INTO feriados SELECT (SELECT substr(new.data, 7)
     || substr(new.data, 3, 4) || substr(new.data, 1, 2)), new.comemoracao;
@@ -1001,7 +1003,7 @@ END;
 -- conveniência para facilitar atualização de registros com data pt-BR
 --
 CREATE TRIGGER feriados_facil_t1 INSTEAD OF UPDATE OF data ON feriados_facil
-WHEN new.data GLOB "[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]"
+-- WHEN new.data GLOB "[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]"
 BEGIN
   UPDATE feriados SET data=(SELECT substr(new.data, 7)
     || substr(new.data, 3, 4) || substr(new.data, 1, 2))

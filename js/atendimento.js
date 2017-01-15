@@ -137,7 +137,7 @@ window.addEventListener('load',
     function setInputsReadonly(boolValue) {
       // declara os valores do atributo readonly dos inputs de campos..
       (boolValue || searchBtn.classList.contains('working') ?
-        [0, 1, 2, 3, 4, 5, 6, 7, 8] : [0, 1, 2, 3, 4, 6, 8]).forEach(
+        [0, 1, 2, 3, 4, 5, 6, 7, 8] : [0, 1, 2, 3, 4, 6]).forEach(
           function (index) { fields[index].readOnly = boolValue; });
     }
 

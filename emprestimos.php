@@ -32,7 +32,7 @@
       JOIN obras ON (emprestimos.obra == obras.code)
     ORDER BY data_emprestimo, leitores.nome, obras.titulo;
   DELETE FROM emprestimos;
-  INSERT INTO emprestimos SELECT * FROM t;
+  INSERT INTO emprestimos_easy SELECT * FROM t;
   -- REINDEX autores_ndx;
   COMMIT;
   PRAGMA foreign_keys = ON;
