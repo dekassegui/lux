@@ -576,7 +576,7 @@ CREATE TABLE IF NOT EXISTS emprestimos (
 
   data_emprestimo DATE      --> DATA e HORA local da operação :: ISO-8601
                   NOT NULL
-                  DEFAULT(datetime('now', 'localtime')),
+                  DEFAULT(datetime(CURRENT_TIMESTAMP, 'localtime')),
 
   data_devolucao  DATE,     --> NULL value se exemplar está emprestado!
 
@@ -626,17 +626,23 @@ CREATE INDEX data_devolucao_ndx ON emprestimos(data_devolucao DESC);
 CREATE INDEX leitor_ndx ON emprestimos(leitor);
 
 --
--- check-up sequencial das restrições de empréstimo
+-- check-up sequencial das restrições de empréstimo nas inserções
 --
 CREATE TRIGGER KASHITENAI BEFORE INSERT ON emprestimos
 BEGIN
   SELECT CASE
   WHEN EXISTS(
       SELECT 1 FROM emprestimos
-      WHERE data_devolucao ISNULL
-        AND leitor IS new.leitor AND data_limite < date("now", "localtime")
+      WHERE data_devolucao ISNULL AND leitor IS new.leitor
+        AND data_limite < date("now", "localtime")
     )
     THEN raise(ABORT, "O leitor tem ao menos 1 empréstimo em atraso")
+  WHEN EXISTS(
+      SELECT 1 FROM emprestimos
+      WHERE data_devolucao ISNULL AND leitor IS new.leitor
+        AND obra IS new.obra
+    )
+    THEN raise(ABORT, "O leitor não pode emprestar mais de um exemplar da mesma obra")
   WHEN EXISTS(
       SELECT 1 FROM emprestimos
       WHERE data_devolucao ISNULL
@@ -644,38 +650,103 @@ BEGIN
     )
     THEN raise(ABORT, "O exemplar requisitado já está emprestado")
   WHEN (
-      SELECT N >= pendencias
-      FROM config, (
-        SELECT count(1) AS N FROM emprestimos
-        WHERE data_devolucao ISNULL AND leitor IS new.leitor
-      )
+      SELECT count(1) >= pendencias
+      FROM config, emprestimos
+      WHERE data_devolucao ISNULL AND leitor IS new.leitor
     )
-    THEN raise(ABORT,
-      "O leitor não pode exceder a quantidade máxima de empréstimos pendentes")
+    THEN raise(ABORT, "O leitor não pode exceder a quantidade máxima de empréstimos pendentes")
   WHEN (
       SELECT (M > 0) AND (N > 0) AND (M == N)
       FROM (
-          SELECT count(1) AS M FROM acervo
-          WHERE obra IS new.obra
+          SELECT count(1) AS M FROM acervo WHERE obra IS new.obra
         ), (
           SELECT count(1) AS N FROM emprestimos
           WHERE data_devolucao ISNULL AND obra IS new.obra
         )
     )
     THEN raise(ABORT, "Todos os exemplares da obra estão emprestados")
-  WHEN EXISTS(
-      SELECT 1 FROM emprestimos
-      WHERE data_devolucao ISNULL
-        AND leitor IS new.leitor AND obra IS new.obra
-    )
-    THEN raise(ABORT,
-      "O leitor não pode emprestar mais de um exemplar da mesma obra")
   END;
 END;
 
 --
--- conveniência exclusivamente criada para calcular e preencher a
--- coluna "data_limite" na inserção de registros de "emprestimos"
+-- check-up sequencial das restrições de empréstimo nas atualizações
+--
+CREATE TRIGGER CHK_UPDATE_ON_EMPRESTIMOS BEFORE UPDATE ON emprestimos
+BEGIN
+  SELECT CASE
+  WHEN new.leitor NOTNULL AND new.leitor IS NOT old.leitor
+    THEN (
+      SELECT CASE
+      WHEN EXISTS(
+          SELECT 1 FROM emprestimos
+          WHERE data_devolucao ISNULL AND leitor IS new.leitor
+            AND data_limite < date("now", "localtime")
+        )
+        THEN raise(ABORT, "O leitor tem ao menos 1 empréstimo em atraso")
+      WHEN (
+          SELECT count(1) >= pendencias
+          FROM config, emprestimos
+          WHERE data_devolucao ISNULL AND leitor IS new.leitor
+        )
+        THEN raise(ABORT, "O leitor não pode exceder a quantidade máxima de empréstimos pendentes")
+      WHEN EXISTS(
+          SELECT 1 FROM emprestimos
+          WHERE data_devolucao ISNULL AND leitor IS new.leitor
+            AND obra IS ifnull(new.obra, old.obra)
+        )
+        THEN raise(ABORT, "O leitor não pode emprestar mais de um exemplar da mesma obra")
+      END
+    )
+  WHEN new.obra NOTNULL AND new.obra IS NOT old.obra
+    THEN (
+      SELECT CASE
+      WHEN (
+          SELECT (M > 0) AND (N > 0) AND (M == N)
+          FROM (
+              SELECT count(1) AS M FROM acervo WHERE obra IS new.obra
+            ), (
+              SELECT count(1) AS N FROM emprestimos
+              WHERE data_devolucao ISNULL AND obra IS new.obra
+            )
+        )
+        THEN raise(ABORT, "Todos os exemplares da obra estão emprestados")
+      WHEN (
+          SELECT 1 FROM emprestimos
+          WHERE data_devolucao ISNULL AND obra IS new.obra
+            AND exemplar IS ifnull(new.exemplar, old.exemplar)
+        )
+        THEN raise(ABORT, "O exemplar da obra já está emprestado")
+      END
+    )
+  WHEN new.exemplar NOTNULL AND new.exemplar IS NOT old.exemplar
+    THEN (
+      SELECT CASE
+      WHEN (
+          SELECT (M > 0) AND (N > 0) AND (M == N)
+          FROM (
+              SELECT count(1) AS M FROM acervo
+              WHERE obra IS ifnull(new.obra, old.obra)
+            ), (
+              SELECT count(1) AS N FROM emprestimos
+              WHERE data_devolucao ISNULL
+                AND obra IS ifnull(new.obra, old.obra)
+            )
+        )
+        THEN raise(ABORT, "Todos os exemplares da obra estão emprestados")
+      WHEN (
+          SELECT 1 FROM emprestimos
+          WHERE data_devolucao ISNULL AND exemplar IS new.exemplar
+            AND obra IS ifnull(new.obra, old.obra)
+        )
+        THEN raise(ABORT, "O exemplar da obra já está emprestado")
+      END
+    )
+  END;
+END;
+
+--
+-- conveniência disponível exclusivamente para calcular e preencher
+-- a coluna "data_limite" na inserção de registros de "emprestimos"
 --
 CREATE VIEW IF NOT EXISTS emprestimos_easy AS SELECT * FROM emprestimos;
 
@@ -993,7 +1064,6 @@ CREATE VIEW IF NOT EXISTS feriados_facil AS
 -- conveniência para facilitar inserção de registros com data pt-BR
 --
 CREATE TRIGGER feriados_facil_t0 INSTEAD OF INSERT ON feriados_facil
--- WHEN new.data GLOB "[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]"
 BEGIN
   INSERT INTO feriados SELECT (SELECT substr(new.data, 7)
     || substr(new.data, 3, 4) || substr(new.data, 1, 2)), new.comemoracao;
@@ -1003,7 +1073,6 @@ END;
 -- conveniência para facilitar atualização de registros com data pt-BR
 --
 CREATE TRIGGER feriados_facil_t1 INSTEAD OF UPDATE OF data ON feriados_facil
--- WHEN new.data GLOB "[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]"
 BEGIN
   UPDATE feriados SET data=(SELECT substr(new.data, 7)
     || substr(new.data, 3, 4) || substr(new.data, 1, 2))

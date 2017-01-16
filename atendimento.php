@@ -60,9 +60,6 @@ EOT
 
     case 'INSERT':
     case 'UPDATE':
-      //
-      // TODO: what happens when a legal reader is changed to an illegal?
-      //
       $bibliotecario = chk($_GET['bibliotecario']);
       $data_emprestimo = chk(normalize($_GET['data_emprestimo']));
       $data_devolucao = chk(normalize($_GET['data_devolucao']));
