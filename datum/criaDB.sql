@@ -315,8 +315,7 @@ CREATE TABLE IF NOT EXISTS acervo (
 CREATE TRIGGER acervo_t0 AFTER INSERT ON acervo
 WHEN trim(new.exemplar) <> new.exemplar
 BEGIN
-  UPDATE acervo SET exemplar=trim(new.exemplar)
-    WHERE exemplar == new.exemplar;
+  UPDATE acervo SET exemplar=trim(new.exemplar) WHERE exemplar == new.exemplar;
 END;
 
 --
@@ -326,8 +325,7 @@ END;
 CREATE TRIGGER acervo_t1 AFTER UPDATE OF exemplar ON acervo
 WHEN trim(new.exemplar) <> new.exemplar
 BEGIN
-  UPDATE acervo SET exemplar=trim(new.exemplar)
-    WHERE exemplar == new.exemplar;
+  UPDATE acervo SET exemplar=trim(new.exemplar) WHERE exemplar == new.exemplar;
 END;
 
 --
@@ -506,8 +504,7 @@ END;
 CREATE TRIGGER leitores_t3 AFTER UPDATE OF nome ON leitores
 WHEN new.nome GLOB "*  *"
 BEGIN
-  UPDATE leitores SET nome=replace(new.nome, "  ", " ")
-    WHERE nome == new.nome;
+  UPDATE leitores SET nome=replace(new.nome, "  ", " ") WHERE nome == new.nome;
 END;
 
 CREATE TABLE IF NOT EXISTS config (
@@ -745,8 +742,8 @@ BEGIN
 END;
 
 --
--- conveniência disponível exclusivamente para calcular e preencher
--- a coluna "data_limite" na inserção de registros de "emprestimos"
+-- conveniência exclusivamente para calcular e preencher a coluna
+-- "data_limite" na inserção de registros de "emprestimos"
 --
 CREATE VIEW IF NOT EXISTS emprestimos_easy AS SELECT * FROM emprestimos;
 
@@ -769,7 +766,7 @@ BEGIN
           -- testa disponibilidade do dia da semana da data candidata
           ((weekdays >> wday) & 1)
           -- testa se a data não cai num feriado
-          AND NOT EXISTS(SELECT 1 FROM feriados WHERE data == expDate)
+          AND NOT EXISTS(SELECT 1 FROM feriados WHERE data_feriado == expDate)
         ) THEN (
           expDate  --> data candidata disponível
         ) ELSE (
@@ -778,49 +775,49 @@ BEGIN
             (SELECT CASE WHEN wday<>0 AND weekdays&1
               THEN (
                 SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                  WHERE data == dia) THEN dia ELSE NEVER END
+                  WHERE data_feriado == dia) THEN dia ELSE NEVER END
                 FROM (SELECT DATE(expDate, "weekday 0") AS dia)
               )
               ELSE NEVER END),
             (SELECT CASE WHEN wday<>1 AND weekdays&2
               THEN (
                 SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                  WHERE data == dia) THEN dia ELSE NEVER END
+                  WHERE data_feriado == dia) THEN dia ELSE NEVER END
                 FROM (SELECT DATE(expDate, "weekday 1") AS dia)
               )
               ELSE NEVER END),
             (SELECT CASE WHEN wday<>2 AND weekdays&4
               THEN (
                 SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                  WHERE data == dia) THEN dia ELSE NEVER END
+                  WHERE data_feriado == dia) THEN dia ELSE NEVER END
                 FROM (SELECT DATE(expDate, "weekday 2") AS dia)
               )
               ELSE NEVER END),
             (SELECT CASE WHEN wday<>3 AND weekdays&8
               THEN (
                 SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                  WHERE data == dia) THEN dia ELSE NEVER END
+                  WHERE data_feriado == dia) THEN dia ELSE NEVER END
                 FROM (SELECT DATE(expDate, "weekday 3") AS dia)
               )
               ELSE NEVER END),
             (SELECT CASE WHEN wday<>4 AND weekdays&16
               THEN (
                 SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                  WHERE data == dia) THEN dia ELSE NEVER END
+                  WHERE data_feriado == dia) THEN dia ELSE NEVER END
                 FROM (SELECT DATE(expDate, "weekday 4") AS dia)
               )
               ELSE NEVER END),
             (SELECT CASE WHEN wday<>5 AND weekdays&32
               THEN (
                 SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                  WHERE data == dia) THEN dia ELSE NEVER END
+                  WHERE data_feriado == dia) THEN dia ELSE NEVER END
                 FROM (SELECT DATE(expDate, "weekday 5") AS dia)
               )
               ELSE NEVER END),
             (SELECT CASE WHEN wday<>6 AND weekdays&64
               THEN (
                 SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                  WHERE data == dia) THEN dia ELSE NEVER END
+                  WHERE data_feriado == dia) THEN dia ELSE NEVER END
                 FROM (SELECT DATE(expDate, "weekday 6") AS dia)
               )
               ELSE NEVER END),
@@ -831,49 +828,49 @@ BEGIN
             (SELECT CASE WHEN weekdays&1
               THEN (
                 SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                  WHERE data == dia) THEN dia ELSE NEVER END
+                  WHERE data_feriado == dia) THEN dia ELSE NEVER END
                 FROM (SELECT DATE(expDateExt, "weekday 0") AS dia)
               )
               ELSE NEVER END),
             (SELECT CASE WHEN weekdays&2
               THEN (
                 SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                  WHERE data == dia) THEN dia ELSE NEVER END
+                  WHERE data_feriado == dia) THEN dia ELSE NEVER END
                 FROM (SELECT DATE(expDateExt, "weekday 1") AS dia)
               )
               ELSE NEVER END),
             (SELECT CASE WHEN weekdays&4
               THEN (
                 SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                  WHERE data == dia) THEN dia ELSE NEVER END
+                  WHERE data_feriado == dia) THEN dia ELSE NEVER END
                 FROM (SELECT DATE(expDateExt, "weekday 2") AS dia)
               )
               ELSE NEVER END),
             (SELECT CASE WHEN weekdays&8
               THEN (
                 SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                  WHERE data == dia) THEN dia ELSE NEVER END
+                  WHERE data_feriado == dia) THEN dia ELSE NEVER END
                 FROM (SELECT DATE(expDateExt, "weekday 3") AS dia)
               )
               ELSE NEVER END),
             (SELECT CASE WHEN weekdays&16
               THEN (
                 SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                  WHERE data == dia) THEN dia ELSE NEVER END
+                  WHERE data_feriado == dia) THEN dia ELSE NEVER END
                 FROM (SELECT DATE(expDateExt, "weekday 4") AS dia)
               )
               ELSE NEVER END),
             (SELECT CASE WHEN weekdays&32
               THEN (
                 SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                  WHERE data == dia) THEN dia ELSE NEVER END
+                  WHERE data_feriado == dia) THEN dia ELSE NEVER END
                 FROM (SELECT DATE(expDateExt, "weekday 5") AS dia)
               )
               ELSE NEVER END),
             (SELECT CASE WHEN weekdays&64
               THEN (
                 SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM feriados
-                  WHERE data == dia) THEN dia ELSE NEVER END
+                  WHERE data_feriado == dia) THEN dia ELSE NEVER END
                 FROM (SELECT DATE(expDateExt, "weekday 6") AS dia)
               )
               ELSE NEVER END)
@@ -1033,13 +1030,13 @@ CREATE TABLE IF NOT EXISTS feriados (
   -- feriados que afetam funcionamento da biblioteca
   --
 
-  data        DATE          -- ISO-8601
-              NOT NULL
-              PRIMARY KEY,
+  data_feriado  DATE          -- ISO-8601
+                NOT NULL
+                PRIMARY KEY,
 
-  comemoracao TEXT
-              NOT NULL
-              COLLATE NOCASE
+  comemoracao   TEXT          -- motivo do feriado
+                NOT NULL
+                COLLATE NOCASE
 );
 
 --
@@ -1053,11 +1050,11 @@ CREATE VIEW IF NOT EXISTS feriados_facil AS
       WHEN 3 THEN "Quarta"    WHEN 4 THEN "Quinta"    WHEN 5 THEN "Sexta"
       ELSE "Sábado"
     END
-  ) || substr(rawDate, 2) AS data, comemoracao
+  ) || substr(rawDate, 2) AS data_feriado, comemoracao
   FROM (
-    SELECT strftime("%w %d-%m-%Y", data) AS rawDate, comemoracao
+    SELECT strftime("%w %d-%m-%Y", data_feriado) AS rawDate, comemoracao
     FROM feriados
-    ORDER BY data ASC
+    ORDER BY data_feriado ASC
   );
 
 --
@@ -1065,8 +1062,9 @@ CREATE VIEW IF NOT EXISTS feriados_facil AS
 --
 CREATE TRIGGER feriados_facil_t0 INSTEAD OF INSERT ON feriados_facil
 BEGIN
-  INSERT INTO feriados SELECT (SELECT substr(new.data, 7)
-    || substr(new.data, 3, 4) || substr(new.data, 1, 2)), new.comemoracao;
+  INSERT INTO feriados SELECT (SELECT substr(new.data_feriado, 7)
+    || substr(new.data_feriado, 3, 4)
+    || substr(new.data_feriado, 1, 2)), new.comemoracao;
 END;
 
 --
@@ -1074,8 +1072,8 @@ END;
 --
 CREATE TRIGGER feriados_facil_t1 INSTEAD OF UPDATE OF data ON feriados_facil
 BEGIN
-  UPDATE feriados SET data=(SELECT substr(new.data, 7)
-    || substr(new.data, 3, 4) || substr(new.data, 1, 2))
+  UPDATE feriados SET data=(SELECT substr(new.data_feriado, 7)
+    || substr(new.data_feriado, 3, 4) || substr(new.data_feriado, 1, 2))
   WHERE comemoracao == old.comemoracao;
 END;
 

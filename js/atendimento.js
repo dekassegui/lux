@@ -442,6 +442,11 @@ window.addEventListener('load',
         xhr.send();
       }, true);
 
+    /* $('leitor').addEventListener('focus',
+      function () {
+        if
+      }, true); */
+
     {
       // preenche datalists cujos ids correspondem ao nome (sem extensão)
       // do script server side que atende a requisição dos seus dados
