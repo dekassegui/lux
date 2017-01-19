@@ -33,7 +33,8 @@ DROP TABLE IF EXISTS acervo;
 DROP TABLE IF EXISTS bibliotecarios;
 DROP TABLE IF EXISTS leitores;
 DROP TABLE IF EXISTS emprestimos;
-DROP TABLE IF EXISTS feriados;
+DROP TABLE IF EXISTS feriados_moveis;
+DROP TABLE IF EXISTS feriados_fixos;
 DROP VIEW IF EXISTS conta_obras_acervo;
 DROP VIEW IF EXISTS disponiveis_acervo;
 DROP VIEW IF EXISTS emprestados;
@@ -46,7 +47,8 @@ DROP VIEW IF EXISTS emprestimos_easy;
 DROP VIEW IF EXISTS emprestimos_facil;
 DROP VIEW IF EXISTS exemplares_disponiveis;
 DROP VIEW IF EXISTS config_facil;
-DROP VIEW IF EXISTS feriados_facil;
+DROP VIEW IF EXISTS feriados;
+DROP VIEW IF EXISTS calc_feriados_moveis;
 
 CREATE TABLE IF NOT EXISTS autores (
   --
@@ -110,7 +112,7 @@ END;
 -- coluna "nome" de registro recém inserido na tabela de "autores"
 --
 CREATE TRIGGER autores_t2 AFTER INSERT ON autores
-WHEN new.nome GLOB "*  *"
+WHEN new.nome glob "*  *"
 BEGIN
   UPDATE autores SET nome=replace(new.nome, "  ", " ") WHERE nome == new.nome;
 END;
@@ -120,7 +122,7 @@ END;
 -- coluna "nome" de registro recém atualizado na tabela de "autores"
 --
 CREATE TRIGGER autores_t3 AFTER UPDATE OF nome ON autores
-WHEN new.nome GLOB "*  *"
+WHEN new.nome glob "*  *"
 BEGIN
   UPDATE autores SET nome=replace(new.nome, "  ", " ") WHERE nome == new.nome;
 END;
@@ -130,7 +132,7 @@ END;
 -- coluna "espirito" de registro recém inserido na tabela de "autores"
 --
 CREATE TRIGGER autores_t4 AFTER INSERT ON autores
-WHEN (new.espirito NOTNULL) AND (new.espirito GLOB "*  *")
+WHEN (new.espirito NOTNULL) AND (new.espirito glob "*  *")
 BEGIN
   UPDATE autores SET espirito=replace(new.espirito, "  ", " ")
     WHERE espirito == new.espirito;
@@ -141,7 +143,7 @@ END;
 -- coluna "espirito" de registro recém atualizado na tabela de "autores"
 --
 CREATE TRIGGER autores_t5 AFTER UPDATE OF espirito ON autores
-WHEN (new.espirito NOTNULL) AND (new.espirito GLOB "*  *")
+WHEN (new.espirito NOTNULL) AND (new.espirito glob "*  *")
 BEGIN
   UPDATE autores SET espirito=replace(new.espirito, "  ", " ")
     WHERE espirito == new.espirito;
@@ -233,7 +235,7 @@ END;
 -- coluna "titulo" de registro recém inserido na tabela de "obras"
 --
 CREATE TRIGGER obras_t2 AFTER INSERT ON obras
-WHEN new.titulo GLOB "*  *"
+WHEN new.titulo glob "*  *"
 BEGIN
   UPDATE obras SET titulo=replace(new.titulo, "  ", " ")
     WHERE titulo == new.titulo;
@@ -244,7 +246,7 @@ END;
 -- coluna "titulo" de registro recém inserido na tabela de "obras"
 --
 CREATE TRIGGER obras_t3 AFTER UPDATE OF titulo ON obras
-WHEN new.titulo GLOB "*  *"
+WHEN new.titulo glob "*  *"
 BEGIN
   UPDATE obras SET titulo=replace(new.titulo, "  ", " ")
     WHERE titulo == new.titulo;
@@ -303,7 +305,7 @@ CREATE TABLE IF NOT EXISTS acervo (
   posicao     TEXT                  --> disposição numa das prateleiras:
               NOT NULL              --> A1 a A6 ou B1 a B6 ou C1 a C6
               COLLATE NOCASE
-              CHECK(upper(posicao) GLOB "[ABC][1-6]"),
+              CHECK(upper(posicao) glob "[ABC][1-6]"),
 
   comentario  TEXT  --> qualquer comentário sobre o exemplar
 );
@@ -422,7 +424,7 @@ END;
 -- coluna "nome" de registro recém inserido na tabela de "bibliotecarios"
 --
 CREATE TRIGGER bibliotecarios_t2 AFTER INSERT ON bibliotecarios
-WHEN new.nome GLOB "*  *"
+WHEN new.nome glob "*  *"
 BEGIN
   UPDATE bibliotecarios SET nome=replace(new.nome, "  ", " ")
     WHERE nome == new.nome;
@@ -433,7 +435,7 @@ END;
 -- coluna "nome" de registro recém inserido na tabela de "bibliotecarios"
 --
 CREATE TRIGGER bibliotecarios_t3 AFTER UPDATE OF nome ON bibliotecarios
-WHEN new.nome GLOB "*  *"
+WHEN new.nome glob "*  *"
 BEGIN
   UPDATE bibliotecarios SET nome=replace(new.nome, "  ", " ")
     WHERE nome == new.nome;
@@ -464,7 +466,7 @@ CREATE TABLE IF NOT EXISTS leitores (
     (telefone NOTNULL AND trim(telefone) <> "")   --> telefone(s)
     OR (email NOTNULL                             --> ou e-mail(s)
         AND trim(email)
-         GLOB "*[^ .@]@[^ .@]*.[^ .@]*"))
+         glob "*[^ .@]@[^ .@]*.[^ .@]*"))
 );
 
 --
@@ -492,7 +494,7 @@ END;
 -- coluna "nome" de registro recém inserido na tabela de "leitores"
 --
 CREATE TRIGGER leitores_t2 AFTER INSERT ON leitores
-WHEN new.nome GLOB "*  *"
+WHEN new.nome glob "*  *"
 BEGIN
   UPDATE leitores SET nome=replace(new.nome, "  ", " ") WHERE nome == new.nome;
 END;
@@ -502,7 +504,7 @@ END;
 -- coluna "nome" de registro recém inserido na tabela de "leitores"
 --
 CREATE TRIGGER leitores_t3 AFTER UPDATE OF nome ON leitores
-WHEN new.nome GLOB "*  *"
+WHEN new.nome glob "*  *"
 BEGIN
   UPDATE leitores SET nome=replace(new.nome, "  ", " ") WHERE nome == new.nome;
 END;
@@ -527,8 +529,8 @@ CREATE TABLE IF NOT EXISTS config (
               NOT NULL,
 
   CONSTRAINT prazo_chk CHECK(
-    ((lower(prazo) GLOB "+[0-9][0-9] days")
-     OR (lower(prazo) GLOB "+[0-9] days"))
+    ((lower(prazo) glob "+[0-9][0-9] days")
+     OR (lower(prazo) glob "+[0-9] days"))
     AND (CAST(prazo AS integer) > 0)),
 
   CONSTRAINT pendencias_chk CHECK(pendencias > 0),
@@ -1025,63 +1027,169 @@ CREATE VIEW IF NOT EXISTS exemplares_disponiveis AS
     JOIN generos ON obras.genero == generos.code
     JOIN autores ON obras.autor == autores.code;
 
-CREATE TABLE IF NOT EXISTS feriados (
+CREATE TABLE feriados_moveis (
   --
-  -- feriados que afetam funcionamento da biblioteca
+  -- feriados baseados na data da Páscoa: Carnaval, Paixão e Corpus Christi
+  --
+  -- importante: use a view "calc_feriados_moveis" para cálculo automático
+  --             de data, com base na data da Páscoa do seu respectivo ano
   --
 
-  data_feriado  DATE          -- ISO-8601
-                NOT NULL
-                PRIMARY KEY,
+  data_feriado    DATE  --> ISO 8601
+                  NOT NULL ON CONFLICT FAIL
+                  PRIMARY KEY ON CONFLICT FAIL,
 
-  comemoracao   TEXT          -- motivo do feriado
-                NOT NULL
-                COLLATE NOCASE
+  comemoracao     TEXT  --> motivo da comemoração/homenagem
+                  NOT NULL ON CONFLICT FAIL
+                  COLLATE NOCASE,
+
+  CONSTRAINT NOMES_FERIADOS_MOVEIS CHECK(       --> aceita somente os valores:
+    glob("P[AÁaá]SCOA", upper(comemoracao))     --> "Páscoa", "Corpus Christi",
+    OR glob("PAIX[AÃaã]O", upper(comemoracao))  --> "Paixão" ou "Carnaval",
+    OR upper(comemoracao)                       --> indiferente ao uso de
+      IN ("CARNAVAL", "CORPUS CHRISTI")         --> maiúsculas/minúsculas
+  ) ON CONFLICT FAIL
+);
+
+CREATE VIEW calc_feriados_moveis AS SELECT * FROM feriados_moveis;
+
+--
+-- Calcula a data da "Páscoa" e outros feriados móveis; "Corpus Christi",
+-- "Carnaval" e "Paixão", os quais são baseados na data da "Páscoa" que
+-- necessariamente precisa ser calculada antes das demais datas, de ano
+-- arbitrário no Calendário Gregoriano (a partir de 1583).
+--
+-- PSEUDO ARGUMENTOS (em ordem natural)
+--
+-- A coluna "data_feriado", do tipo DATE no padrão ISO-8601, utilizará
+-- apenas o ANO, cujo valor default é o ano corrente, enquanto a coluna
+-- "comemoracao" deve ser um dentre os valores: "Páscoa", "Carnaval",
+-- "Paixão" e "Corpus Christi".
+--
+CREATE TRIGGER calc_feriados_moveis_t0 INSTEAD OF INSERT ON calc_feriados_moveis
+BEGIN
+  INSERT INTO feriados_moveis SELECT (
+    SELECT CASE
+    WHEN like('P_SCOA', new.comemoracao) THEN (
+      SELECT ANO || '-' || substr(MES+100, 2) || '-' || substr(DIA+100, 2)
+      FROM (
+        SELECT ANO, n / 31 AS MES, (n % 31) + 1 AS DIA
+        FROM (
+          SELECT ANO, h + L - 7 * m + 114 AS n
+          FROM (
+            SELECT ANO, h, L, (a + 11 * (h + (L << 1))) / 451 AS m
+            FROM (
+              SELECT ANO, a, h, (32 + ((e + i) << 1) - h - k) % 7 AS L
+              FROM (
+                SELECT ANO, a, e, h, c >> 2 AS i, c % 4 AS k
+                FROM (
+                  SELECT ANO, a, e, c, (19 * a + b - d - g + 15) % 30 AS h
+                  FROM (
+                    SELECT ANO, a, b, c, d, e, (b - f + 1) / 3 AS g
+                    FROM (
+                      SELECT ANO, a, b, c, b >> 2 AS d, b%4 AS e, (b + 8) / 25 AS f
+                      FROM (
+                        SELECT ANO, ANO%19 AS a, ANO/100 AS b, ANO%100 AS c
+                        FROM (
+                          SELECT substr(
+                            ifnull(new.data_feriado, date("now", "localtime")),
+                            1, 4) + 0 AS ANO  --> evita cast & strftime
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+    ELSE (
+      date(
+        (
+          SELECT CASE
+          WHEN EXISTS(
+            SELECT 1 FROM feriados_moveis
+            WHERE like('P_SCOA', comemoracao) AND like(pattern, data_feriado)
+          ) THEN (
+            SELECT data_feriado FROM feriados_moveis
+            WHERE like('P_SCOA', comemoracao) AND like(pattern, data_feriado)
+          )
+          ELSE raise(ABORT, 'Não há registro da Data da Páscoa do ano.')
+          END
+          FROM (SELECT substr(new.data_feriado, 1, 4) || '%' AS pattern)
+        ),
+        (
+          SELECT CASE
+          WHEN upper(new.comemoracao) IS 'CARNAVAL'       THEN '-47 days'
+          WHEN like('PAIX_O', new.comemoracao)            THEN  '-2 days'
+          WHEN upper(new.comemoracao) IS 'CORPUS CHRISTI' THEN '+60 days'
+          ELSE raise(ABORT, 'Valor da coluna "comemoracao" não é válido.')
+          END
+        )
+      )
+    )
+    END
+  ),
+  new.comemoracao;
+END;
+
+CREATE TABLE feriados_fixos (
+
+  data_feriado    DATE  --> ISO 8601
+                  NOT NULL ON CONFLICT FAIL
+                  PRIMARY KEY ON CONFLICT FAIL,
+
+  comemoracao     TEXT  --> motivo da comemoração/homenagem
+                  NOT NULL ON CONFLICT FAIL
+                  COLLATE NOCASE
 );
 
 --
--- conveniência para apresentação das datas num formato pt-BR
--- prefixado com nome do dia da semana por extenso
+-- Subconjunto dos feriados móveis/fixos em que a biblioteca não funcionará,
+-- considerados os dias da semana com atendimento, declarados na config.
 --
-CREATE VIEW IF NOT EXISTS feriados_facil AS
-  SELECT (
-    SELECT CASE CAST(substr(rawDate, 1, 1) AS INTEGER)
-      WHEN 0 THEN "Domingo"   WHEN 1 THEN "Segunda"   WHEN 2 THEN "Terça"
-      WHEN 3 THEN "Quarta"    WHEN 4 THEN "Quinta"    WHEN 5 THEN "Sexta"
-      ELSE "Sábado"
-    END
-  ) || substr(rawDate, 2) AS data_feriado, comemoracao
-  FROM (
-    SELECT strftime("%w %d-%m-%Y", data_feriado) AS rawDate, comemoracao
-    FROM feriados
-    ORDER BY data_feriado ASC
-  );
+CREATE VIEW feriados AS
+  SELECT data_feriado, comemoracao
+    FROM config, feriados_moveis
+    WHERE (weekdays >> strftime("%w", data_feriado)) & 1
+  UNION
+  SELECT data_feriado, comemoracao
+    FROM config, feriados_fixos
+    WHERE (weekdays >> strftime("%w", data_feriado)) & 1;
 
---
--- conveniência para facilitar inserção de registros com data pt-BR
---
-CREATE TRIGGER feriados_facil_t0 INSTEAD OF INSERT ON feriados_facil
-BEGIN
-  INSERT INTO feriados SELECT (SELECT substr(new.data_feriado, 7)
-    || substr(new.data_feriado, 3, 4)
-    || substr(new.data_feriado, 1, 2)), new.comemoracao;
-END;
+INSERT INTO calc_feriados_moveis VALUES
+  (strftime("%Y", "now", "localtime"), 'Páscoa'),
+  (strftime("%Y", "now", "localtime"), 'Carnaval'),
+  (strftime("%Y", "now", "localtime"), 'Paixão'),
+  (strftime("%Y", "now", "localtime"), 'Corpus Christi');
 
---
--- conveniência para facilitar atualização de registros com data pt-BR
---
-CREATE TRIGGER feriados_facil_t1 INSTEAD OF UPDATE OF data ON feriados_facil
-BEGIN
-  UPDATE feriados SET data=(SELECT substr(new.data_feriado, 7)
-    || substr(new.data_feriado, 3, 4) || substr(new.data_feriado, 1, 2))
-  WHERE comemoracao == old.comemoracao;
-END;
+INSERT INTO calc_feriados_moveis SELECT NEXT_YEAR, comemoracao
+  FROM (SELECT strftime("%Y", "now", "localtime", "+1 year") AS NEXT_YEAR),
+    feriados_moveis;
+
+INSERT INTO feriados_fixos VALUES
+  (strftime("%Y-01-01", "now", "localtime"), "Ano Novo"),
+  (strftime("%Y-04-21", "now", "localtime"), "Tiradentes"),
+  (strftime("%Y-05-01", "now", "localtime"), "Dia do Trabalho"),
+  (strftime("%Y-09-07", "now", "localtime"), "Independência do Brasil"),
+  (strftime("%Y-10-12", "now", "localtime"), "Nossa Senhora Aparecida"),
+  (strftime("%Y-11-02", "now", "localtime"), "Finados"),
+  (strftime("%Y-11-15", "now", "localtime"), "Proclamação da República"),
+  (strftime("%Y-11-20", "now", "localtime"), "Dia da Consciência Negra"),
+  (strftime("%Y-12-08", "now", "localtime"), "Nossa Senhora da Conceição"),
+  (strftime("%Y-12-25", "now", "localtime"), "Natal");
+
+INSERT INTO feriados_fixos SELECT NEXT_YEAR || substr(data_feriado, 5),
+  comemoracao FROM (SELECT strftime("%Y", "now", "localtime", "+1 year") AS
+  NEXT_YEAR), feriados_fixos;
 
 COMMIT;
 
 PRAGMA FOREIGN_KEYS = ON;   --> habilita integridade referencial
 
---> preenchimento das tabelas com dados de teste
+-- PREENCHIMENTO DAS TABELAS COM DADOS DE TESTE
 
 create temp table t (c, n, e);
 .import "autores.dat" t
@@ -1097,8 +1205,6 @@ update acervo set comentario=null where comentario == "";
 .import "bibliotecarios.dat" bibliotecarios
 
 .import "leitores.dat" leitores
-
-.import "feriados-2017.dat" feriados
 
 create temp table t (e, d, b, l, o, x, c);
 .import "emprestimos.dat" t
