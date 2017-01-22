@@ -49,30 +49,37 @@ BEGIN
   SELECT CASE
   --
   -- checa se o valor de "data_feriado" segue um dos padrões esperados:
-  -- apenas ANO com 4 dígitos (inicio do cálculo) ou DATA no padrão ISO-8601
+  -- apenas ANO com 4 dígitos (inicio do cálculo) ou DATA conforme ISO-8601
   --
   WHEN NOT (new.data_feriado GLOB "[0-9][0-9][0-9][0-9]"
       OR new.data_feriado GLOB "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]")
     THEN raise(ABORT, "Formato ilegal da coluna 'data_feriado'.")
   --
-  -- checa se o ano de "data_feriado" é parte do calendário Gregoriano
+  -- checa se o ANO de "data_feriado" está contido no calendário Gregoriano
   --
   WHEN cast(substr(new.data_feriado, 1, 4) AS INTEGER) < 1583
     THEN raise(ABORT, "Ano de 'data_feriado' < 1583.")
   --
-  -- checa se o valor de "comemoracao" é um dentre: "Páscoa", "Carnaval",
-  -- "Paixão" ou "Corpus Christi", indiferente à grafia
+  -- checa se "comemoracao" é um dentre: "Páscoa", "Carnaval", "Paixão"
+  -- ou "Corpus Christi", indiferente ao uso de maiúsculas/minúsculas
+  --
+  -- Nota: O uso de soundex é workaround para a inabilidade de upper/lower
+  --       manejar argumentos que contém vogais acentuadas e cedilha.
   --
   WHEN NOT (soundex(new.comemoracao) IN (soundex("PÁSCOA"), soundex("PAIXÃO"))
       OR upper(new.comemoracao) IN ("CARNAVAL", "CORPUS CHRISTI"))
     THEN raise(ABORT, "Valor ilegal da coluna 'comemoracao'.")
   --
-  -- checa se o feriado já está registrado com outra data no ano de interesse
+  -- checa se o feriado já está registrado com outra data no ANO
   --
   WHEN (length(new.data_feriado) == 10) AND EXISTS(
       SELECT 1 FROM feriados_moveis WHERE
-        soundex(comemoracao) == soundex(new.comemoracao)
-        AND length(comemoracao) == length(new.comemoracao)
+        (
+          -- A comparação das quantidades de caracteres visa desambiguação,
+          -- pois soundex retorna parâmetro para checar "semelhança".
+          soundex(comemoracao) == soundex(new.comemoracao)
+          AND length(comemoracao) == length(new.comemoracao)
+        )
         AND substr(data_feriado, 1, 4) IS substr(new.data_feriado, 1, 4)
         AND data_feriado IS NOT new.data_feriado
     )
@@ -91,18 +98,16 @@ END;
  *             "data_feriado" for unicamente o ANO com 4 dígitos!
 */
 CREATE TRIGGER COMPUTUS AFTER INSERT ON feriados_moveis
-WHEN new.data_feriado GLOB "[0-9][0-9][0-9][0-9]"
+WHEN new.data_feriado GLOB "[0-9][0-9][0-9][0-9]" --> ANO
 BEGIN
-
   --
-  -- exclusão do registro da data (incompleta) da Páscoa
+  -- exclusão do registro da data da Páscoa que contém apenas o ANO
   --
   DELETE FROM feriados_moveis
   WHERE data_feriado IS new.data_feriado
     AND soundex(new.comemoracao) IS soundex("PÁSCOA");
-
   --
-  -- inclusão do registro da data da Páscoa no ano desejado
+  -- inclusão, se necessário, do registro da data da Páscoa no ANO
   --
   INSERT OR IGNORE INTO feriados_moveis VALUES ((
       SELECT date(dia, "+" || (7 - strftime("%w", dia)) || " days")
@@ -112,10 +117,8 @@ BEGIN
             1 + (new.data_feriado % 19) * 6, 6) AS dia
       )
     ), "Páscoa");
-
   --
-  -- atualização da data do feriado, usando a data da Páscoa no ano,
-  -- previamente calculada, como offset de cálculo
+  -- atualização de registro de data do Carnaval, Paixão ou Corpus Christi
   --
   UPDATE feriados_moveis SET data_feriado = (
     date(
@@ -179,8 +182,12 @@ BEGIN
   --
   WHEN EXISTS(
       SELECT 1 FROM feriados_fixos WHERE
-        soundex(comemoracao) == soundex(new.comemoracao)
-        AND length(comemoracao) == length(new.comemoracao)
+        (
+          -- A comparação das quantidades de caracteres visa desambiguação,
+          -- pois soundex retorna parâmetro para checar "semelhança".
+          soundex(comemoracao) == soundex(new.comemoracao)
+          AND length(comemoracao) == length(new.comemoracao)
+        )
         AND substr(data_feriado, 1, 4) IS substr(new.data_feriado, 1, 4)
         AND data_feriado IS NOT new.data_feriado
     )

@@ -1038,23 +1038,19 @@ CREATE TABLE IF NOT EXISTS feriados (
 
 COMMIT;
 
-ATTACH "util.sqlite" AS util;
+ATTACH "util.sqlite" AS UTIL;
 
 DELETE FROM feriados;
 
-INSERT INTO feriados SELECT *
-  FROM (
-    SELECT feriados_moveis.*
-    FROM config JOIN feriados_moveis
-    WHERE weekdays >> strftime("%w", data_feriado) & 1
-  UNION
-    SELECT feriados_fixos.*
-    FROM config JOIN feriados_fixos
-    WHERE weekdays >> strftime("%w", data_feriado) & 1
+INSERT INTO feriados SELECT data_feriado, comemoracao FROM (
+    SELECT weekdays FROM config
+  ) JOIN (
+    SELECT * FROM UTIL.feriados_moveis UNION SELECT * FROM UTIL.feriados_fixos
   )
+  WHERE weekdays >> strftime("%w", data_feriado) & 1
   ORDER BY data_feriado;
 
-DETACH util;
+DETACH UTIL;
 
 PRAGMA FOREIGN_KEYS = ON;   --> habilita integridade referencial
 
