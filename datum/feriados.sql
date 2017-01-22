@@ -11,8 +11,8 @@
  *
  * ===========================================================================
  *
- *  Este software está licenciado em GNU Lesser General Public License,
- *  aka LGPL v.3, cujo texto está disponível em:
+ *  Este software está licenciado sob GNU Lesser General Public License v3,
+ *  aka LGPL v3, cujo texto está disponível em:
  *
  *      https://www.gnu.org/licenses/lgpl-3.0.html
  *
@@ -40,23 +40,39 @@ CREATE TABLE feriados_moveis (
                 COLLATE NOCASE
 );
 
-CREATE TRIGGER CHK_NEWREC_FERIADOS_MOVEIS BEFORE INSERT ON feriados_moveis
+--
+-- Validação prévia à inserção na tabela "feriados_moveis" sem comprometer
+-- o cálculo de data implementado no trigger "COMPUTUS".
+--
+CREATE TRIGGER VALIDATE_FERIADOS_MOVEIS BEFORE INSERT ON feriados_moveis
 BEGIN
   SELECT CASE
+  --
+  -- checa se o valor de "data_feriado" segue um dos padrões esperados:
+  -- apenas ANO com 4 dígitos (inicio do cálculo) ou DATA no padrão ISO-8601
+  --
   WHEN NOT (new.data_feriado GLOB "[0-9][0-9][0-9][0-9]"
       OR new.data_feriado GLOB "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]")
     THEN raise(ABORT, "Formato ilegal da coluna 'data_feriado'.")
+  --
+  -- checa se o ano de "data_feriado" é parte do calendário Gregoriano
+  --
   WHEN cast(substr(new.data_feriado, 1, 4) AS INTEGER) < 1583
     THEN raise(ABORT, "Ano de 'data_feriado' < 1583.")
+  --
+  -- checa se o valor de "comemoracao" é um dentre: "Páscoa", "Carnaval",
+  -- "Paixão" ou "Corpus Christi", indiferente à grafia
+  --
   WHEN NOT (soundex(new.comemoracao) IN (soundex("PÁSCOA"), soundex("PAIXÃO"))
       OR upper(new.comemoracao) IN ("CARNAVAL", "CORPUS CHRISTI"))
     THEN raise(ABORT, "Valor ilegal da coluna 'comemoracao'.")
-  WHEN EXISTS(
+  --
+  -- checa se o feriado já está registrado com outra data no ano de interesse
+  --
+  WHEN (length(new.data_feriado) == 10) AND EXISTS(
       SELECT 1 FROM feriados_moveis WHERE
-        length(new.comemoracao) == length(comemoracao)
-        AND soundex(new.comemoracao) == soundex(comemoracao)
-        AND length(data_feriado) == 10
-        AND length(new.data_feriado) == 10
+        soundex(comemoracao) == soundex(new.comemoracao)
+        AND length(comemoracao) == length(new.comemoracao)
         AND substr(data_feriado, 1, 4) IS substr(new.data_feriado, 1, 4)
         AND data_feriado IS NOT new.data_feriado
     )
@@ -78,10 +94,16 @@ CREATE TRIGGER COMPUTUS AFTER INSERT ON feriados_moveis
 WHEN new.data_feriado GLOB "[0-9][0-9][0-9][0-9]"
 BEGIN
 
+  --
+  -- exclusão do registro da data (incompleta) da Páscoa
+  --
   DELETE FROM feriados_moveis
   WHERE data_feriado IS new.data_feriado
     AND soundex(new.comemoracao) IS soundex("PÁSCOA");
 
+  --
+  -- inclusão do registro da data da Páscoa no ano desejado
+  --
   INSERT OR IGNORE INTO feriados_moveis VALUES ((
       SELECT date(dia, "+" || (7 - strftime("%w", dia)) || " days")
       FROM (
@@ -91,6 +113,10 @@ BEGIN
       )
     ), "Páscoa");
 
+  --
+  -- atualização da data do feriado, usando a data da Páscoa no ano,
+  -- previamente calculada, como offset de cálculo
+  --
   UPDATE feriados_moveis SET data_feriado = (
     date(
       (
@@ -136,18 +162,25 @@ CREATE TABLE feriados_fixos (
                 COLLATE NOCASE
 );
 
-CREATE TRIGGER CHK_NEWREC_FERIADOS_FIXOS BEFORE INSERT ON feriados_fixos
+--
+-- Validação prévia à inserção na tabela "feriados_fixos".
+--
+CREATE TRIGGER VALIDATE_FERIADOS_FIXOS BEFORE INSERT ON feriados_fixos
 BEGIN
   SELECT CASE
+  --
+  -- checa se o valor de "data_feriado" segue o padrão esperado, isto é:
+  -- representa DATA no padrão ISO-8601 (ano-mês-dia)
+  --
   WHEN NOT new.data_feriado GLOB "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]"
     THEN raise(ABORT, "Formato ilegal da coluna 'data_feriado'.")
+  --
+  -- checa se o feriado já está registrado com outra data no ano de interesse
+  --
   WHEN EXISTS(
       SELECT 1 FROM feriados_fixos WHERE
-        length(new.comemoracao) == length(comemoracao)
-        AND soundex(new.comemoracao) == soundex(comemoracao)
-        AND length(new.comemoracao) == length(comemoracao)
-        AND length(data_feriado) == 10
-        AND length(new.data_feriado) == 10
+        soundex(comemoracao) == soundex(new.comemoracao)
+        AND length(comemoracao) == length(new.comemoracao)
         AND substr(data_feriado, 1, 4) IS substr(new.data_feriado, 1, 4)
         AND data_feriado IS NOT new.data_feriado
     )

@@ -908,11 +908,8 @@ CREATE VIEW IF NOT EXISTS emprestimos_facil AS
     acervo_facil.posicao,
     data_limite,
     "Emprestado até " || (
-      SELECT CASE CAST(substr(rawDate, 1, 1) AS INTEGER)
-        WHEN 0 THEN "Domingo"   WHEN 1 THEN "Segunda"   WHEN 2 THEN "Terça"
-        WHEN 3 THEN "Quarta"    WHEN 4 THEN "Quinta"    WHEN 5 THEN "Sexta"
-        ELSE "Sábado"
-      END || substr(rawDate, 2)
+      SELECT rtrim(substr("DomingoSegundaTerça++Quarta+Quinta+Sexta++Sábado",
+        1 + substr(rawDate, 1, 1) * 7, 7), "+") || substr(rawDate, 2)
       FROM (SELECT strftime("%w %d-%m-%Y.", data_limite) AS rawDate)
     ) AS comentario
   FROM emprestimos
@@ -1026,7 +1023,8 @@ CREATE VIEW IF NOT EXISTS exemplares_disponiveis AS
 
 CREATE TABLE IF NOT EXISTS feriados (
   --
-  -- container dos "feriados" importados
+  -- união das tabelas "feriados_moveis" e "feriados fixos"
+  -- armazenadas no DB anexado em "util.sqlite"
   --
 
   data_feriado    DATE            --> ISO-8601
@@ -1040,9 +1038,25 @@ CREATE TABLE IF NOT EXISTS feriados (
 
 COMMIT;
 
-PRAGMA FOREIGN_KEYS = ON;   --> habilita integridade referencial
+ATTACH "util.sqlite" AS util;
 
-.import "feriados.dat" feriados
+DELETE FROM feriados;
+
+INSERT INTO feriados SELECT *
+  FROM (
+    SELECT feriados_moveis.*
+    FROM config JOIN feriados_moveis
+    WHERE weekdays >> strftime("%w", data_feriado) & 1
+  UNION
+    SELECT feriados_fixos.*
+    FROM config JOIN feriados_fixos
+    WHERE weekdays >> strftime("%w", data_feriado) & 1
+  )
+  ORDER BY data_feriado;
+
+DETACH util;
+
+PRAGMA FOREIGN_KEYS = ON;   --> habilita integridade referencial
 
 -- PREENCHIMENTO DAS TABELAS COM DADOS DE TESTE
 
