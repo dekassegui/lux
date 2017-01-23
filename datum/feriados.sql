@@ -41,8 +41,8 @@ CREATE TABLE feriados_moveis (
 );
 
 --
--- Validação prévia à inserção na tabela "feriados_moveis" sem comprometer
--- o cálculo de data implementado no trigger "COMPUTUS".
+-- Validação prévia à inserção na tabela "feriados_moveis", compromissada
+-- com cálculos de datas implementados no trigger "COMPUTUS".
 --
 CREATE TRIGGER VALIDATE_FERIADOS_MOVEIS BEFORE INSERT ON feriados_moveis
 BEGIN
@@ -63,24 +63,20 @@ BEGIN
   -- checa se "comemoracao" é um dentre: "Páscoa", "Carnaval", "Paixão"
   -- ou "Corpus Christi", indiferente ao uso de maiúsculas/minúsculas
   --
-  -- Nota: O uso de soundex é workaround para a inabilidade de upper/lower
-  --       manejar argumentos que contém vogais acentuadas e cedilha.
-  --
-  WHEN NOT (soundex(new.comemoracao) IN (soundex("PÁSCOA"), soundex("PAIXÃO"))
-      OR upper(new.comemoracao) IN ("CARNAVAL", "CORPUS CHRISTI"))
+  WHEN upper(new.comemoracao) NOT IN ("CARNAVAL", "CORPUS CHRISTI",
+      "PáSCOA", "PÁSCOA", "PAIXãO", "PAIXÃO")
     THEN raise(ABORT, "Valor ilegal da coluna 'comemoracao'.")
   --
   -- checa se o feriado já está registrado com outra data no ANO
   --
-  WHEN (length(new.data_feriado) == 10) AND EXISTS(
-      SELECT 1 FROM feriados_moveis WHERE
-        (
-          -- A comparação das quantidades de caracteres visa desambiguação,
-          -- pois soundex retorna parâmetro para checar "semelhança".
-          soundex(comemoracao) == soundex(new.comemoracao)
-          AND length(comemoracao) == length(new.comemoracao)
-        )
-        AND substr(data_feriado, 1, 4) IS substr(new.data_feriado, 1, 4)
+  WHEN (length(new.data_feriado) == 10)
+    AND EXISTS(
+      SELECT 1 FROM (
+        SELECT soundex(new.comemoracao) AS SDX,
+          substr(new.data_feriado, 1, 4) AS ANO
+      ) JOIN feriados_moveis
+      WHERE soundex(comemoracao) == SDX       --> semelhança !== identidade
+        AND substr(data_feriado, 1, 4) IS ANO
         AND data_feriado IS NOT new.data_feriado
     )
     THEN raise(ABORT, "O feriado/ano já está registrado com outra data.")
@@ -101,11 +97,10 @@ CREATE TRIGGER COMPUTUS AFTER INSERT ON feriados_moveis
 WHEN new.data_feriado GLOB "[0-9][0-9][0-9][0-9]" --> ANO
 BEGIN
   --
-  -- exclusão do registro da data da Páscoa que contém apenas o ANO
+  -- exclusão do registro da data da Páscoa que contém apenas ANO
   --
   DELETE FROM feriados_moveis
-  WHERE data_feriado IS new.data_feriado
-    AND soundex(new.comemoracao) IS soundex("PÁSCOA");
+  WHERE data_feriado IS new.data_feriado AND soundex(comemoracao) IS "P220";
   --
   -- inclusão, se necessário, do registro da data da Páscoa no ANO
   --
@@ -119,27 +114,25 @@ BEGIN
     ), "Páscoa");
   --
   -- atualização de registro de data do Carnaval, Paixão ou Corpus Christi
+  -- no ANO
   --
   UPDATE feriados_moveis SET data_feriado = (
     date(
       (
         SELECT data_feriado
-        FROM (
-          SELECT soundex("PÁSCOA") as SDX, new.data_feriado || "%" AS PAT
-        ) JOIN feriados_moveis
-        WHERE soundex(comemoracao) IS SDX AND like(PAT, data_feriado)
+        FROM (SELECT new.data_feriado || "%" AS PAT) JOIN feriados_moveis
+        WHERE soundex(comemoracao) IS "P220" AND like(PAT, data_feriado)
       ), (
-        SELECT CASE
-        WHEN upper(new.comemoracao) IS "CARNAVAL" THEN "-47 days"
-        WHEN soundex(new.comemoracao) IS soundex("PAIXÃO") THEN "-2 days"
-        WHEN upper(new.comemoracao) IS "CORPUS CHRISTI" THEN "+60 days"
+        SELECT CASE soundex(new.comemoracao)
+        WHEN "C651" THEN "-47 days"   -- Carnaval
+        WHEN "P200" THEN "-2 days"    -- Paixão
+        WHEN "C612" THEN "+60 days"   -- Corpus Christi
         ELSE raise(IGNORE)
         END
       )
     )
   )
   WHERE data_feriado IS new.data_feriado;
-
 END;
 
 INSERT INTO feriados_moveis VALUES
@@ -181,14 +174,15 @@ BEGIN
   -- checa se o feriado já está registrado com outra data no ano de interesse
   --
   WHEN EXISTS(
-      SELECT 1 FROM feriados_fixos WHERE
-        (
-          -- A comparação das quantidades de caracteres visa desambiguação,
-          -- pois soundex retorna parâmetro para checar "semelhança".
-          soundex(comemoracao) == soundex(new.comemoracao)
-          AND length(comemoracao) == length(new.comemoracao)
+      SELECT 1 FROM (
+        SELECT soundex(new.comemoracao) AS SDX, length(new.comemoracao) AS LEN,
+          substr(new.data_feriado, 1, 4) AS ANO
+      ) JOIN feriados_fixos
+      WHERE (
+          -- testa a semelhança ao invés da identidade
+          soundex(comemoracao) == SDX AND length(comemoracao) == LEN
         )
-        AND substr(data_feriado, 1, 4) IS substr(new.data_feriado, 1, 4)
+        AND substr(data_feriado, 1, 4) IS ANO
         AND data_feriado IS NOT new.data_feriado
     )
     THEN raise(ABORT, "O feriado/ano já está registrado com outra data.")

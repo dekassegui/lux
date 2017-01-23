@@ -1042,10 +1042,15 @@ ATTACH "util.sqlite" AS UTIL;
 
 DELETE FROM feriados;
 
-INSERT INTO feriados SELECT data_feriado, comemoracao FROM (
+INSERT INTO feriados
+  SELECT
+    data_feriado, comemoracao
+  FROM (
     SELECT weekdays FROM config
   ) JOIN (
-    SELECT * FROM UTIL.feriados_moveis UNION SELECT * FROM UTIL.feriados_fixos
+    SELECT * FROM UTIL.feriados_moveis
+    UNION
+    SELECT * FROM UTIL.feriados_fixos
   )
   WHERE weekdays >> strftime("%w", data_feriado) & 1
   ORDER BY data_feriado;
