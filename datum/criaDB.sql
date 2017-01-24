@@ -1027,11 +1027,11 @@ CREATE TABLE IF NOT EXISTS feriados (
   -- armazenadas no DB anexado em "util.sqlite"
   --
 
-  data_feriado    DATE            --> ISO-8601
+  data_feriado    DATE        --> ISO-8601
                   NOT NULL
                   PRIMARY KEY,
 
-  comemoracao     TEXT            --> motivo da comemoração/homenagem
+  nome_feriado    TEXT
                   NOT NULL
                   COLLATE NOCASE
 );
@@ -1044,7 +1044,7 @@ DELETE FROM feriados;
 
 INSERT INTO feriados
   SELECT
-    data_feriado, comemoracao
+    data_feriado, nome_feriado
   FROM (
     SELECT weekdays FROM config
   ) JOIN (

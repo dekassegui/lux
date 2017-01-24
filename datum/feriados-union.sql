@@ -1,7 +1,7 @@
 ATTACH "util.sqlite" AS util;
 
 CREATE TEMPORARY VIEW dayoffs AS
-  SELECT substr(dayNames, 1 + w * 3, 3) AS nomeDia, data_feriado, comemoracao
+  SELECT substr(dayNames, 1 + w * 3, 3) AS nomeDia, data_feriado, nome_feriado
   FROM (
     SELECT "DOMSEGTERQUAQUISEXSAB" AS dayNames, weekdays FROM config
   ) JOIN (
@@ -13,7 +13,7 @@ CREATE TEMPORARY VIEW dayoffs AS
   ORDER BY data_feriado;
 
 -- DELETE FROM feriados;
--- INSERT INTO feriados SELECT data_feriado, comemoracao FROM dayoffs;
+-- INSERT INTO feriados SELECT data_feriado, nome_feriado FROM dayoffs;
 
 -- DETACH util;
 -- DROP VIEW dayoffs;
