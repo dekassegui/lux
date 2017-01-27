@@ -6,9 +6,12 @@
 
   require 'utils.php';
 
-  $db = new SQLite3(DB_FILENAME) or die('Unable to open database');
-
-  addRegex($db);
+  try {
+    $db = new SQLitePDO();
+    $db->connect(DB_FILENAME);
+  } catch(PDOException $e) {
+    die($e->getMessage());
+  }
 
   /**
    * Refaz a sequência contínua dos "rowid" dos registros da tabela "acervo",
@@ -38,6 +41,7 @@
   -- VACUUM;
 EOT
     );
+    return $db->exec($sql) === FALSE ? FALSE : TRUE;
   }
 
   switch ($_GET['action']) {
@@ -49,11 +53,12 @@ EOT
   WHERE rowid == {$_GET['recnumber']};
 EOT
       );
-      echo join('|', $result->fetchArray(SQLITE3_NUM));
+      echo join('|', $result->fetch(PDO::FETCH_NUM));
       break;
 
     case 'COUNT':
-      echo $db->querySingle('SELECT count() FROM acervo');
+      $result = $db->query('SELECT count() FROM acervo');
+      echo $result->fetchColumn();
       break;
 
     case 'INSERT':
@@ -78,16 +83,22 @@ EOT;
     'dummy_autor', $exemplar, $posicao, $comentario;
 EOT;
       }
-      if ($db->exec($sql)) {
-        rebuildTable($db);
-        $sql = <<<EOT
+      // requisita a atualização ou inserção
+      if ($db->exec($sql) === FALSE) {
+        $arr = $db->errorInfo();
+        echo join('|', $arr);
+      } else {
+        if (rebuildTable($db)) {
+          $sql = <<<EOT
   SELECT rowid
   FROM acervo_facil
   WHERE obra == $obra AND exemplar == $exemplar
 EOT;
-        echo $db->querySingle($sql);
-      } else {
-        echo 'Error: '.$db->lastErrorMsg();
+          $result = $db->query($sql);
+          echo $result->fetchColumn();
+        } else {
+          echo "1";
+        }
       }
       break;
 
@@ -100,7 +111,8 @@ EOT;
         rebuildTable($db);
         echo 'TRUE';
       } else {
-        echo 'Error: '.$db->lastErrorMsg();
+        $arr = $db->errorInfo();
+        echo join('|', $arr);
       }
       break;
 
@@ -119,18 +131,19 @@ EOT;
 EOT;
         // for debug purpose --> $text = $sql."\n";
         // consulta o DB
+        // consulta o DB
         $result = $db->query($sql);
         // montagem da lista de resultados
-        if ($row = $result->fetchArray(SQLITE3_NUM)) {
+        if ($row = $result->fetch(PDO::FETCH_NUM)) {
           $text .= join('|', $row);
-          while ($row = $result->fetchArray(SQLITE3_NUM)) {
+          while ($row = $result->fetch(PDO::FETCH_NUM)) {
             $text .= "\n".join('|', $row);
           }
         } else {
-          $text = "Warning: No data found to satisfy search:\n$sql";
+          $text = "Advertência: Não há dados que satisfaçam a requisição:\n$sql";
         }
       } else {
-        $text = 'Warning: Parâmetros insuficientes para montagem das restrições de pesquisa.';
+        $text = 'Advertência: Parâmetros insuficientes para montagem das restrições de pesquisa.';
       }
       echo $text;
       break;
@@ -140,16 +153,14 @@ EOT;
       $result = $db->query(
         'SELECT code, obra || " (" || exemplar || " - " || posicao || ")" FROM acervo_facil'
         );
-      if ($row = $result->fetchArray(SQLITE3_NUM)) {
+      if ($row = $result->fetch(PDO::FETCH_NUM)) {
         $text .= join('|', $row);
-        while ($row = $result->fetchArray(SQLITE3_NUM)) {
+        while ($row = $result->fetch(PDO::FETCH_NUM)) {
           $text .= "\n".join('|', $row);
         }
       }
       echo $text;
       break;
   }
-
-  $db->close();
 
 ?>

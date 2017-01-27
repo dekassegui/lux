@@ -15,7 +15,12 @@
     return $s;
   }
 
-  $db = new SQLite3(DB_FILENAME) or die('Unable to open database');
+  try {
+    $db = new SQLitePDO();
+    $db->connect(DB_FILENAME);
+  } catch(PDOException $e) {
+    die($e->getMessage());
+  }
 
   switch ($_GET['action']) {
 
@@ -23,7 +28,7 @@
 
       // requisita parâmetros para cálculo dos empréstimos e datas limite
       $result = $db->query(EASYQUERY);
-      $values = $result->fetchArray(SQLITE3_NUM);
+      $values = $result->fetch(PDO::FETCH_NUM);
       echo $values[0].'|'.$values[1].'|'.$values[2];
       break;
 
@@ -32,28 +37,27 @@
       $fields = array('prazo', 'pendencias', 'weekdays');
 
       $result = $db->query(EASYQUERY);
-      $current = $result->fetchArray(SQLITE3_ASSOC);
+      $current = $result->fetch(PDO::FETCH_ASSOC);
 
       $buffer = array();
       foreach (aexplode('|', $_GET['CFG'], $fields) as $parName=>$value)
       {
         if ($current[$parName] == $value) continue;
 
-        if ($db->exec("UPDATE config_facil SET $parName=".$value)) {
+        if ($db->exec("UPDATE config_facil SET $parName=".$value) === FALSE) {
 
-          $buffer[] = "Parâmetro '$parName' atualizado com sucesso.";
+          $buffer[] = "Erro ao atualizar '$parName': "
+            .translate($db->errorInfo()[2]);
 
         } else {
 
-          $buffer[] = "Erro ao atualizar '$parName': "
-            .translate( $db->lastErrorMsg() );
+          $buffer[] = "Parâmetro '$parName' atualizado com sucesso.";
+
         }
       }
       echo join("\n", $buffer);
       break;
 
   }
-
-  $db->close();
 
 ?>

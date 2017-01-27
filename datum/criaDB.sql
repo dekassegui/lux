@@ -42,7 +42,7 @@ DROP VIEW IF EXISTS count_emprestados;
 DROP VIEW IF EXISTS obras_facil;
 DROP VIEW IF EXISTS obras_emprestadas;
 DROP VIEW IF EXISTS acervo_facil;
-DROP VIEW IF EXISTS emprestimos_easy;
+DROP VIEW IF EXISTS emprestimos_calc;
 DROP VIEW IF EXISTS emprestimos_facil;
 DROP VIEW IF EXISTS exemplares_disponiveis;
 DROP VIEW IF EXISTS config_facil;
@@ -744,14 +744,14 @@ END;
 -- conveniência exclusivamente para calcular e preencher a coluna
 -- "data_limite" na inserção de registros de "emprestimos"
 --
-CREATE VIEW IF NOT EXISTS emprestimos_easy AS SELECT * FROM emprestimos;
+CREATE VIEW IF NOT EXISTS emprestimos_calc AS SELECT * FROM emprestimos;
 
 --
 -- Se o novo valor da coluna "data_limite" é NULL, então calcula e preenche
 -- a coluna, restrita aos dias da semana com atendimento, i.e.: a biblioteca
 -- funciona e que não sejam feriado, senão preenche a coluna com o novo valor.
 --
-CREATE TRIGGER emprestimos_easy_t0 INSTEAD OF INSERT ON emprestimos_easy
+CREATE TRIGGER emprestimos_calc_t0 INSTEAD OF INSERT ON emprestimos_calc
 BEGIN
   INSERT INTO emprestimos SELECT new.data_emprestimo, new.data_devolucao,
     new.bibliotecario, new.leitor, new.obra, new.exemplar,
@@ -926,7 +926,7 @@ CREATE VIEW IF NOT EXISTS emprestimos_facil AS
 --
 CREATE TRIGGER emprestimos_facil_t0 INSTEAD OF INSERT ON emprestimos_facil
 BEGIN
-  INSERT INTO emprestimos_easy SELECT
+  INSERT INTO emprestimos_calc SELECT
     substr(new.data_emprestimo, 7, 4) || "-"
       || substr(new.data_emprestimo, 4, 2) || "-"
       || substr(new.data_emprestimo, 1, 2)
@@ -1080,5 +1080,5 @@ create temp table t (e, d, b, l, o, x, c);
 .import "emprestimos.dat" t
 update t set d=null where d == "";
 update t set c=null;
-insert into emprestimos_easy select * from t;
+insert into emprestimos_calc select * from t;
 drop table t;

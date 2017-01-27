@@ -6,6 +6,26 @@
 
   define('DB_FILENAME', 'datum/lux.sqlite');
 
+  class SQLitePDO extends PDO
+  {
+    public function __construct() {}
+
+    /**
+     * Instancia objeto da classe PDO e cria funções nativas para uso no sql,
+     * que é "workaround" para o bug da criação de funções em algumas versões
+     * de PDO para SQLite.
+     *
+     * @param $dsn String container do "data source name".
+    */
+    public function connect($dsn)
+    {
+      parent::__construct("sqlite:".$dsn);
+
+      $this->sqliteCreateFunction("preg_match", "preg_match", 2);
+      $this->sqliteCreateFunction("toISOdate", "toISOdate", 1);
+    }
+  }
+
   $nomeMes = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
   /**
@@ -182,10 +202,10 @@
   }
 
   function addRegex($db) {
-    if ($db->createFunction("preg_match", "preg_match", 2) === FALSE)
+    /* if ($db->sqliteCreateFunction("preg_match", "preg_match", 2) === FALSE)
       exit("Failed creating function\n");
-    if ($db->createFunction("toISOdate", "toISOdate", 1) === FALSE)
-      exit("Failed creating function\n");
+    if ($db->sqliteCreateFunction("toISOdate", "toISOdate", 1) === FALSE)
+      exit("Failed creating function\n"); */
   }
 
 ?>

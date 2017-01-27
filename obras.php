@@ -6,9 +6,12 @@
 
   require 'utils.php';
 
-  $db = new SQLite3(DB_FILENAME) or die('Unable to open database');
-
-  addRegex($db);
+  try {
+    $db = new SQLitePDO();
+    $db->connect(DB_FILENAME);
+  } catch(PDOException $e) {
+    die($e->getMessage());
+  }
 
   /**
    * Refaz a sequência contínua dos "rowid" dos registros da tabela
@@ -35,6 +38,7 @@
   -- VACUUM;
 EOT
     );
+    return $db->exec($sql) === FALSE ? FALSE : TRUE;
   }
 
   switch ($_GET['action']) {
@@ -46,11 +50,12 @@ EOT
   WHERE rowid == {$_GET['recnumber']};
 EOT
       );
-      echo join('|', $result->fetchArray(SQLITE3_NUM));
+      echo join('|', $result->fetch(PDO::FETCH_NUM));
       break;
 
     case 'COUNT':
-      echo $db->querySingle('SELECT count() FROM obras');
+      $result = $db->query('SELECT count() FROM obras');
+      echo $result->fetchColumn();
       break;
 
     case 'INSERT':
@@ -74,12 +79,18 @@ EOT;
   INSERT INTO obras_facil SELECT 'dummy_rowid', $code, $titulo, $autor, $genero;
 EOT;
       }
-      if ($db->exec($sql)) {
-        rebuildTable($db);
-        $sql = "SELECT rowid FROM obras WHERE code == $code";
-        echo $db->querySingle($sql);
+      // requisita a atualização ou inserção
+      if ($db->exec($sql) === FALSE) {
+        $arr = $db->errorInfo();
+        echo join('|', $arr);
       } else {
-        echo 'Error: '.$db->lastErrorMsg();
+        if (rebuildTable($db)) {
+          $sql = "SELECT rowid FROM obras WHERE code == $code";
+          $result = $db->query($sql);
+          echo $result->fetchColumn();
+        } else {
+          echo "1";
+        }
       }
       break;
 
@@ -92,7 +103,8 @@ EOT;
         rebuildTable($db);
         echo 'TRUE';
       } else {
-        echo 'Error: '.$db->lastErrorMsg();
+        $arr = $db->errorInfo();
+        echo join('|', $arr);
       }
       break;
 
@@ -113,16 +125,16 @@ EOT;
         // consulta o DB
         $result = $db->query($sql);
         // montagem da lista de resultados
-        if ($row = $result->fetchArray(SQLITE3_NUM)) {
+        if ($row = $result->fetch(PDO::FETCH_NUM)) {
           $text .= join('|', $row);
-          while ($row = $result->fetchArray(SQLITE3_NUM)) {
+          while ($row = $result->fetch(PDO::FETCH_NUM)) {
             $text .= "\n".join('|', $row);
           }
         } else {
-          $text = "Warning: No data found to satisfy search:\n$sql";
+          $text = "Advertência: Não há dados que satisfaçam a requisição:\n$sql";
         }
       } else {
-        $text = 'Warning: Parâmetros insuficientes para montagem das restrições de pesquisa.';
+        $text = 'Advertência: Parâmetros insuficientes para montagem das restrições de pesquisa.';
       }
       echo $text;
       break;
@@ -130,16 +142,14 @@ EOT;
     case 'GETALL':
       $text = '';
       $result = $db->query('SELECT code, titulo FROM obras');
-      if ($row = $result->fetchArray(SQLITE3_NUM)) {
+      if ($row = $result->fetch(PDO::FETCH_NUM)) {
         $text .= join('|', $row);
-        while ($row = $result->fetchArray(SQLITE3_NUM)) {
+        while ($row = $result->fetch(PDO::FETCH_NUM)) {
           $text .= "\n".join('|', $row);
         }
       }
       echo $text;
       break;
   }
-
-  $db->close();
 
 ?>

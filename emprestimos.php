@@ -6,9 +6,12 @@
 
   require 'utils.php';
 
-  $db = new SQLite3(DB_FILENAME) or die('Unable to open database');
-
-  addRegex($db);
+  try {
+    $db = new SQLitePDO();
+    $db->connect(DB_FILENAME);
+  } catch(PDOException $e) {
+    die($e->getMessage());
+  }
 
   /**
    * Refaz a sequência contínua dos "rowid" dos registros da tabela
@@ -32,13 +35,13 @@
       JOIN obras ON (emprestimos.obra == obras.code)
     ORDER BY data_emprestimo, leitores.nome, obras.titulo;
   DELETE FROM emprestimos;
-  INSERT INTO emprestimos_easy SELECT * FROM t;
+  INSERT INTO emprestimos_calc SELECT * FROM t;
   -- REINDEX autores_ndx;
   COMMIT;
   PRAGMA foreign_keys = ON;
   -- VACUUM;
 EOT;
-    return $db->exec($sql) ? TRUE : FALSE;
+    return $db->exec($sql) === FALSE ? FALSE : TRUE;
   }
 
   switch ($_GET['action']) {
@@ -51,11 +54,12 @@ EOT;
   WHERE rowid == {$_GET['recnumber']}
 EOT
       );
-      echo join('|', $result->fetchArray(SQLITE3_NUM));
+      echo join('|', $result->fetch(PDO::FETCH_NUM));
       break;
 
     case 'COUNT':
-      echo $db->querySingle('SELECT count() FROM emprestimos');
+      $result = $db->query('SELECT count() FROM emprestimos');
+      echo $result->fetchColumn();
       break;
 
     case 'INSERT':
@@ -91,29 +95,25 @@ EOT;
       $exemplar;
 EOT;
       }
-      // tenta executar a requisição
-      if ($db->exec($sql)) {
+      // requisita a atualização ou inserção
+      if ($db->exec($sql) === FALSE) {
+        $arr = $db->errorInfo();
+        echo join('|', $arr);
+      } else {
         if (rebuildTable($db)) {
           // requisita o número de ordem do registro recém atualizado/inserido
-          $d = toISOdate(
-            substr($data_emprestimo, 1, strlen($data_emprestimo)-2));
+          $d = substr($data_emprestimo, 1, 10);
           $sql = <<<EOT
   SELECT rowid
   FROM emprestimos_facil
-  WHERE
-    --> comparação "nixtime" de datas ISO-8601
-    strftime("%s", substr(data_emprestimo, 7, 4) || "-"
-      || substr(data_emprestimo, 4, 2) || "-"
-      || substr(data_emprestimo, 1, 2)
-      || substr(data_emprestimo, 11)) == strftime("%s", "$d")
+  WHERE substr(data_emprestimo, 1, 10) == "$d"
     AND leitor == $leitor AND obra == $obra AND exemplar == $exemplar;
 EOT;
-          echo $db->querySingle($sql);
+          $result = $db->query($sql);
+          echo $result->fetchColumn();
         } else {
           echo "1";
         }
-      } else {
-        echo 'Error: '.$db->lastErrorMsg();
       }
       break;
 
@@ -126,7 +126,8 @@ EOT;
         rebuildTable($db);
         echo 'TRUE';
       } else {
-        echo 'Error: '.$db->lastErrorMsg();
+        $arr = $db->errorInfo();
+        echo join('|', $arr);
       }
       break;
 
@@ -149,9 +150,9 @@ EOT;
         // consulta o DB
         $result = $db->query($sql);
         // montagem da lista de resultados
-        if ($row = $result->fetchArray(SQLITE3_NUM)) {
+        if ($row = $result->fetch(PDO::FETCH_NUM)) {
           $text .= join('|', $row);
-          while ($row = $result->fetchArray(SQLITE3_NUM)) {
+          while ($row = $result->fetch(PDO::FETCH_NUM)) {
             $text .= "\n".join('|', $row);
           }
         } else {
@@ -163,7 +164,5 @@ EOT;
       echo $text;
       break;
   }
-
-  $db->close();
 
 ?>

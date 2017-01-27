@@ -6,7 +6,12 @@
 
   require 'utils.php';
 
-  $db = new SQLite3(DB_FILENAME) or die('Unable to open database');
+  try {
+    $db = new SQLitePDO();
+    $db->connect(DB_FILENAME);
+  } catch(PDOException $e) {
+    die($e->getMessage());
+  }
 
   $text = '';
   $result = $db->query(<<<EOT
@@ -14,14 +19,12 @@
    FROM acervo JOIN obras ON acervo.obra == obras.code
 EOT
     );
-  if ($row = $result->fetchArray(SQLITE3_NUM)) {
+  if ($row = $result->fetch(PDO::FETCH_NUM)) {
     $text .= join('|', $row);
-    while ($row = $result->fetchArray(SQLITE3_NUM)) {
+    while ($row = $result->fetch(PDO::FETCH_NUM)) {
       $text .= "\n".join('|', $row);
     }
   }
   echo $text;
-
-  $db->close();
 
 ?>

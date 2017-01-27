@@ -118,7 +118,7 @@ BEGIN
     ) JOIN (
       SELECT "Carnaval" AS feriado, "-47 days" AS dias
       UNION SELECT "Paixão" AS feriado, "-2 days" AS dias
-      UNION SELECT "Corpus Christi" AS feriado, "60 days" AS dias
+      UNION SELECT "Corpus Christi" AS feriado, "+60 days" AS dias
     );
 
 END;

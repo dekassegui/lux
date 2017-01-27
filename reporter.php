@@ -24,7 +24,12 @@
       $d[1] == '-0300' ? 'BRT' : 'BRST');
   }
 
-  $db = new SQLite3(DB_FILENAME) or die('Unable to open database');
+  try {
+    $db = new SQLitePDO();
+    $db->connect(DB_FILENAME);
+  } catch(PDOException $e) {
+    die($e->getMessage());
+  }
 
   switch ($_GET['action']) {
 
@@ -32,18 +37,24 @@
 
       mkHeader('Devolucões Esperadas');
 
+      $hoje = strftime('%Y-%m-%d');
       $sql = <<<EOT
-  SELECT rowid, bibliotecario, data_emprestimo, leitor, obra, autor, exemplar,
-    posicao, comentario
-  FROM (SELECT date('now', 'localtime') AS hoje), emprestimos_facil
-  WHERE data_devolucao ISNULL AND data_limite <= hoje;
+  SELECT count(1)
+  FROM emprestimos_facil
+  WHERE data_devolucao ISNULL AND data_limite <= "$hoje";
 EOT;
-      for ($m=0, $result=$db->query($sql);
-            $result->fetchArray(SQLITE3_NUM); ++$m);
+      $result = $db->query($sql);
+      $m = $result->fetchColumn();
       echo "\n  #Pendências = $m";
       if ($m > 0) {
-        $result->reset();
-        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+        $sql = <<<EOT
+  SELECT rowid, bibliotecario, data_emprestimo, leitor, obra, autor, exemplar,
+    posicao, comentario
+  FROM emprestimos_facil
+  WHERE data_devolucao ISNULL AND data_limite <= "$hoje";
+EOT;
+        $result = $db->query($sql);
+        while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
           echo "\n\n        Registro: ".$row['rowid'];
           echo "\n          Agente: ".$row['bibliotecario'];
           echo "\n   Emprestado em: ".$row['data_emprestimo'];
@@ -55,25 +66,26 @@ EOT;
           echo "\n      Comentário: ".$row['comentario'];
         }
       }
-      $result->finalize();
 
       echo("\n\n");
       mkHeader('Livros Disponíveis para Empréstimo');
 
-      $n = $db->querySingle('SELECT count(1) FROM exemplares_disponiveis');
+      $result = $db->query('SELECT count(1) FROM exemplares_disponiveis');
+      $n = $result->fetchColumn();
       echo "\n  #Exemplares = $n";
       if ($n > 0) {
+        $sql = 'SELECT count(distinct titulo) FROM exemplares_disponiveis';
+        $result = $db->query($sql);
+        $m = $result->fetchColumn();
+        echo "\n     #Títulos = $m";
         $sql = <<<EOT
   SELECT titulo, autores, genero,
     group_concat(quote(exemplar), ", ") AS exemplares, posicao
   FROM exemplares_disponiveis
   GROUP BY titulo;
 EOT;
-        for ($m=0, $result=$db->query($sql);
-              $result->fetchArray(SQLITE3_NUM); ++$m);
-        echo "\n     #Títulos = $m";
-        $result->reset();
-        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+        $result = $db->query($sql);
+        while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
           echo "\n\n         Título : ".$row['titulo'];
           echo "\n  Autor&Espírito: ".$row['autores'];
           echo "\n          Gênero: ".$row['genero'];
@@ -87,7 +99,6 @@ EOT;
           }
           echo "\n         Posição: ".$row['posicao'];
         }
-        $result->finalize();
       }
 
       break;
@@ -96,13 +107,14 @@ EOT;
 
       mkHeader("Empréstimos em Atraso");
 
-      $sql = 'SELECT * FROM atrasados';
-      for ($n=0, $result=$db->query($sql);
-            $result->fetchArray(SQLITE3_NUM); ++$n);
+      $sql = 'SELECT count(1) FROM atrasados';
+      $result = $db->query($sql);
+      $n = $result->fetchColumn();
       echo "\n  #Pendências = $n";
       if ($n > 0) {
-        $result->reset();
-        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+        $sql = 'SELECT * FROM atrasados';
+        $result = $db->query($sql);
+        while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
           echo "\n\n           Leitor: ".$row['leitor'];
           echo "\n         Telefone: ".$row['telefone'];
           echo "\n           e-mail: ".$row['email'];
@@ -113,13 +125,10 @@ EOT;
           echo "\n      Data limite: ".$row['data_limite'];
           echo "\n           Atraso: ".$row['atraso'].' dias';
         }
-        $result->finalize();
       }
 
       break;
 
   }
-
-  $db->close();
 
 ?>
