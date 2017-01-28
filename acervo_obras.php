@@ -22,7 +22,7 @@ EOT
   if ($row = $result->fetch(PDO::FETCH_NUM)) {
     $text .= join('|', $row);
     while ($row = $result->fetch(PDO::FETCH_NUM)) {
-      $text .= "\n".join('|', $row);
+      $text .= PHP_EOL.join('|', $row);
     }
   }
   echo $text;

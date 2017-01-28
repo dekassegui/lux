@@ -55,7 +55,7 @@
 
         }
       }
-      echo join("\n", $buffer);
+      echo join(PHP_EOL, $buffer);
       break;
 
   }

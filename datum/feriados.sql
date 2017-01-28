@@ -149,7 +149,7 @@ BEGIN
   SELECT CASE
   --
   -- checa se o valor de "data_feriado" segue um dos padrões esperados:
-  -- apenas ANO com 4 dígitos (inicio do cálculo) ou DATA conforme ISO-8601
+  -- apenas ANO com 4 dígitos (inicio do preenchimento) ou DATA ISO-8601
   --
   WHEN NOT (new.data_feriado GLOB "[0-9][0-9][0-9][0-9]"
       OR new.data_feriado GLOB "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]")

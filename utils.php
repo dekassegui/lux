@@ -4,20 +4,26 @@
    * Este script é parte do projeto LUX :: Código aberto em Domínio Público.
   */
 
+  require 'metaphone.php';
+
+  use Metaphone\Metaphone;
+
+  function mphone($phrase) {
+    return Metaphone::getPhraseMetaphone($phrase);
+  }
+
   define('DB_FILENAME', 'datum/lux.sqlite');
 
   /**
-   * Extensão da classe PDO SQLite, provendo métodos convenientes e
-   * "workaround" para bug no método original de criação de funções.
+   * Extensão da classe PDO para SQLite, provendo "workaround" para
+   * bug no método de criação de funções e métodos de conveniência.
   */
   class SQLitePDO extends PDO
   {
     public function __construct() {}
 
     /**
-     * Instancia objeto da classe PDO e cria funções nativas para uso no sql,
-     * que é "workaround" para o bug da criação de funções em algumas versões
-     * de PDO para SQLite.
+     * Instancia objeto e agrega funções nativas para uso nas requisições.
      *
      * @param $dsn String container do "data source name".
     */
@@ -27,10 +33,11 @@
 
       $this->sqliteCreateFunction('preg_match', 'preg_match', 2);
       $this->sqliteCreateFunction('toISOdate', 'toISOdate', 1);
+      $this->sqliteCreateFunction('mphone', 'mphone', 1);
     }
 
     /**
-     * Executa um sql e retorna seu único resultado.
+     * Executa requisição de único resultado com tipo primitivo.
      *
      * Observação: Não substitui o método de mesmo nome no SQlite3.
      *
@@ -186,6 +193,12 @@
 
         $constraints[] =
           $negate."soundex($name) == '".soundex($matches[1])."'";
+
+      // checa uso de METAPHONE
+      } else if (preg_match('/^MPHONE\s+(.+)\s*$/i', $needle, $matches)) {
+
+        $constraints[] =
+          $negate."mphone($name) == '".mphone($matches[1])."'";
 
       // checa uso do operador IN
       } else if (preg_match('/^IN\s+\((.+)\)\s*$/i', $needle, $matches)) {

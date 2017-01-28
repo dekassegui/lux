@@ -11,7 +11,7 @@
   {
     for ($n=1; $n<7; ++$n)
     {
-      if ($m++ > 0) $text .= "\n";
+      if ($m++ > 0) $text .= PHP_EOL;
       $code = $x.$n;
       $text .= "$code|$code";
     }

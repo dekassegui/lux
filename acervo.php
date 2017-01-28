@@ -132,10 +132,10 @@ EOT;
         if ($row = $result->fetch(PDO::FETCH_NUM)) {
           $text .= join('|', $row);
           while ($row = $result->fetch(PDO::FETCH_NUM)) {
-            $text .= "\n".join('|', $row);
+            $text .= PHP_EOL.join('|', $row);
           }
         } else {
-          $text = "Advertência: Não há dados que satisfaçam a requisição:\n$sql";
+          $text = "Advertência: Não há dados que satisfaçam a requisição:".PHP_EOL.$sql;
         }
       } else {
         $text = 'Advertência: Parâmetros insuficientes para montagem das restrições de pesquisa.';
@@ -151,7 +151,7 @@ EOT;
       if ($row = $result->fetch(PDO::FETCH_NUM)) {
         $text .= join('|', $row);
         while ($row = $result->fetch(PDO::FETCH_NUM)) {
-          $text .= "\n".join('|', $row);
+          $text .= PHP_EOL.join('|', $row);
         }
       }
       echo $text;

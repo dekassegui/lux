@@ -17,10 +17,10 @@
    * @param $title String container do título.
   */
   function mkHeader($title) {
-    printf("  === %s ===\n\n", mb_strtoupper($title, 'UTF8'));
+    printf("  === %s ===".PHP_EOL.PHP_EOL, mb_strtoupper($title, 'UTF8'));
     // formata Date&Time no padrão do Brasil com sufixo da região
     $d = explode('|', strftime('%A %d-%m-%Y %H:%M|%z'));
-    printf("  Emissão: %s %s\n", ucfirst($d[0]),
+    printf("  Emissão: %s %s".PHP_EOL, ucfirst($d[0]),
       $d[1] == '-0300' ? 'BRT' : 'BRST');
   }
 
@@ -44,7 +44,7 @@
   WHERE data_devolucao ISNULL AND data_limite <= "$hoje";
 EOT;
       $m = $db->querySingle($sql);
-      echo "\n  #Pendências = $m";
+      echo PHP_EOL."  #Pendências = $m";
       if ($m > 0) {
         $sql = <<<EOT
   SELECT rowid, bibliotecario, data_emprestimo, leitor, obra, autor, exemplar,
@@ -54,27 +54,27 @@ EOT;
 EOT;
         $result = $db->query($sql);
         while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-          echo "\n\n        Registro: ".$row['rowid'];
-          echo "\n          Agente: ".$row['bibliotecario'];
-          echo "\n   Emprestado em: ".$row['data_emprestimo'];
-          echo "\n          Leitor: ".$row['leitor'];
-          echo "\n            Obra: ".$row['obra'];
-          echo "\n  Autor&Espírito: ".$row['autor'];
-          echo "\n        Exemplar: ".$row['exemplar'];
-          echo "\n         Posição: ".$row['posicao'];
-          echo "\n      Comentário: ".$row['comentario'];
+          echo PHP_EOL.PHP_EOL."        Registro: ".$row['rowid'];
+          echo PHP_EOL."          Agente: ".$row['bibliotecario'];
+          echo PHP_EOL."   Emprestado em: ".$row['data_emprestimo'];
+          echo PHP_EOL."          Leitor: ".$row['leitor'];
+          echo PHP_EOL."            Obra: ".$row['obra'];
+          echo PHP_EOL."  Autor&Espírito: ".$row['autor'];
+          echo PHP_EOL."        Exemplar: ".$row['exemplar'];
+          echo PHP_EOL."         Posição: ".$row['posicao'];
+          echo PHP_EOL."      Comentário: ".$row['comentario'];
         }
       }
 
-      echo("\n\n");
+      echo(PHP_EOL.PHP_EOL);
       mkHeader('Livros Disponíveis para Empréstimo');
 
       $n = $db->querySingle('SELECT count(1) FROM exemplares_disponiveis');
-      echo "\n  #Exemplares = $n";
+      echo PHP_EOL."  #Exemplares = $n";
       if ($n > 0) {
         $sql = 'SELECT count(distinct titulo) FROM exemplares_disponiveis';
         $m = $db->querySingle($sql);
-        echo "\n     #Títulos = $m";
+        echo PHP_EOL."     #Títulos = $m";
         $sql = <<<EOT
   SELECT titulo, autores, genero,
     group_concat(quote(exemplar), ", ") AS exemplares, posicao
@@ -83,18 +83,18 @@ EOT;
 EOT;
         $result = $db->query($sql);
         while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-          echo "\n\n         Título : ".$row['titulo'];
-          echo "\n  Autor&Espírito: ".$row['autores'];
-          echo "\n          Gênero: ".$row['genero'];
+          echo PHP_EOL.PHP_EOL."         Título : ".$row['titulo'];
+          echo PHP_EOL."  Autor&Espírito: ".$row['autores'];
+          echo PHP_EOL."          Gênero: ".$row['genero'];
           $n = strrpos($row['exemplares'], ',');
           if ($n === FALSE) {
-            echo "\n        Exemplar: ".$row['exemplares'];
+            echo PHP_EOL."        Exemplar: ".$row['exemplares'];
           } else {
-            echo "\n      Exemplares: "
+            echo PHP_EOL."      Exemplares: "
               .substr($row['exemplares'], 0, $n).' e'
               .substr($row['exemplares'], $n+1);
           }
-          echo "\n         Posição: ".$row['posicao'];
+          echo PHP_EOL."         Posição: ".$row['posicao'];
         }
       }
 
@@ -105,19 +105,19 @@ EOT;
       mkHeader("Empréstimos em Atraso");
 
       $n = $db->querySingle('SELECT count(1) FROM atrasados');
-      echo "\n  #Pendências = $n";
+      echo PHP_EOL."  #Pendências = $n";
       if ($n > 0) {
         $result = $db->query('SELECT * FROM atrasados');
         while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-          echo "\n\n           Leitor: ".$row['leitor'];
-          echo "\n         Telefone: ".$row['telefone'];
-          echo "\n           e-mail: ".$row['email'];
-          echo "\n           Título: ".$row['titulo'];
-          echo "\n   Autor&Espírito: ".$row['autor'];
-          echo "\n         Exemplar: ".$row['exemplar'];
-          echo "\n  Data empréstimo: ".$row['data_emprestimo'];
-          echo "\n      Data limite: ".$row['data_limite'];
-          echo "\n           Atraso: ".$row['atraso'].' dias';
+          echo PHP_EOL.PHP_EOL."           Leitor: ".$row['leitor'];
+          echo PHP_EOL."         Telefone: ".$row['telefone'];
+          echo PHP_EOL."           e-mail: ".$row['email'];
+          echo PHP_EOL."           Título: ".$row['titulo'];
+          echo PHP_EOL."   Autor&Espírito: ".$row['autor'];
+          echo PHP_EOL."         Exemplar: ".$row['exemplar'];
+          echo PHP_EOL."  Data empréstimo: ".$row['data_emprestimo'];
+          echo PHP_EOL."      Data limite: ".$row['data_limite'];
+          echo PHP_EOL."           Atraso: ".$row['atraso'].' dias';
         }
       }
 
