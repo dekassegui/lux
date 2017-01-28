@@ -43,8 +43,7 @@
   FROM emprestimos_facil
   WHERE data_devolucao ISNULL AND data_limite <= "$hoje";
 EOT;
-      $result = $db->query($sql);
-      $m = $result->fetchColumn();
+      $m = $db->querySingle($sql);
       echo "\n  #Pendências = $m";
       if ($m > 0) {
         $sql = <<<EOT
@@ -70,13 +69,11 @@ EOT;
       echo("\n\n");
       mkHeader('Livros Disponíveis para Empréstimo');
 
-      $result = $db->query('SELECT count(1) FROM exemplares_disponiveis');
-      $n = $result->fetchColumn();
+      $n = $db->querySingle('SELECT count(1) FROM exemplares_disponiveis');
       echo "\n  #Exemplares = $n";
       if ($n > 0) {
         $sql = 'SELECT count(distinct titulo) FROM exemplares_disponiveis';
-        $result = $db->query($sql);
-        $m = $result->fetchColumn();
+        $m = $db->querySingle($sql);
         echo "\n     #Títulos = $m";
         $sql = <<<EOT
   SELECT titulo, autores, genero,
@@ -107,13 +104,10 @@ EOT;
 
       mkHeader("Empréstimos em Atraso");
 
-      $sql = 'SELECT count(1) FROM atrasados';
-      $result = $db->query($sql);
-      $n = $result->fetchColumn();
+      $n = $db->querySingle('SELECT count(1) FROM atrasados');
       echo "\n  #Pendências = $n";
       if ($n > 0) {
-        $sql = 'SELECT * FROM atrasados';
-        $result = $db->query($sql);
+        $result = $db->query('SELECT * FROM atrasados');
         while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
           echo "\n\n           Leitor: ".$row['leitor'];
           echo "\n         Telefone: ".$row['telefone'];

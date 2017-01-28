@@ -58,8 +58,7 @@ EOT
       break;
 
     case 'COUNT':
-      $result = $db->query('SELECT count() FROM emprestimos');
-      echo $result->fetchColumn();
+      echo $db->querySingle('SELECT count() FROM emprestimos');
       break;
 
     case 'INSERT':
@@ -96,8 +95,7 @@ EOT;
       }
       // requisita a atualização ou inserção
       if ($db->exec($sql) === FALSE) {
-        $arr = $db->errorInfo();
-        echo join('|', $arr);
+        echo "Error: ".$db->lastErrorMsg();
       } else {
         if (rebuildTable($db)) {
           // requisita o número de ordem do registro recém atualizado/inserido
@@ -108,8 +106,7 @@ EOT;
   WHERE substr(data_emprestimo, 1, 10) == "$d"
     AND leitor == $leitor AND obra == $obra AND exemplar == $exemplar;
 EOT;
-          $result = $db->query($sql);
-          echo $result->fetchColumn();
+          echo $db->querySingle($sql);
         } else {
           echo "1";
         }
@@ -121,12 +118,11 @@ EOT;
   PRAGMA foreign_keys = ON;
   DELETE FROM emprestimos WHERE rowid = {$_GET['recnumber']};
 EOT;
-      if ($db->exec($sql)) {
+      if ($db->exec($sql) === FALSE) {
+        echo "Error: ".$db->lastErrorMsg();
+      } else {
         rebuildTable($db);
         echo 'TRUE';
-      } else {
-        $arr = $db->errorInfo();
-        echo join('|', $arr);
       }
       break;
 

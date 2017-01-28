@@ -47,7 +47,7 @@
         if ($db->exec("UPDATE config_facil SET $parName=".$value) === FALSE) {
 
           $buffer[] = "Erro ao atualizar '$parName': "
-            .translate($db->errorInfo()[2]);
+            .translate($db->lastErrorMsg());
 
         } else {
 

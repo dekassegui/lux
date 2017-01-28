@@ -6,6 +6,10 @@
 
   define('DB_FILENAME', 'datum/lux.sqlite');
 
+  /**
+   * Extensão da classe PDO SQLite, provendo métodos convenientes e
+   * "workaround" para bug no método original de criação de funções.
+  */
   class SQLitePDO extends PDO
   {
     public function __construct() {}
@@ -19,10 +23,32 @@
     */
     public function connect($dsn)
     {
-      parent::__construct("sqlite:".$dsn);
+      parent::__construct('sqlite:'.$dsn);
 
-      $this->sqliteCreateFunction("preg_match", "preg_match", 2);
-      $this->sqliteCreateFunction("toISOdate", "toISOdate", 1);
+      $this->sqliteCreateFunction('preg_match', 'preg_match', 2);
+      $this->sqliteCreateFunction('toISOdate', 'toISOdate', 1);
+    }
+
+    /**
+     * Executa um sql e retorna seu único resultado.
+     *
+     * Observação: Não substitui o método de mesmo nome no SQlite3.
+     *
+     * @param $sql String container do sql a executar.
+     * @return O valor único requisitado na expressão.
+    */
+    public function querySingle($sql)
+    {
+      $result = $this->query($sql);
+      return $result->fetchColumn();
+    }
+
+    /**
+     * @return Retorna texto descrevendo a falha na requisição mais recente.
+    */
+    public function lastErrorMsg()
+    {
+      return $this->errorInfo()[2];
     }
   }
 
@@ -199,13 +225,6 @@
     }
 
     return $constraints;
-  }
-
-  function addRegex($db) {
-    /* if ($db->sqliteCreateFunction("preg_match", "preg_match", 2) === FALSE)
-      exit("Failed creating function\n");
-    if ($db->sqliteCreateFunction("toISOdate", "toISOdate", 1) === FALSE)
-      exit("Failed creating function\n"); */
   }
 
 ?>

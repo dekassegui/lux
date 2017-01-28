@@ -24,7 +24,7 @@
    * @param $db Handle do database container da tabela.
   */
   function rebuildTable($db) {
-    $db->exec(<<<EOT
+    $sql = <<<EOT
   PRAGMA foreign_keys = OFF;
   BEGIN TRANSACTION;
   DROP TABLE IF EXISTS t;
@@ -35,8 +35,7 @@
   COMMIT;
   PRAGMA foreign_keys = ON;
   -- VACUUM;
-EOT
-    );
+EOT;
     return $db->exec($sql) === FALSE ? FALSE : TRUE;
   }
 
@@ -49,8 +48,7 @@ EOT
       break;
 
     case 'COUNT':
-      $result = $db->query('SELECT count() FROM bibliotecarios');
-      echo $result->fetchColumn();
+      echo $db->querySingle('SELECT count() FROM bibliotecarios');
       break;
 
     case 'INSERT':
@@ -73,13 +71,11 @@ EOT;
       }
       // requisita a atualização ou inserção
       if ($db->exec($sql) === FALSE) {
-        $arr = $db->errorInfo();
-        echo join('|', $arr);
+        echo "Error: ".$db->lastErrorMsg();
       } else {
         if (rebuildTable($db)) {
-          $sql = "SELECT rowid FROM bibliotecarios WHERE code == $code";
-          $result = $db->query($sql);
-          echo $result->fetchColumn();
+          echo $db->querySingle(
+            "SELECT rowid FROM bibliotecarios WHERE code == $code");
         } else {
           echo "1";
         }
@@ -91,12 +87,11 @@ EOT;
   PRAGMA foreign_keys = ON;
   DELETE FROM bibliotecarios WHERE rowid = {$_GET['recnumber']};
 EOT;
-      if ($db->exec($sql)) {
+      if ($db->exec($sql) === FALSE) {
+        echo "Error: ".$db->lastErrorMsg();
+      } else {
         rebuildTable($db);
         echo 'TRUE';
-      } else {
-        $arr = $db->errorInfo();
-        echo join('|', $arr);
       }
       break;
 
