@@ -95,7 +95,7 @@ EOT;
       }
       // requisita a atualização ou inserção
       if ($db->exec($sql) === FALSE) {
-        echo "Error: ".$db->lastErrorMsg();
+        echo 'Error: '.$db->lastErrorMsg();
       } else {
         if (rebuildTable($db)) {
           // requisita o número de ordem do registro recém atualizado/inserido
@@ -108,7 +108,7 @@ EOT;
 EOT;
           echo $db->querySingle($sql);
         } else {
-          echo "1";
+          echo '1';
         }
       }
       break;
@@ -119,7 +119,7 @@ EOT;
   DELETE FROM emprestimos WHERE rowid = {$_GET['recnumber']};
 EOT;
       if ($db->exec($sql) === FALSE) {
-        echo "Error: ".$db->lastErrorMsg();
+        echo 'Error: '.$db->lastErrorMsg();
       } else {
         rebuildTable($db);
         echo 'TRUE';
@@ -151,7 +151,7 @@ EOT;
             $text .= PHP_EOL.join('|', $row);
           }
         } else {
-          $text = "Advertência: Não há dados que satisfaçam a requisição:".PHP_EOL.$sql;
+          $text = 'Advertência: Não há dados que satisfaçam a requisição:'.PHP_EOL.$sql;
         }
       } else {
         $text = 'Advertência: Parâmetros insuficientes para montagem das restrições de pesquisa.';

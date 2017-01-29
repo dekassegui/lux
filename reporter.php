@@ -9,7 +9,7 @@
   /**
    * Tenta definir "locale" para português do Brasil.
   */
-  setlocale(LC_ALL, "pt_BR", "pt_BR.utf-8", "pt_BR.iso-8859-1", "portuguese");
+  setlocale(LC_ALL, 'pt_BR', 'pt_BR.utf-8', 'pt_BR.iso-8859-1', 'portuguese');
 
   /**
    * Formata e imprime cabeçalho de relatório agregando Date&Time de emissão.
@@ -17,10 +17,10 @@
    * @param $title String container do título.
   */
   function mkHeader($title) {
-    printf("  === %s ===".PHP_EOL.PHP_EOL, mb_strtoupper($title, 'UTF8'));
+    printf('  === %s ==='.PHP_EOL.PHP_EOL, mb_strtoupper($title, 'UTF8'));
     // formata Date&Time no padrão do Brasil com sufixo da região
     $d = explode('|', strftime('%A %d-%m-%Y %H:%M|%z'));
-    printf("  Emissão: %s %s".PHP_EOL, ucfirst($d[0]),
+    printf('  Emissão: %s %s'.PHP_EOL, ucfirst($d[0]),
       $d[1] == '-0300' ? 'BRT' : 'BRST');
   }
 
@@ -54,15 +54,15 @@ EOT;
 EOT;
         $result = $db->query($sql);
         while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-          echo PHP_EOL.PHP_EOL."        Registro: ".$row['rowid'];
-          echo PHP_EOL."          Agente: ".$row['bibliotecario'];
-          echo PHP_EOL."   Emprestado em: ".$row['data_emprestimo'];
-          echo PHP_EOL."          Leitor: ".$row['leitor'];
-          echo PHP_EOL."            Obra: ".$row['obra'];
-          echo PHP_EOL."  Autor&Espírito: ".$row['autor'];
-          echo PHP_EOL."        Exemplar: ".$row['exemplar'];
-          echo PHP_EOL."         Posição: ".$row['posicao'];
-          echo PHP_EOL."      Comentário: ".$row['comentario'];
+          echo PHP_EOL.PHP_EOL.'        Registro: '.$row['rowid'];
+          echo PHP_EOL.'          Agente: '.$row['bibliotecario'];
+          echo PHP_EOL.'   Emprestado em: '.$row['data_emprestimo'];
+          echo PHP_EOL.'          Leitor: '.$row['leitor'];
+          echo PHP_EOL.'            Obra: '.$row['obra'];
+          echo PHP_EOL.'  Autor&Espírito: '.$row['autor'];
+          echo PHP_EOL.'        Exemplar: '.$row['exemplar'];
+          echo PHP_EOL.'         Posição: '.$row['posicao'];
+          echo PHP_EOL.'      Comentário: '.$row['comentario'];
         }
       }
 
@@ -83,18 +83,18 @@ EOT;
 EOT;
         $result = $db->query($sql);
         while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-          echo PHP_EOL.PHP_EOL."         Título : ".$row['titulo'];
-          echo PHP_EOL."  Autor&Espírito: ".$row['autores'];
-          echo PHP_EOL."          Gênero: ".$row['genero'];
+          echo PHP_EOL.PHP_EOL.'         Título : '.$row['titulo'];
+          echo PHP_EOL.'  Autor&Espírito: '.$row['autores'];
+          echo PHP_EOL.'          Gênero: '.$row['genero'];
           $n = strrpos($row['exemplares'], ',');
           if ($n === FALSE) {
-            echo PHP_EOL."        Exemplar: ".$row['exemplares'];
+            echo PHP_EOL.'        Exemplar: '.$row['exemplares'];
           } else {
-            echo PHP_EOL."      Exemplares: "
+            echo PHP_EOL.'      Exemplares: '
               .substr($row['exemplares'], 0, $n).' e'
               .substr($row['exemplares'], $n+1);
           }
-          echo PHP_EOL."         Posição: ".$row['posicao'];
+          echo PHP_EOL.'         Posição: '.$row['posicao'];
         }
       }
 
@@ -102,22 +102,22 @@ EOT;
 
     case 'LEITOR':
 
-      mkHeader("Empréstimos em Atraso");
+      mkHeader('Empréstimos em Atraso');
 
       $n = $db->querySingle('SELECT count(1) FROM atrasados');
       echo PHP_EOL."  #Pendências = $n";
       if ($n > 0) {
         $result = $db->query('SELECT * FROM atrasados');
         while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-          echo PHP_EOL.PHP_EOL."           Leitor: ".$row['leitor'];
-          echo PHP_EOL."         Telefone: ".$row['telefone'];
-          echo PHP_EOL."           e-mail: ".$row['email'];
-          echo PHP_EOL."           Título: ".$row['titulo'];
-          echo PHP_EOL."   Autor&Espírito: ".$row['autor'];
-          echo PHP_EOL."         Exemplar: ".$row['exemplar'];
-          echo PHP_EOL."  Data empréstimo: ".$row['data_emprestimo'];
-          echo PHP_EOL."      Data limite: ".$row['data_limite'];
-          echo PHP_EOL."           Atraso: ".$row['atraso'].' dias';
+          echo PHP_EOL.PHP_EOL.'           Leitor: '.$row['leitor'];
+          echo PHP_EOL.'         Telefone: '.$row['telefone'];
+          echo PHP_EOL.'           e-mail: '.$row['email'];
+          echo PHP_EOL.'           Título: '.$row['titulo'];
+          echo PHP_EOL.'   Autor&Espírito: '.$row['autor'];
+          echo PHP_EOL.'         Exemplar: '.$row['exemplar'];
+          echo PHP_EOL.'  Data empréstimo: '.$row['data_emprestimo'];
+          echo PHP_EOL.'      Data limite: '.$row['data_limite'];
+          echo PHP_EOL.'           Atraso: '.$row['atraso'].' dias';
         }
       }
 

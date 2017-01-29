@@ -4,15 +4,41 @@
    * Este script é parte do projeto LUX :: Código aberto em Domínio Público.
   */
 
+  define('DB_FILENAME', 'datum/lux.sqlite');
+
   require 'metaphone.php';
 
   use Metaphone\Metaphone;
 
+  /**
+   * Retorna o "metaphone" de frase, isto é; sequência de 1+ strings
+   * separadas por espaço em branco ou separador de linhas do sistema.
+   *
+   * @param $phrase String container da frase.
+   * @return String container do "metaphone" resultante.
+  */
   function mphone($phrase) {
     return Metaphone::getPhraseMetaphone($phrase);
   }
 
-  define('DB_FILENAME', 'datum/lux.sqlite');
+  /**
+   * Pesquisa palavra em frase, comparando o "metaphone" dessa palavra
+   * com o de cada componente da frase, separados por espaços em branco
+   * ou separador de linhas do sistema, finalizando o loop de pesquisa
+   * assim que alguma comparação for bem sucedida.
+   *
+   * @param $phrase String container da frase.
+   * @param $needle String container da palavra pesquisada.
+   * @return Boolean status da pesquisa.
+  */
+  function in_mphone($phrase, $needle) {
+    $meta = Metaphone::getMetaphone($needle);
+    foreach (preg_split('|\s+|',
+      Metaphone::getPhraseMetaphone($phrase)) as $item) {
+      if ($item == $meta) return TRUE;
+    }
+    return FALSE;
+  }
 
   /**
    * Extensão da classe PDO para SQLite, provendo "workaround" para
@@ -34,6 +60,7 @@
       $this->sqliteCreateFunction('preg_match', 'preg_match', 2);
       $this->sqliteCreateFunction('toISOdate', 'toISOdate', 1);
       $this->sqliteCreateFunction('mphone', 'mphone', 1);
+      $this->sqliteCreateFunction('in_mphone', 'in_mphone', 2);
     }
 
     /**
@@ -199,6 +226,11 @@
 
         $constraints[] =
           $negate."mphone($name) == '".mphone($matches[1])."'";
+
+      // checa uso de INNER METAPHONE
+      } else if (preg_match('/^IN_MPHONE\s+(\w+)\s*$/i', $needle, $matches)) {
+
+        $constraints[] = $negate."in_mphone($name, '{$matches[1]}')";
 
       // checa uso do operador IN
       } else if (preg_match('/^IN\s+\((.+)\)\s*$/i', $needle, $matches)) {
