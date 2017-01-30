@@ -11,33 +11,29 @@
   use Metaphone\Metaphone;
 
   /**
-   * Retorna o "metaphone" de frase, isto é; sequência de 1+ strings
-   * separadas por espaço em branco ou separador de linhas do sistema.
+   * Pesquisa por todos os itens de "needle" em "phrase" via "Metaphone",
+   * indiferente à ordem dos itens e desde que a cardinalidade de "needle"
+   * não seja maior que a cardinalidade de "phrase".
    *
-   * @param $phrase String container da frase.
-   * @return String container do "metaphone" resultante.
-  */
-  function mphone($phrase) {
-    return Metaphone::getPhraseMetaphone($phrase);
-  }
-
-  /**
-   * Pesquisa palavra em frase, comparando o "metaphone" dessa palavra
-   * com o de cada componente da frase, separados por espaços em branco
-   * ou separador de linhas do sistema, finalizando o loop de pesquisa
-   * assim que alguma comparação for bem sucedida.
-   *
-   * @param $phrase String container da frase.
-   * @param $needle String container da palavra pesquisada.
+   * @param $phrase String container da frase pesquisada.
+   * @param $needle String container da(s) palavra(s) procurada(s).
    * @return Boolean status da pesquisa.
   */
-  function in_mphone($phrase, $needle) {
-    $meta = Metaphone::getMetaphone($needle);
-    foreach (preg_split('|\s+|',
-      Metaphone::getPhraseMetaphone($phrase)) as $item) {
-      if ($item == $meta) return TRUE;
+  function sonat($phrase, $needle) {
+    $p = preg_split('|\s+|', Metaphone::getPhraseMetaphone($phrase));
+    if (strpos($needle, ' ') === FALSE) {
+      $m = Metaphone::getMetaphone($needle);
+      return in_array($m, $p);
+    } else {
+      $n = preg_split('|\s+|', Metaphone::getPhraseMetaphone($needle));
+      if (count($p) >= count($n)) {
+        foreach ($n as $item) {
+          if (in_array($item, $p) === FALSE) return FALSE;
+        }
+        return TRUE;
+      }
+      return FALSE;
     }
-    return FALSE;
   }
 
   /**
@@ -59,8 +55,7 @@
 
       $this->sqliteCreateFunction('preg_match', 'preg_match', 2);
       $this->sqliteCreateFunction('toISOdate', 'toISOdate', 1);
-      $this->sqliteCreateFunction('mphone', 'mphone', 1);
-      $this->sqliteCreateFunction('in_mphone', 'in_mphone', 2);
+      $this->sqliteCreateFunction('sonat', 'sonat', 2);
     }
 
     /**
@@ -221,16 +216,10 @@
         $constraints[] =
           $negate."soundex($name) == '".soundex($matches[1])."'";
 
-      // checa uso de METAPHONE
-      } else if (preg_match('/^MPHONE\s+(.+)\s*$/i', $needle, $matches)) {
+      // checa uso de SONAT aka METAPHONE
+      } else if (preg_match('/^SONAT\s+(.+)\s*$/i', $needle, $matches)) {
 
-        $constraints[] =
-          $negate."mphone($name) == '".mphone($matches[1])."'";
-
-      // checa uso de INNER METAPHONE
-      } else if (preg_match('/^IN_MPHONE\s+(\w+)\s*$/i', $needle, $matches)) {
-
-        $constraints[] = $negate."in_mphone($name, '{$matches[1]}')";
+        $constraints[] = $negate."sonat($name, '{$matches[1]}')";
 
       // checa uso do operador IN
       } else if (preg_match('/^IN\s+\((.+)\)\s*$/i', $needle, $matches)) {

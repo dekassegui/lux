@@ -120,7 +120,7 @@ EOT;
         // consulta o DB
         $result = $db->query($sql);
         // montagem da lista de resultados
-        if ($row = $result->fetch(PDO::FETCH_NUM)) {
+        if ($result !== FALSE AND $row = $result->fetch(PDO::FETCH_NUM)) {
           $text .= join('|', $row);
           while ($row = $result->fetch(PDO::FETCH_NUM)) {
             $text .= PHP_EOL.join('|', $row);
