@@ -19,7 +19,7 @@
    FROM acervo JOIN obras ON acervo.obra == obras.code
 EOT
     );
-  if ($row = $result->fetch(PDO::FETCH_NUM)) {
+  if ($result !== FALSE AND $row = $result->fetch(PDO::FETCH_NUM)) {
     $text .= join('|', $row);
     while ($row = $result->fetch(PDO::FETCH_NUM)) {
       $text .= PHP_EOL.join('|', $row);

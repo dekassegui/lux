@@ -71,7 +71,7 @@ EOT;
       }
       // requisita a atualização ou inserção
       if ($db->exec($sql) === FALSE) {
-        echo 'Error: '.$db->lastErrorMsg();
+        echo 'Error: ', $db->lastErrorMsg();
       } else {
         if (rebuildTable($db)) {
           echo $db->querySingle(
@@ -88,7 +88,7 @@ EOT;
   DELETE FROM bibliotecarios WHERE rowid = {$_GET['recnumber']};
 EOT;
       if ($db->exec($sql) === FALSE) {
-        echo 'Error: '.$db->lastErrorMsg();
+        echo 'Error: ', $db->lastErrorMsg();
       } else {
         rebuildTable($db);
         echo 'TRUE';

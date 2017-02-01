@@ -13,18 +13,12 @@
     die($e->getMessage());
   }
 
-  $text = '';
-  $result = $db->query(<<<EOT
-   SELECT DISTINCT exemplar, exemplar
-   FROM acervo
-EOT
-    );
-  if ($row = $result->fetch(PDO::FETCH_NUM)) {
-    $text .= join('|', $row);
+  $result = $db->query('SELECT DISTINCT exemplar, exemplar FROM acervo');
+  if ($result !== FALSE AND $row = $result->fetch(PDO::FETCH_NUM)) {
+    echo join('|', $row);
     while ($row = $result->fetch(PDO::FETCH_NUM)) {
-      $text .= PHP_EOL.join('|', $row);
+      echo PHP_EOL, join('|', $row);
     }
   }
-  echo $text;
 
 ?>

@@ -95,7 +95,7 @@ EOT;
       }
       // requisita a atualização ou inserção
       if ($db->exec($sql) === FALSE) {
-        echo 'Error: '.$db->lastErrorMsg();
+        echo 'Error: ', $db->lastErrorMsg();
       } else {
         if (rebuildTable($db)) {
           // requisita o número de ordem do registro recém atualizado/inserido
@@ -119,7 +119,7 @@ EOT;
   DELETE FROM emprestimos WHERE rowid = {$_GET['recnumber']};
 EOT;
       if ($db->exec($sql) === FALSE) {
-        echo 'Error: '.$db->lastErrorMsg();
+        echo 'Error: ', $db->lastErrorMsg();
       } else {
         rebuildTable($db);
         echo 'TRUE';

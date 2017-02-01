@@ -11,28 +11,49 @@
   use Metaphone\Metaphone;
 
   /**
-   * Pesquisa por todos os itens de "needle" em "phrase" via "Metaphone",
-   * indiferente à ordem dos itens e desde que a cardinalidade de "needle"
-   * não seja maior que a cardinalidade de "phrase".
+   * Pesquisa na "phrase" por todas as palavras distintas de "needle"
+   * via "Metaphone", indiferente à ordem das palavras e desde que a
+   * quantidade de palavras distintas de "needle" não seja maior que
+   * a da "phrase".
    *
    * @param $phrase String container da frase pesquisada.
    * @param $needle String container da(s) palavra(s) procurada(s).
    * @return Boolean status da pesquisa.
   */
   function sonat($phrase, $needle) {
-    $p = preg_split('|\s+|', Metaphone::getPhraseMetaphone($phrase));
+    $p_arr = preg_split('|\s+|', $phrase);
     if (strpos($needle, ' ') === FALSE) {
-      $m = Metaphone::getMetaphone($needle);
-      return in_array($m, $p);
-    } else {
-      $n = preg_split('|\s+|', Metaphone::getPhraseMetaphone($needle));
-      if (count($p) >= count($n)) {
-        foreach ($n as $item) {
-          if (in_array($item, $p) === FALSE) return FALSE;
-        }
-        return TRUE;
+      // obtém o metaphone da única palavra procurada
+      $meta = Metaphone::getMetaphone($needle);
+      // testa se o metaphone da única palavra procurada coincide
+      // com algum metaphone de palavra da frase pesquisada
+      foreach ($p_arr as $word) {
+        if (Metaphone::getMetaphone($word) == $meta) return TRUE;
       }
       return FALSE;
+    } else {
+      // obtém array das palavras procuradas distintas sem preservar chaves
+      $n_arr = array_keys(array_flip(preg_split('|\s+|', $needle)));
+      $n = count($n_arr);
+      if ($n == 1) return sonat($phrase, $n_arr[0]);
+      $m = count($p_arr);
+      // valida a restrição de cardinalidade
+      if ($m < $n) return FALSE;
+      // obtém o metaphone da primeira palavra procurada
+      $meta = Metaphone::getMetaphone($n_arr[0]);
+      // monta array dos metaphones das palavras da frase
+      // e testa o metaphone da primeira palavra procurada
+      for ($ok=FALSE, $i=0; $i<$m; ++$i) {
+        $p_arr[$i] = Metaphone::getMetaphone($p_arr[$i]);
+        $ok |= ($p_arr[$i] == $meta);
+      }
+      // testa o metaphone das palavras procuradas, exceto a primeira,
+      // se o teste dessa primeira palavra procurada resultou TRUE
+      for ($i=1; $ok && $i<$n; ++$i) {
+        $meta = Metaphone::getMetaphone($n_arr[$i]);
+        $ok = in_array($meta, $p_arr);
+      }
+      return $ok;
     }
   }
 
@@ -210,16 +231,16 @@
         $constraints[] =
           $negate."preg_match('/{$matches[2]}/$ignorecase', $name)";
 
+      // checa uso de SONAT aka METAPHONE
+      } else if (preg_match('/^SONAT\s+(.+)\s*$/i', $needle, $matches)) {
+
+        $constraints[] = $negate."sonat($name, '{$matches[1]}')";
+
       // checa uso de SOUNDEX
       } else if (preg_match('/^SOUNDEX\s+(.+)\s*$/i', $needle, $matches)) {
 
         $constraints[] =
           $negate."soundex($name) == '".soundex($matches[1])."'";
-
-      // checa uso de SONAT aka METAPHONE
-      } else if (preg_match('/^SONAT\s+(.+)\s*$/i', $needle, $matches)) {
-
-        $constraints[] = $negate."sonat($name, '{$matches[1]}')";
 
       // checa uso do operador IN
       } else if (preg_match('/^IN\s+\((.+)\)\s*$/i', $needle, $matches)) {

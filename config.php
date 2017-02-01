@@ -29,7 +29,7 @@
       // requisita parâmetros para cálculo dos empréstimos e datas limite
       $result = $db->query(EASYQUERY);
       $values = $result->fetch(PDO::FETCH_NUM);
-      echo $values[0].'|'.$values[1].'|'.$values[2];
+      echo $values[0], '|', $values[1], '|', $values[2];
       break;
 
     case 'UPDATE':
