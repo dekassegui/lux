@@ -13,7 +13,20 @@
     die($e->getMessage());
   }
 
-  $result = $db->query('SELECT DISTINCT exemplar, exemplar FROM acervo');
+  if (isset($_GET['code'])) {
+
+    $sql = <<<EOT
+  SELECT exemplar, exemplar FROM disponiveis_acervo
+  WHERE obra == "{$_GET['code']}"
+EOT;
+
+  } else {
+
+    $sql = 'SELECT DISTINCT exemplar, exemplar FROM acervo';
+
+  }
+
+  $result = $db->query($sql);
   if ($result !== FALSE AND $row = $result->fetch(PDO::FETCH_NUM)) {
     echo join('|', $row);
     while ($row = $result->fetch(PDO::FETCH_NUM)) {

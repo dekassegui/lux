@@ -55,13 +55,13 @@ EOT;
         $result = $db->query($sql);
         while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
           echo PHP_EOL, PHP_EOL, '        Registro: ', $row['rowid'];
-          echo PHP_EOL, '          Agente: ', $row['bibliotecario'];
-          echo PHP_EOL, '   Emprestado em: ', $row['data_emprestimo'];
           echo PHP_EOL, '          Leitor: ', $row['leitor'];
           echo PHP_EOL, '            Obra: ', $row['obra'];
           echo PHP_EOL, '  Autor&Espírito: ', $row['autor'];
           echo PHP_EOL, '        Exemplar: ', $row['exemplar'];
           echo PHP_EOL, '         Posição: ', $row['posicao'];
+          echo PHP_EOL, '          Agente: ', $row['bibliotecario'];
+          echo PHP_EOL, '   Emprestado em: ', $row['data_emprestimo'];
           echo PHP_EOL, '      Comentário: ', $row['comentario'];
         }
       }

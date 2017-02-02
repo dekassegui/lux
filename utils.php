@@ -21,39 +21,47 @@
    * @return Boolean status da pesquisa.
   */
   function sonat($phrase, $needle) {
+    // obtém array das palavras da frase pesquisada
     $p_arr = preg_split('|\s+|', $phrase);
+    // testa se não há separação de palavras procuradas i.e; palavra é única
     if (strpos($needle, ' ') === FALSE) {
       // obtém o metaphone da única palavra procurada
       $meta = Metaphone::getMetaphone($needle);
-      // testa se o metaphone da única palavra procurada coincide
-      // com algum metaphone de palavra da frase pesquisada
+      // retorna TRUE imediatamente se o metaphone da única palavra
+      // procurada coincide com algum metaphone de palavra da frase
+      // pesquisada, ou retorna FALSE em caso contrário
       foreach ($p_arr as $word) {
         if (Metaphone::getMetaphone($word) == $meta) return TRUE;
       }
       return FALSE;
     } else {
-      // obtém array das palavras procuradas distintas sem preservar chaves
+      // obtém array das palavras procuradas distintas, sem preservar chaves
       $n_arr = array_keys(array_flip(preg_split('|\s+|', $needle)));
       $n = count($n_arr);
+      // retorna resultado de pesquisa invocada recursivamente se a palavra
+      // procurada distinta é única
       if ($n == 1) return sonat($phrase, $n_arr[0]);
       $m = count($p_arr);
-      // valida a restrição de cardinalidade
+      // retorna FALSE imediatamente se a restrição de cardinalidade não
+      // for respeitada i.e; há mais palavras procuradas do que na frase
       if ($m < $n) return FALSE;
       // obtém o metaphone da primeira palavra procurada
       $meta = Metaphone::getMetaphone($n_arr[0]);
       // monta array dos metaphones das palavras da frase
       // e testa o metaphone da primeira palavra procurada
-      for ($ok=FALSE, $i=0; $i<$m; ++$i) {
+      for ($found=FALSE, $i=0; $i<$m; ++$i) {
         $p_arr[$i] = Metaphone::getMetaphone($p_arr[$i]);
-        $ok |= ($p_arr[$i] == $meta);
+        $found |= ($p_arr[$i] == $meta);
       }
-      // testa o metaphone das palavras procuradas, exceto a primeira,
-      // se o teste dessa primeira palavra procurada resultou TRUE
-      for ($i=1; $ok && $i<$n; ++$i) {
+      // se o teste no metaphone da primeira palavra procurada resultou TRUE
+      // então inicia a sequência de testes dos metaphones das demais palavras
+      // procuradas, que pode terminar antecipadamente se algum deles resultar
+      // FALSE i.e; a palavra procurada não se assemelha a nenhuma da frase
+      for ($i=1; $found && $i<$n; ++$i) {
         $meta = Metaphone::getMetaphone($n_arr[$i]);
-        $ok = in_array($meta, $p_arr);
+        $found = in_array($meta, $p_arr);
       }
-      return $ok;
+      return $found;
     }
   }
 

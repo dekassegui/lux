@@ -442,10 +442,38 @@ window.addEventListener('load',
         xhr.send();
       }, true);
 
-    /* $('leitor').addEventListener('focus',
+    $('obra').addEventListener('change',
       function () {
-        if
-      }, true); */
+        if (newBtn.classList.contains('working')
+            || updateBtn.classList.contains('working')) {
+          $('exemplar').value = '';
+          var xhr = new XMLHttpRequest();
+          xhr.onreadystatechange = function () {
+            var datalist = $("acervo_exemplares");
+            removeChildNodes(datalist);
+            var fragment = document.createDocumentFragment();
+            this.responseText.split(/\n|\r|\r\n/g).forEach(
+              function (text) {
+                var option = document.createElement("option");
+                var j = text.indexOf('|');
+                option.setAttribute("code", text.substring(0, j));
+                option.value = text.substring(j+1);
+                fragment.appendChild(option);
+              }
+            );
+            datalist.appendChild(fragment);
+          }
+          var code;
+          for (var x=$("obra").value, c=$("acervo_obras").options, j=0;
+                !code && j<c.length; ++j) {
+            if (c.item(j).value == x) code = c.item(j).getAttribute("code");
+          }
+          var aUri = uri.substring(0, uri.lastIndexOf("/")+1)
+            + "acervo_exemplares.php?code=" + code;
+          xhr.open("GET", aUri, true);
+          xhr.send();
+        }
+      }, true);
 
     {
       // preenche datalists cujos ids correspondem ao nome (sem extensão)
