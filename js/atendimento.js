@@ -448,7 +448,7 @@ window.addEventListener('load',
     $('obra').addEventListener('change',
       function () {
         // tenta atualizar as opções do datalist de "exemplares" conforme
-        // título da "obra selecionado" na atualização/criação de registro
+        // "título da obra" selecionado na atualização/criação de registro
         if ([newBtn, updateBtn].some(Bt => Bt.classList.contains('working'))) {
           $('exemplar').value = '';
           var input = $('obra');
@@ -468,9 +468,9 @@ window.addEventListener('load',
                   // preenche o datalist associado ao input do "exemplar"
                   input = $('exemplar');
                   datalist = $(input.getAttribute('list'));
-                  datalist.innerHTML = '<option code="' + this.responseText
-                    .replace(/\n|\r|\r\n/g, '</option><option code="')
-                    .replace(/\|/g, '">') + '</option>';
+                  datalist.innerHTML = this.responseText
+                    .replace(/([^|\r\n]+)\|([^\r\n]+)/g,
+                      '<option code="$1">$2</option>');
                   // preenche o input do "exemplar" com a primeira opção
                   input.value = datalist.options.item(0).value;
                 }
@@ -490,16 +490,15 @@ window.addEventListener('load',
       // preenche datalists cujos ids correspondem ao nome (sem extensão)
       // do script server side que atende a requisição dos seus dados
       ['bibliotecarios', 'leitores', 'acervo_obras',
-        'acervo_exemplares'].forEach(
+       'acervo_exemplares'].forEach(
         function (iD) {
-          var datalist = $(iD);
           var xhr = new XMLHttpRequest();
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200
                 && this.responseText)
-              datalist.innerHTML = '<option code="' + this.responseText
-                .replace(/\n|\r|\r\n/g, '</option><option code="')
-                .replace(/\|/g, '">') + '</option>';
+              $(iD).innerHTML = this.responseText
+                .replace(/([^|\r\n]+)\|([^\r\n]+)/g,
+                  '<option code="$1">$2</option>');
           };
           // monta a uri do script backend incumbente
           var aUri = uri.substring(0, uri.lastIndexOf("/")+1)

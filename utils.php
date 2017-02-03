@@ -4,13 +4,16 @@
    * Este script é parte do projeto LUX :: Código aberto em Domínio Público.
   */
 
-  define('DB_FILENAME', 'datum/lux.sqlite');
+  require 'metaphone.php';
+
+  use Metaphone\Metaphone;
 
   /**
-   * Pesquisa na "phrase" por todas as palavras distintas de "needle" via
-   * função codificadora "func", indiferente à ordem das palavras e desde
-   * que a quantidade de palavras distintas de "needle" não seja maior que
-   * a da "phrase".
+   * Pesquisa entre as palavras na "phrase" por todas as palavras distintas
+   * de "needle", comparando seus códigos gerados via função "func" arbitrária,
+   * indiferente à ordem das palavras e desde que a quantidade de palavras
+   * distintas de "needle" seja menor ou igual a quantidade de palavras da
+   * "phrase".
    *
    * @param $func Função arbitrária codificadora de única palavra.
    * @param $phrase String container da frase pesquisada.
@@ -63,36 +66,31 @@
   };
 
   /**
-   * Pesquisa na "phrase" por todas as palavras distintas de "needle"
-   * via "soundex", indiferente à ordem das palavras e desde que a
-   * quantidade de palavras distintas de "needle" não seja maior que
-   * a da "phrase".
+   * Retorna o resultado da pesquisa "similis" usando "soundex" como função
+   * codificadora das palavras.
    *
    * @param $phrase String container da frase pesquisada.
    * @param $needle String container da(s) palavra(s) procurada(s).
    * @return Boolean status da pesquisa.
   */
-  function sounds($phrase, $needle) {
+  function sondx($phrase, $needle) {
     return similis(function ($x) { return soundex($x); }, $phrase, $needle);
   }
 
-  require 'metaphone.php';
-
-  use Metaphone\Metaphone;
-
   /**
-   * Pesquisa na "phrase" por todas as palavras distintas de "needle"
-   * via "Metaphone", indiferente à ordem das palavras e desde que a
-   * quantidade de palavras distintas de "needle" não seja maior que
-   * a da "phrase".
+   * Retorna o resultado da pesquisa "similis" usando "getMetaphone" como
+   * função codificadora das palavras.
    *
    * @param $phrase String container da frase pesquisada.
    * @param $needle String container da(s) palavra(s) procurada(s).
    * @return Boolean status da pesquisa.
   */
   function sonat($phrase, $needle) {
-    return similis(function ($x) { return Metaphone::getMetaphone($x); }, $phrase, $needle);
+    return similis(
+      function ($x) { return Metaphone::getMetaphone($x); }, $phrase, $needle);
   }
+
+  define('DB_FILENAME', 'datum/lux.sqlite');
 
   /**
    * Extensão da classe PDO para SQLite, provendo "workaround" para
@@ -107,13 +105,13 @@
      *
      * @param $dsn String container do "data source name".
     */
-    public function connect($dsn)
+    public function connect($dsn=DB_FILENAME)
     {
       parent::__construct('sqlite:'.$dsn);
 
       $this->sqliteCreateFunction('preg_match', 'preg_match', 2);
       $this->sqliteCreateFunction('toISOdate', 'toISOdate', 1);
-      $this->sqliteCreateFunction('sounds', 'sounds', 2);
+      $this->sqliteCreateFunction('sondx', 'sondx', 2);
       $this->sqliteCreateFunction('sonat', 'sonat', 2);
     }
 
@@ -274,10 +272,10 @@
 
         $constraints[] = $negate."sonat($name, '{$matches[1]}')";
 
-      // checa uso de SOUNDS aka SOUNDEX
-      } else if (preg_match('/^SOUNDS\s+(.+)\s*$/i', $needle, $matches)) {
+      // checa uso de SONDX aka SOUNDEX
+      } else if (preg_match('/^SONDX\s+(.+)\s*$/i', $needle, $matches)) {
 
-        $constraints[] = $negate."sounds($name, '{$matches[1]}')";
+        $constraints[] = $negate."sondx($name, '{$matches[1]}')";
 
       // checa uso do operador IN
       } else if (preg_match('/^IN\s+\((.+)\)\s*$/i', $needle, $matches)) {

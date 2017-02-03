@@ -26,7 +26,7 @@
 
   try {
     $db = new SQLitePDO();
-    $db->connect(DB_FILENAME);
+    $db->connect();
   } catch(PDOException $e) {
     die($e->getMessage());
   }
