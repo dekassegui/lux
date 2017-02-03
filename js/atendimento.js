@@ -412,6 +412,8 @@ window.addEventListener('load',
 
     infoBtn.addEventListener('click',
       function () {
+        // requisita listagem dos empréstimos esperado no dia corrente
+        // e dos exemplares disponíveis no acervo, agrupados por título
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
           if (this.readyState == 4 && this.status == 200) {
@@ -428,6 +430,7 @@ window.addEventListener('load',
 
     leitorBtn.addEventListener('click',
       function () {
+        // requisita listagem dos leitores/obras com empréstimos em atraso
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
           if (this.readyState == 4 && this.status == 200) {
@@ -444,34 +447,42 @@ window.addEventListener('load',
 
     $('obra').addEventListener('change',
       function () {
-        if (newBtn.classList.contains('working')
-            || updateBtn.classList.contains('working')) {
+        // tenta atualizar as opções do datalist de "exemplares" conforme
+        // título da "obra selecionado" na atualização/criação de registro
+        if ([newBtn, updateBtn].some(Bt => Bt.classList.contains('working'))) {
           $('exemplar').value = '';
-          var xhr = new XMLHttpRequest();
-          xhr.onreadystatechange = function () {
-            var datalist = $("acervo_exemplares");
-            removeChildNodes(datalist);
-            var fragment = document.createDocumentFragment();
-            this.responseText.split(/\n|\r|\r\n/g).forEach(
-              function (text) {
-                var option = document.createElement("option");
-                var j = text.indexOf('|');
-                option.setAttribute("code", text.substring(0, j));
-                option.value = text.substring(j+1);
-                fragment.appendChild(option);
-              }
-            );
-            datalist.appendChild(fragment);
+          var input = $('obra');
+          if (input.value) {
+            var  code, datalist = $(input.getAttribute('list'));
+            // percorre as options do datalist associado ao input "obra"
+            // para obter o "code" correspondente ao título selecionado
+            for (var titulo=input.value, collection=datalist.options, j=0;
+                 !code && j<collection.length; ++j)
+              if (collection.item(j).value == titulo)
+                code = collection.item(j).getAttribute('code');
+            if (code) {
+              var xhr = new XMLHttpRequest();
+              xhr.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200
+                    && this.responseText) {
+                  // preenche o datalist associado ao input do "exemplar"
+                  input = $('exemplar');
+                  datalist = $(input.getAttribute('list'));
+                  datalist.innerHTML = '<option code="' + this.responseText
+                    .replace(/\n|\r|\r\n/g, '</option><option code="')
+                    .replace(/\|/g, '">') + '</option>';
+                  // preenche o input do "exemplar" com a primeira opção
+                  input.value = datalist.options.item(0).value;
+                }
+              };
+              // prepara uri para requisitar "exemplares disponíveis"
+              // da "obra" cujo "code" foi previamente identificado
+              var aUri = uri.substring(0, uri.lastIndexOf('/')+1)
+                + 'acervo_exemplares.php?code=' + code;
+              xhr.open('GET', aUri, true);
+              xhr.send();
+            }
           }
-          var code;
-          for (var x=$("obra").value, c=$("acervo_obras").options, j=0;
-                !code && j<c.length; ++j) {
-            if (c.item(j).value == x) code = c.item(j).getAttribute("code");
-          }
-          var aUri = uri.substring(0, uri.lastIndexOf("/")+1)
-            + "acervo_exemplares.php?code=" + code;
-          xhr.open("GET", aUri, true);
-          xhr.send();
         }
       }, true);
 
@@ -484,21 +495,13 @@ window.addEventListener('load',
           var datalist = $(iD);
           var xhr = new XMLHttpRequest();
           xhr.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-              var fragment = document.createDocumentFragment();
-              this.responseText.split(/\n|\r|\r\n/g).forEach(
-                function (text) {
-                  var option = document.createElement("option");
-                  var j = text.indexOf('|');
-                  option.setAttribute("code", text.substring(0, j));
-                  option.value = text.substring(j+1);
-                  fragment.appendChild(option);
-                }
-              );
-              datalist.appendChild(fragment);
-            }
+            if (this.readyState == 4 && this.status == 200
+                && this.responseText)
+              datalist.innerHTML = '<option code="' + this.responseText
+                .replace(/\n|\r|\r\n/g, '</option><option code="')
+                .replace(/\|/g, '">') + '</option>';
           };
-          // monta a string da uri do script server side incumbente
+          // monta a uri do script backend incumbente
           var aUri = uri.substring(0, uri.lastIndexOf("/")+1)
             + iD + ".php?action=GETALL";
           xhr.open("GET", aUri, true);

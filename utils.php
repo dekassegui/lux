@@ -6,6 +6,76 @@
 
   define('DB_FILENAME', 'datum/lux.sqlite');
 
+  /**
+   * Pesquisa na "phrase" por todas as palavras distintas de "needle" via
+   * função codificadora "func", indiferente à ordem das palavras e desde
+   * que a quantidade de palavras distintas de "needle" não seja maior que
+   * a da "phrase".
+   *
+   * @param $func Função arbitrária codificadora de única palavra.
+   * @param $phrase String container da frase pesquisada.
+   * @param $needle String container da(s) palavra(s) procurada(s).
+   * @return Boolean status da pesquisa.
+  */
+  function similis($func, $phrase, $needle) {
+    // obtém array das palavras da frase pesquisada
+    $p_arr = preg_split('|\s+|', $phrase);
+    // testa se não há separação de palavras procuradas i.e; palavra é única
+    if (strpos($needle, ' ') === FALSE) {
+      // obtém o código da única palavra procurada
+      $code = $func($needle);
+      // retorna TRUE imediatamente se o código da única palavra
+      // procurada coincide com algum código de palavra da frase
+      // pesquisada, ou retorna FALSE em caso contrário
+      foreach ($p_arr as $word) {
+        if ($func($word) == $code) return TRUE;
+      }
+      return FALSE;
+    } else {
+      // obtém array das palavras procuradas distintas, sem preservar chaves
+      $n_arr = array_keys(array_flip(preg_split('|\s+|', $needle)));
+      $n = count($n_arr);
+      // retorna resultado de pesquisa invocada recursivamente se a palavra
+      // procurada distinta é única
+      if ($n == 1) return similis($func, $phrase, $n_arr[0]);
+      $m = count($p_arr);
+      // retorna FALSE imediatamente se a restrição de cardinalidade não
+      // for respeitada i.e; há mais palavras procuradas do que na frase
+      if ($m < $n) return FALSE;
+      // obtém o código da primeira palavra procurada
+      $code = $func($n_arr[0]);
+      // monta array dos códigos das palavras da frase
+      // e testa o código da primeira palavra procurada
+      for ($found=FALSE, $i=0; $i<$m; ++$i) {
+        $p_arr[$i] = $func($p_arr[$i]);
+        $found |= ($p_arr[$i] == $code);
+      }
+      // se o teste no código da primeira palavra procurada resultou TRUE
+      // então inicia a sequência de testes dos códigos das demais palavras
+      // procuradas, que pode terminar antecipadamente se algum deles resultar
+      // FALSE i.e; a palavra procurada não se assemelha a nenhuma da frase
+      for ($i=1; $found && $i<$n; ++$i) {
+        $code = $func($n_arr[$i]);
+        $found = in_array($code, $p_arr);
+      }
+      return $found;
+    }
+  };
+
+  /**
+   * Pesquisa na "phrase" por todas as palavras distintas de "needle"
+   * via "soundex", indiferente à ordem das palavras e desde que a
+   * quantidade de palavras distintas de "needle" não seja maior que
+   * a da "phrase".
+   *
+   * @param $phrase String container da frase pesquisada.
+   * @param $needle String container da(s) palavra(s) procurada(s).
+   * @return Boolean status da pesquisa.
+  */
+  function sounds($phrase, $needle) {
+    return similis(function ($x) { return soundex($x); }, $phrase, $needle);
+  }
+
   require 'metaphone.php';
 
   use Metaphone\Metaphone;
@@ -21,48 +91,7 @@
    * @return Boolean status da pesquisa.
   */
   function sonat($phrase, $needle) {
-    // obtém array das palavras da frase pesquisada
-    $p_arr = preg_split('|\s+|', $phrase);
-    // testa se não há separação de palavras procuradas i.e; palavra é única
-    if (strpos($needle, ' ') === FALSE) {
-      // obtém o metaphone da única palavra procurada
-      $meta = Metaphone::getMetaphone($needle);
-      // retorna TRUE imediatamente se o metaphone da única palavra
-      // procurada coincide com algum metaphone de palavra da frase
-      // pesquisada, ou retorna FALSE em caso contrário
-      foreach ($p_arr as $word) {
-        if (Metaphone::getMetaphone($word) == $meta) return TRUE;
-      }
-      return FALSE;
-    } else {
-      // obtém array das palavras procuradas distintas, sem preservar chaves
-      $n_arr = array_keys(array_flip(preg_split('|\s+|', $needle)));
-      $n = count($n_arr);
-      // retorna resultado de pesquisa invocada recursivamente se a palavra
-      // procurada distinta é única
-      if ($n == 1) return sonat($phrase, $n_arr[0]);
-      $m = count($p_arr);
-      // retorna FALSE imediatamente se a restrição de cardinalidade não
-      // for respeitada i.e; há mais palavras procuradas do que na frase
-      if ($m < $n) return FALSE;
-      // obtém o metaphone da primeira palavra procurada
-      $meta = Metaphone::getMetaphone($n_arr[0]);
-      // monta array dos metaphones das palavras da frase
-      // e testa o metaphone da primeira palavra procurada
-      for ($found=FALSE, $i=0; $i<$m; ++$i) {
-        $p_arr[$i] = Metaphone::getMetaphone($p_arr[$i]);
-        $found |= ($p_arr[$i] == $meta);
-      }
-      // se o teste no metaphone da primeira palavra procurada resultou TRUE
-      // então inicia a sequência de testes dos metaphones das demais palavras
-      // procuradas, que pode terminar antecipadamente se algum deles resultar
-      // FALSE i.e; a palavra procurada não se assemelha a nenhuma da frase
-      for ($i=1; $found && $i<$n; ++$i) {
-        $meta = Metaphone::getMetaphone($n_arr[$i]);
-        $found = in_array($meta, $p_arr);
-      }
-      return $found;
-    }
+    return similis(function ($x) { return Metaphone::getMetaphone($x); }, $phrase, $needle);
   }
 
   /**
@@ -84,6 +113,7 @@
 
       $this->sqliteCreateFunction('preg_match', 'preg_match', 2);
       $this->sqliteCreateFunction('toISOdate', 'toISOdate', 1);
+      $this->sqliteCreateFunction('sounds', 'sounds', 2);
       $this->sqliteCreateFunction('sonat', 'sonat', 2);
     }
 
@@ -244,11 +274,10 @@
 
         $constraints[] = $negate."sonat($name, '{$matches[1]}')";
 
-      // checa uso de SOUNDEX
-      } else if (preg_match('/^SOUNDEX\s+(.+)\s*$/i', $needle, $matches)) {
+      // checa uso de SOUNDS aka SOUNDEX
+      } else if (preg_match('/^SOUNDS\s+(.+)\s*$/i', $needle, $matches)) {
 
-        $constraints[] =
-          $negate."soundex($name) == '".soundex($matches[1])."'";
+        $constraints[] = $negate."sounds($name, '{$matches[1]}')";
 
       // checa uso do operador IN
       } else if (preg_match('/^IN\s+\((.+)\)\s*$/i', $needle, $matches)) {
