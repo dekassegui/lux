@@ -8,3 +8,5 @@ DB + UI multiplataforma, desenvolvidos para uso em bibliotecas de casas espírit
 <li>Qualquer navegador da web aderente aos padrões <strong>HTML5 + CSS3 + ECMAScript5</strong>.</li>
 </ul>
 <p>Observação: O esquema do DB é para uso no <strong>SQLite 3.7.13</strong> ou mais recente, acessado pelo <strong>PHP</strong> via PDO.</p>
+## diagrama ER
+![diagrama ER do Lux](https://github.com/dekassegui/lux/blob/dekassegui-raw/lux.png)
