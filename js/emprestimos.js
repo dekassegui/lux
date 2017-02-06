@@ -72,49 +72,7 @@ window.addEventListener('load',
 
     var commandButtons = [updateBtn, delBtn, searchBtn, newBtn];
 
-    var MURAL = (function () {
-
-      var mural = $('mural');  // área de notificações ao usuário
-
-      var lineHeight = parseInt(getCSSproperty(mural, 'line-height'));
-
-      mural.oninput = function () {
-        if (mural.textLength == 0) {
-          mural.classList.add('empty');
-        } else {
-          mural.classList.remove('empty');
-        }
-      };
-
-      // agrega 'text' como apêndice do conteúdo da textarea cujo canvas
-      // escorre até que 'text' seja visível tão ao topo quanto possível
-      this.append = function (text) {
-        if (text.map) {
-          text.map(append);
-        } else {
-          var a = mural.clientHeight,   // altura do canvas
-              b = mural.scrollHeight;   // altura do conteúdo a priori
-          if (mural.textLength > 0) {
-            mural.value = [mural.value, text].join("\n");
-          } else {
-            mural.value = text;
-            mural.oninput();
-          }
-          if (b > a) {
-            mural.scrollTop = b - lineHeight;
-          }
-        }
-      };
-
-      this.isEmpty = function() { return mural.textLength == 0; };
-
-      // inicia o mural com saudação em função da hora local
-      mural.value = ["> Boa noite!", "> Bom dia!", "> Boa tarde!"]
-        [Math.floor(new Date().getHours() / 6) % 3];
-
-      return this;
-
-    })();
+    var MURAL = new Mural();
 
     function print(text) { MURAL.append(text); }
 
@@ -419,29 +377,80 @@ window.addEventListener('load',
         setInputsReadonly(true);            // desabilita os inputs dos..
       }, true);
 
+    $('obra').addEventListener('change',
+      function () {
+        // tenta atualizar as opções do datalist de "exemplares" conforme
+        // "título da obra" selecionado na atualização/criação de registro
+        if ([newBtn, updateBtn].some(Bt => Bt.classList.contains('working'))) {
+          $('exemplar').value = '';
+          var input = $('obra');
+          if (input.value) {
+            var  code, datalist = $(input.getAttribute('list'));
+            // percorre as options do datalist associado ao input "obra"
+            // para obter o "code" correspondente ao título selecionado
+            for (var titulo=input.value, collection=datalist.options, j=0;
+                 !code && j<collection.length; ++j)
+              if (collection.item(j).value == titulo)
+                code = collection.item(j).getAttribute('code');
+            if (code) {
+              var xhr = new XMLHttpRequest();
+              xhr.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                  input = $('exemplar');
+                  datalist = $(input.getAttribute('list'));
+                  // substitui todos os itens da lista de opções, que pode
+                  // tornar-se vazia caso não hajam exemplares disponíveis
+                  datalist.innerHTML = montaOptions(this.responseText);
+                  if (this.responseText) {
+                    // preenche o input com a primeira opção
+                    input.value = datalist.options.item(0).value;
+                  }
+                }
+              };
+              // prepara uri para requisitar "exemplares disponíveis"
+              // da "obra" cujo "code" foi previamente identificado
+              var aUri = uri.substring(0, uri.lastIndexOf('/')+1)
+                + 'acervo_exemplares.php?code=' + code;
+              xhr.open('GET', aUri, true);
+              xhr.send();
+            }
+          }
+        }
+      }, true);
+
     {
       // preenche datalists cujos ids correspondem ao nome (sem extensão)
       // do script server side que atende a requisição dos seus dados
-      ['bibliotecarios', 'leitores', 'acervo_obras', 'acervo_exemplares'].forEach(
+      ['bibliotecarios', 'leitores', 'acervo_obras',
+        'acervo_exemplares'].forEach(
         function (iD) {
-          var datalist = $(iD);
           var xhr = new XMLHttpRequest();
           xhr.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-              var fragment = document.createDocumentFragment();
-              this.responseText.split(/\n|\r|\r\n/g).forEach(
-                function (text) {
-                  var option = document.createElement("option");
-                  var j = text.indexOf('|');
-                  option.setAttribute("code", text.substring(0, j));
-                  option.value = text.substring(j+1);
-                  fragment.appendChild(option);
-                }
-              );
-              datalist.appendChild(fragment);
-            }
+            if (this.readyState == 4 && this.status == 200
+                && this.responseText)
+              $(iD).innerHTML = montaOptions(this.responseText);
           };
-          // monta a string da uri do script server side incumbente
+          // monta a uri do script backend incumbente
+          var aUri = uri.substring(0, uri.lastIndexOf("/")+1)
+            + iD + ".php?action=GETALL";
+          xhr.open("GET", aUri, true);
+          xhr.send();
+        });
+    }
+
+    {
+      // preenche datalists cujos ids correspondem ao nome (sem extensão)
+      // do script server side que atende a requisição dos seus dados
+      ['bibliotecarios', 'leitores', 'acervo_obras',
+        'acervo_exemplares'].forEach(
+        function (iD) {
+          var xhr = new XMLHttpRequest();
+          xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200
+                && this.responseText)
+              $(iD).innerHTML = montaOptions(this.responseText);
+          };
+          // monta a uri do script backend incumbente
           var aUri = uri.substring(0, uri.lastIndexOf("/")+1)
             + iD + ".php?action=GETALL";
           xhr.open("GET", aUri, true);
