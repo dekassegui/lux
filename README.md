@@ -9,4 +9,10 @@ DB + UI multiplataforma para gestão de bibliotecas de casas espíritas, que ten
 </ul>
 <p>Observação: O esquema do DB é para uso no <strong>SQLite 3.7.13</strong> ou mais recente, acessado pelo <strong>PHP</strong> via PDO.</p>
 ## diagrama ER
-<img src="https://github.com/dekassegui/lux/blob/dekassegui-raw/lux.png" alt="diagrama ER do Lux" width="800" height="377">
+<img src="https://github.com/dekassegui/lux/blob/dekassegui-raw/lux.png" alt="diagrama ER do Lux">
+## dependências
+<ul>
+<li><a href="https://github.com/t1m0n/air-datepicker/tree/master/dist">Air-Datepicker</a></li>
+<li><a href="https://github.com/FortAwesome/Font-Awesome">Font-Awesome</a></li>
+<li><a href="https://sourceforge.net/projects/metaphoneptbr/">Metaphone for Brazilian Portuguese</a></li>
+</ul>
