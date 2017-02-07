@@ -1,6 +1,6 @@
 # lux
-<p>Sistema para gestão mínima do acervo de bibliotecas de casas espíritas, composto de um conjunto de páginas da web que atuam como interface (<em>aka UI</em>) entre o usuário final e scripts que consultam o banco de dados (<em>aka DB</em>), hospedados em servidor local. Portanto, o sistema é multiplataforma, não é necessário acesso a internet e usa (<em>recomendamos</em>) somente software livre.</p>
-<p><strong>O "business" está completamente embarcado no DB</strong>, possibilitando montagem de outras UIs em qualquer linguagem/tecnologia, manejo direto em aplicativos para gestão de banco de dados ou até mesmo via CLI, dado que o esquema do DB é para o <strong>SQLite</strong>.</p>
+<p>Sistema para gestão do acervo de bibliotecas de casas espíritas, composto de um conjunto de páginas da web que atuam como interface (<em>aka UI</em>) entre o usuário final e scripts que consultam o banco de dados (<em>aka DB</em>), hospedados em servidor local. Portanto, o sistema é multiplataforma, não é necessário acesso a internet e usa somente software livre.</p>
+<p><strong>O "business" está completamente embarcado no DB</strong>, possibilitando montagem de outras UIs em qualquer linguagem/tecnologia, manejo em aplicativos para gestão de banco de dados ou até mesmo via CLI, dado que o esquema do DB é para o <strong>SQLite</strong>.</p>
 ## pré-requisitos
 <ul>
 <li>Qualquer sistema operacional.</li>

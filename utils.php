@@ -138,8 +138,6 @@
     }
   }
 
-  $nomeMes = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-
   /**
    * Cria array associativo com as substrings resultantes de explode.
    *

@@ -365,17 +365,7 @@ window.addEventListener('load',
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function () {
               if (this.readyState == 4 && this.status == 200) {
-                var fragment = document.createDocumentFragment();
-                this.responseText.split(/\n|\r|\r\n/g).forEach(
-                  function (text) {
-                    var option = document.createElement("option");
-                    var j = text.indexOf('|');
-                    option.setAttribute("code", text.substring(0, j));
-                    option.value = text.substring(j+1);
-                    fragment.appendChild(option);
-                  }
-                );
-                datalist.appendChild(fragment);
+                datalist.innerHTML = montaOptions(this.responseText);
               }
             };
             // monta a string da uri do script server side incumbente
