@@ -1,5 +1,7 @@
 <?php
 
+  /** Este script é parte do projeto LUX. */
+
   /**
    * Satisfaz a requisição de dados para preenchimento do datalist associado
    * ao input de posição de livro no formulário da tabela 'acervo'.

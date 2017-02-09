@@ -9,7 +9,8 @@
  *
  *  ===========================================================================
  *
- *   Este software é de Domínio Público, sem restrição de uso comercial, pois:
+ *  Este software está licenciado sob GNU Lesser General Public License v3,
+ *  aka LGPL v3, pois:
  *
  *     "Compartilhar é uma das melhores formas de reduzir desigualdades".
  *

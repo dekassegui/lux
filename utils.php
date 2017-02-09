@@ -1,8 +1,6 @@
 <?php
 
-  /**
-   * Este script é parte do projeto LUX :: Código aberto em Domínio Público.
-  */
+  /** Este script é parte do projeto LUX. */
 
   require 'metaphone.php';
 

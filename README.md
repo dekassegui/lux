@@ -1,5 +1,5 @@
 # lux
-<p>Sistema para gestão do acervo de bibliotecas de casas espíritas, composto de um conjunto de páginas da web que atuam como interface (<em>aka UI</em>) entre o usuário final e scripts que consultam o banco de dados (<em>aka DB</em>), hospedados em servidor local. Portanto, o sistema é multiplataforma, não é necessário acesso a internet e usa somente software livre.</p>
+<p>Sistema para gestão do acervo de bibliotecas de casas espíritas, composto de um conjunto de páginas da web que atuam como interface (<em>aka UI</em>) entre o usuário final e scripts que consultam o banco de dados (<em>aka DB</em>), hospedados em servidor local, portanto não é necessário acesso a internet e usa-se somente software livre.</p>
 <p><strong>O "business" está completamente embarcado no DB</strong>, possibilitando montagem de outras UIs em qualquer linguagem/tecnologia, manejo em aplicativos para gestão de banco de dados ou até mesmo via CLI, dado que o esquema do DB é para o <strong>SQLite</strong>.</p>
 ## pré-requisitos
 <ul>
@@ -12,8 +12,9 @@
 <img src="https://github.com/dekassegui/lux/blob/dekassegui-raw/lux.png" alt="diagrama ER do Lux">
 ## dependências
 <ul>
-<li><a href="https://github.com/t1m0n/air-datepicker/tree/master/dist">Air-Datepicker</a></li>
+<li><a href="https://github.com/t1m0n/air-datepicker">Air-Datepicker</a></li>
 <li><a href="https://github.com/FortAwesome/Font-Awesome">Font-Awesome</a></li>
+<li><a href="https://github.com/jquery/jquery">jQuery</a></li>
 <li><a href="https://sourceforge.net/projects/metaphoneptbr/">Metaphone for Brazilian Portuguese</a></li>
 <li><a href="https://github.com/t4t5/sweetalert">Sweet Alert</a></li>
 </ul>
