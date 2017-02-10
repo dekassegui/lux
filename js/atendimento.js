@@ -196,16 +196,17 @@ window.addEventListener('load',
           indexRec = valor;                   // corrente, atualizando-o
         } else {
           print('> Erro: Valor do índice do registro ilegal.');
-          show('Erro: Valor do índice do registro ilegal.');
+          text = 'Erro: Valor do índice do registro ilegal.';
           if (0 < indexRec && indexRec <= numRecs) {
             print('> Restaurando valor do índice do registro corrente.');
-            show('Restaurando valor do índice do registro corrente.');
+            text += '<br>Restaurando valor do índice do registro corrente.';
             counter.value = indexRec;
           } else {
             print('> Reiniciando valor do índice do registro corrente.');
-            show('Reiniciando valor do índice do registro corrente.');
+            text += '<br>Reiniciando valor do índice do registro corrente.';
             counter.value = indexRec = 1;
           }
+          show(text);
         }
         update();
       }, true);
@@ -294,9 +295,8 @@ window.addEventListener('load',
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText.startsWith('Error')) {
-                var text = 'Inserção mal sucedida.' + this.responseText;
-                print('> ' + text);
-                show(text);
+                print('> Inserção mal sucedida.' + this.responseText);
+                show('Inserção mal sucedida.<br>' + this.responseText);
               } else {
                 amount.value = ++numRecs;
                 indexRec = parseInt(this.responseText);
@@ -344,9 +344,8 @@ window.addEventListener('load',
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText.startsWith('Error')) {
-                var text = 'Atualização mal sucedida.' + this.responseText;
-                print('> ' + text);
-                show(text);
+                print('> Atualização mal sucedida.' + this.responseText);
+                show('Atualização mal sucedida.<br>' + this.responseText);
               } else {
                 var n = parseInt(this.responseText);
                 if (n != indexRec) indexRec = n;
@@ -364,9 +363,8 @@ window.addEventListener('load',
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText.startsWith('Error')) {
-                var text = 'Exclusão mal sucedida.' + this.responseText;
-                print('> ' + text);
-                show(text);
+                print('> Exclusão mal sucedida.' + this.responseText);
+                show('Exclusão mal sucedida.<br>' + this.responseText);
               } else {
                 amount.value = --numRecs;
                 if (indexRec > numRecs) --indexRec;
