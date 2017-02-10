@@ -64,6 +64,17 @@ window.addEventListener('load',
 
     function print(text) { MURAL.append(text); }
 
+    function show(text) {
+      swal({
+          html: true,
+          title: null,
+          text: text,
+          confirmButtonText: "Fechar",
+          confirmButtonColor: "#ff9900",
+          allowEscapeKey: true,
+        });
+    }
+
     function disableButtons() {
       // desabilita botões de navegação & comando
       setDisabled([firstBtn, previousBtn, nextBtn, lastBtn], true);
@@ -168,11 +179,13 @@ window.addEventListener('load',
               update();
             } else {
               print('> Erro: Número de registro é ilegal.');
+              show('Erro: Número de registro é ilegal.');
               ev.preventDefault();
             }
           }
         } else {
           print('> Erro: A tabela está vazia.');
+          show('Erro: A tabela está vazia.');
         }
       }, true);
 
@@ -183,11 +196,14 @@ window.addEventListener('load',
           indexRec = valor;                   // corrente, atualizando-o
         } else {
           print('> Erro: Valor do índice do registro ilegal.');
+          show('Erro: Valor do índice do registro ilegal.');
           if (0 < indexRec && indexRec <= numRecs) {
             print('> Restaurando valor do índice do registro corrente.');
+            show('Restaurando valor do índice do registro corrente.');
             counter.value = indexRec;
           } else {
             print('> Reiniciando valor do índice do registro corrente.');
+            show('Reiniciando valor do índice do registro corrente.');
             counter.value = indexRec = 1;
           }
         }
@@ -278,7 +294,9 @@ window.addEventListener('load',
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText.startsWith('Error')) {
-                print(['> Inserção mal sucedida.', this.responseText]);
+                var text = 'Inserção mal sucedida.' + this.responseText;
+                print('> ' + text);
+                show(text);
               } else {
                 amount.value = ++numRecs;
                 indexRec = parseInt(this.responseText);
@@ -293,6 +311,7 @@ window.addEventListener('load',
                 setDisabled(actionButtons, true);
                 setInputsReadonly(true);
                 print('> Inserção bem sucedida.');
+                show('Inserção bem sucedida.');
               }
             }
           };
@@ -303,11 +322,16 @@ window.addEventListener('load',
 
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
-              if (this.responseText.startsWith('Warning')) {
-                print('> Não há dados que satisfaçam a pesquisa.');
+              if (this.responseText.startsWith('Advertência')
+                  || this.responseText.startsWith('Warning')) {
+                var text = 'Não há dados que satisfaçam a pesquisa.';
+                print('> ' + text);
+                show(text);
               } else {
-                var n = this.responseText.split(/\n|\r|\r\n/g).length;
-                print(['> Sucesso, localizou ', ' registro(s):'].join(n));
+                var n = this.responseText.split(/\r\n|\n|\r/g).length;
+                var text = 'Sucesso, localizou ' + n + ' registro(s)';
+                print('> ' + text + ':');
+                show(text + '!');
               }
               print(this.responseText);
             }
@@ -320,11 +344,14 @@ window.addEventListener('load',
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText.startsWith('Error')) {
-                print(['> Atualização mal sucedida.', this.responseText]);
+                var text = 'Atualização mal sucedida.' + this.responseText;
+                print('> ' + text);
+                show(text);
               } else {
                 var n = parseInt(this.responseText);
                 if (n != indexRec) indexRec = n;
                 print('> Atualização bem sucedida.');
+                show('Atualização bem sucedida.');
                 cancelBtn.click();
               }
             }
@@ -337,12 +364,15 @@ window.addEventListener('load',
           xhr.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText.startsWith('Error')) {
-                print(['> Exclusão mal sucedida.', this.responseText]);
+                var text = 'Exclusão mal sucedida.' + this.responseText;
+                print('> ' + text);
+                show(text);
               } else {
                 amount.value = --numRecs;
                 if (indexRec > numRecs) --indexRec;
                 counter.maxLength = amount.value.length;
                 print('> Exclusão bem sucedida.');
+                show('Exclusão bem sucedida.');
               }
               cancelBtn.click();
             }

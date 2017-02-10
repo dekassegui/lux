@@ -200,7 +200,7 @@ window.addEventListener('load',
             var text = "<p>" + this.responseText
               .replace(/(['"])([^'"]+)\1/g, "<strong>$2</strong>")
               .replace(/:\s*/g, ":<br>")
-              .replace(/\n/g, "</p><p>") + "</p>";
+              .replace(/\r\n|\n|\r/g, "</p><p>") + "</p>";
             swal({
                 html: true,
                 title: null,
