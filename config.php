@@ -4,7 +4,7 @@
 
   require 'utils.php';
 
-  define('EASYQUERY', 'SELECT prazo, pendencias, weekdays FROM config_facil');
+  define('EASYQUERY', 'SELECT pendencias, prazo, weekdays FROM config_facil');
 
   function translate($s) {
     if (strpos($s, 'weekdays_chk') !== FALSE) {
@@ -32,7 +32,7 @@
 
     case 'UPDATE':
 
-      $fields = array('prazo', 'pendencias', 'weekdays');
+      $fields = array('pendencias', 'prazo', 'weekdays');
 
       $result = $db->query(EASYQUERY);
       $current = $result->fetch(PDO::FETCH_ASSOC);

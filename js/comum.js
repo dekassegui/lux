@@ -59,3 +59,14 @@ function Mural(iD) {
   return this;
 
 }
+
+function show(text) {
+  swal({
+      html: true,
+      title: null,
+      text: text.replace(/\r\n|\n|\r/g, "<br>"),
+      confirmButtonText: "Fechar",
+      confirmButtonColor: "#ff9900",
+      allowEscapeKey: true,
+    });
+}
