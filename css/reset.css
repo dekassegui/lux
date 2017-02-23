@@ -57,6 +57,12 @@ a { text-decoration: none; }
   src: local('Droid Serif Bold Italic'), local('DroidSerif-BoldItalic'), url('font/DroidSerif-BoldItalic.ttf') format('truetype');
 }
 @font-face {
+  font-family: 'Droid Sans Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Droid Sans Mono'), local('DroidSansMono'), url('font/DroidSansMono.ttf') format('truetype');
+}
+@font-face {
   font-family: 'Open Sans';
   font-style: normal;
   font-weight: 300;
