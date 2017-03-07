@@ -360,8 +360,25 @@ window.addEventListener('load',
                 counter.maxLength = amount.value.length;
                 //print('> Exclusão bem sucedida.');
                 show('Exclusão bem sucedida.');
+                //
+                if (indexRec > 0) {
+                  cancelBtn.click();
+                } else {
+                  // alterna de "excluir" para "novo"
+                  counter.value = 0;
+                  delBtn.classList.remove('working');
+                  newBtn.classList.add('working');
+                  // modifica rotulo do botão
+                  saveBtn.value = OKchar + ' Salvar';
+                  // somente permite "salvar"
+                  cancelBtn.disabled = true;
+                  setInputsValues();
+                  setInputsReadonly(false);
+                  /* TODO: foco inútil devido ao acionamento do diálogo de alerta
+                  fields[0].focus(); */
+                }
               }
-              cancelBtn.click();
+              //cancelBtn.click();
             }
           };
           par.push("?action=DELETE&recnumber=", indexRec);
