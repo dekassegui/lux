@@ -325,13 +325,28 @@ window.addEventListener('load',
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText.startsWith('Error')) {
                 print(['> Exclusão mal sucedida.', this.responseText]);
+                cancelBtn.click();
               } else {
                 amount.value = --numRecs;
                 if (indexRec > numRecs) --indexRec;
                 counter.maxLength = amount.value.length;
                 print('> Exclusão bem sucedida.');
+                if (indexRec > 0) {
+                  cancelBtn.click();
+                } else {
+                  // alterna de "excluir" para "novo"
+                  counter.value = 0;
+                  delBtn.classList.remove('working');
+                  newBtn.classList.add('working');
+                  // modifica rotulo do botão
+                  saveBtn.value = OKchar + ' Salvar';
+                  // somente permite "salvar"
+                  cancelBtn.disabled = true;
+                  setInputsValues();
+                  setInputsReadonly(false);
+                  fields[0].focus();
+                }
               }
-              cancelBtn.click();
             }
           };
           par.push("?action=DELETE&recnumber=", indexRec);

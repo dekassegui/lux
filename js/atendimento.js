@@ -354,13 +354,13 @@ window.addEventListener('load',
               if (this.responseText.startsWith('Error')) {
                 //print('> Exclusão mal sucedida.' + this.responseText);
                 show('Exclusão mal sucedida.<br>' + this.responseText);
+                cancelBtn.click();
               } else {
                 amount.value = --numRecs;
                 if (indexRec > numRecs) --indexRec;
                 counter.maxLength = amount.value.length;
                 //print('> Exclusão bem sucedida.');
                 show('Exclusão bem sucedida.');
-                //
                 if (indexRec > 0) {
                   cancelBtn.click();
                 } else {
@@ -374,11 +374,10 @@ window.addEventListener('load',
                   cancelBtn.disabled = true;
                   setInputsValues();
                   setInputsReadonly(false);
-                  /* TODO: foco inútil devido ao acionamento do diálogo de alerta
-                  fields[0].focus(); */
+                  /* TODO: foco inútil devido ao diálogo */
+                  fields[0].focus();
                 }
               }
-              //cancelBtn.click();
             }
           };
           par.push("?action=DELETE&recnumber=", indexRec);

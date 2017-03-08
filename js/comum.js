@@ -34,7 +34,7 @@ function Mural(iD) {
   // escorre até que 'text' seja visível tão ao topo quanto possível
   this.append = function (text) {
     if (text.map) {
-      text.map(append);
+      text.map(this.append);
     } else {
       var a = mural.clientHeight,   // altura do canvas
           b = mural.scrollHeight;   // altura do conteúdo a priori
