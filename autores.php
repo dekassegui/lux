@@ -130,7 +130,7 @@ EOT;
     case 'GETALL':
       $text = '';
       $result = $db->query(
-        'SELECT code, ifnull(nome||" - "||espirito, nome) FROM autores');
+        'SELECT code, ifnull(nome||" + "||espirito, nome) FROM autores');
       if ($row = $result->fetch(PDO::FETCH_NUM)) {
         $text .= join('|', $row);
         while ($row = $result->fetch(PDO::FETCH_NUM)) {
