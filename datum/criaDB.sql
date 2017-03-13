@@ -266,7 +266,9 @@ BEGIN
   INSERT INTO obras SELECT
     new.code,
     new.titulo,
-    (SELECT code FROM autores WHERE nome == new.autor),
+    (SELECT code FROM (
+        SELECT code, ifnull(nome || " + " || espirito, nome) AS nome FROM autores
+      ) WHERE nome == new.autor),
     (SELECT code FROM generos WHERE nome == new.genero);
 END;
 
@@ -275,7 +277,10 @@ BEGIN
   UPDATE obras SET
     code=new.code,
     titulo=new.titulo,
-    autor=(SELECT code FROM autores WHERE nome == new.autor),
+    autor=(SELECT code FROM (
+        SELECT code, ifnull(nome || " + " || espirito, nome) AS nome
+        FROM autores
+      ) WHERE nome == new.autor),
     genero=(SELECT code FROM generos WHERE nome == new.genero)
   WHERE rowid == old.rowid;
 END;
