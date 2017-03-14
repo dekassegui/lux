@@ -118,6 +118,9 @@ CORNL|unico|A6|
 CRTIMO|unico|B3|
 CREESP|unico|B3|
 CURESP|unico|B3|
+CEM1A|1|B4|
+CEM1A|2|B4|
+CEM1A|3|B4|
 DAPRE|unico|A6|
 DTMS|unico|A4|
 DEVPAS|unico|A6|
@@ -277,6 +280,7 @@ NOSSL|4|B1|
 NOAU|unico|A4|
 NOCA|unico|A1|
 NMLS|unico|A2|
+NVTEST|unico|B4|
 NAVI|unico|A1|
 NESAB|unico|A5|
 NPNBL|unico|B4|
@@ -372,6 +376,10 @@ PEA|unico|A1|
 POCDF|unico|B3|
 PETE|unico|A1|
 PLES|unico|A1|
+PEM|1|B4|
+PEM|2|B4|
+PEM|3|B4|
+PEM|4|B4|
 PAMAID|unico|A6|
 PQCOM|unico|A6|
 PQEA|unico|A1|
