@@ -47,6 +47,7 @@ DROP VIEW IF EXISTS emprestimos_calc;
 DROP VIEW IF EXISTS emprestimos_facil;
 DROP VIEW IF EXISTS exemplares_disponiveis;
 DROP VIEW IF EXISTS config_facil;
+DROP VIEW IF EXISTS scribas;
 
 CREATE TABLE IF NOT EXISTS autores (
   --
@@ -146,6 +147,12 @@ BEGIN
   UPDATE autores SET espirito=replace(new.espirito, "  ", " ")
     WHERE espirito == new.espirito;
 END;
+
+--
+-- conveniência combinando as colunas "nome" e "espirito"
+--
+CREATE VIEW IF NOT EXISTS scribas AS
+  select code, ifnull(nome || " + " || espirito, nome) as autores from autores;
 
 CREATE TABLE IF NOT EXISTS generos (
   --
@@ -256,9 +263,8 @@ END;
 --
 CREATE VIEW IF NOT EXISTS obras_facil AS
   SELECT obras.rowid, obras.code, obras.titulo,
-    ifnull(autores.nome || " + " || autores.espirito, autores.nome) AS autor,
-    generos.nome AS genero
-  FROM obras JOIN autores ON obras.autor == autores.code
+    scribas.autores AS autor, generos.nome AS genero
+  FROM obras JOIN scribas ON obras.autor == scribas.code
     JOIN generos ON obras.genero == generos.code;
 
 CREATE TRIGGER obras_facil_t0 INSTEAD OF INSERT ON obras_facil
@@ -266,10 +272,8 @@ BEGIN
   INSERT INTO obras SELECT
     new.code,
     new.titulo,
-    (SELECT code FROM (
-        SELECT code, ifnull(nome || " + " || espirito, nome) AS nome FROM autores
-      ) WHERE nome == new.autor),
-    (SELECT code FROM generos WHERE nome == new.genero);
+    (SELECT code FROM scribas WHERE scribas.autores == new.autor),
+    (SELECT code FROM generos WHERE generos.nome == new.genero);
 END;
 
 CREATE TRIGGER obras_facil_t1 INSTEAD OF UPDATE ON obras_facil
@@ -277,11 +281,8 @@ BEGIN
   UPDATE obras SET
     code=new.code,
     titulo=new.titulo,
-    autor=(SELECT code FROM (
-        SELECT code, ifnull(nome || " + " || espirito, nome) AS nome
-        FROM autores
-      ) WHERE nome == new.autor),
-    genero=(SELECT code FROM generos WHERE nome == new.genero)
+    autor=(SELECT code FROM scribas WHERE scribas.autores == new.autor),
+    genero=(SELECT code FROM generos WHERE generos.nome == new.genero)
   WHERE rowid == old.rowid;
 END;
 
@@ -1019,13 +1020,12 @@ CREATE VIEW IF NOT EXISTS disponiveis_acervo AS
 -- listagem "conveniente" dos exemplares disponíveis para empréstimo
 --
 CREATE VIEW IF NOT EXISTS exemplares_disponiveis AS
-  SELECT obra, titulo,
-    ifnull(autores.nome || " + " || espirito, autores.nome) AS autores,
+  SELECT obra, titulo, scribas.autores,
     generos.nome AS genero, exemplar, posicao, comentario
   FROM disponiveis_acervo
     JOIN obras ON disponiveis_acervo.obra == obras.code
     JOIN generos ON obras.genero == generos.code
-    JOIN autores ON obras.autor == autores.code;
+    JOIN scribas ON obras.autor == scribas.code;
 
 CREATE TABLE IF NOT EXISTS feriados (
   --
