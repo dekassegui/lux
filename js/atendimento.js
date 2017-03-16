@@ -444,7 +444,7 @@ window.addEventListener('load',
           $('exemplar').value = '';
           var input = $('obra');
           if (input.value) {
-            var  code, datalist = $(input.getAttribute('list'));
+            var code, datalist = $(input.getAttribute('list'));
             // percorre as options do datalist associado ao input "obra"
             // para obter o "code" correspondente ao título selecionado
             for (var titulo=input.value, collection=datalist.options, j=0;
@@ -455,12 +455,20 @@ window.addEventListener('load',
               var xhr = new XMLHttpRequest();
               xhr.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
+                  // mostra o nome do autor da obra escolhida
+                  var j = this.responseText.indexOf('|');
+                  $('autor').value = this.responseText.substring(0, j);
+                  // mostra a posição dos exemplares da obra escolhida
+                  var m = k = this.responseText.indexOf('\n');
+                  if (this.responseText.charAt(k-1) == '\r') --m;
+                  $('posicao').value = this.responseText.substring(j+1, m);
                   input = $('exemplar');
                   datalist = $(input.getAttribute('list'));
                   // substitui todos os itens da lista de opções, que pode
                   // tornar-se vazia caso não hajam exemplares disponíveis
-                  datalist.innerHTML = montaOptions(this.responseText);
-                  if (this.responseText) {
+                  var txt = montaOptions(this.responseText.substring(k+1));
+                  datalist.innerHTML = txt;
+                  if (txt.length > 0) {
                     // preenche o input com a primeira opção
                     input.value = datalist.options.item(0).value;
                   }

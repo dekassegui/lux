@@ -14,6 +14,14 @@
   if (isset($_GET['code'])) {
 
     $sql = <<<EOT
+  SELECT autor, posicao FROM acervo_facil WHERE code IS "{$_GET['code']}"
+EOT;
+    $result = $db->query($sql);
+    if ($row = $result->fetch(PDO::FETCH_NUM)) {
+      echo join('|', $row), PHP_EOL;
+    }
+
+    $sql = <<<EOT
   SELECT exemplar, exemplar FROM disponiveis_acervo
   WHERE obra == "{$_GET['code']}"
 EOT;
