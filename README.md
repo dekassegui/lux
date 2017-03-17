@@ -5,7 +5,7 @@ Sistema para gestão do acervo de bibliotecas de casas espíritas, composto de u
 ![interfaces do LUX](https://github.com/dekassegui/lux/blob/dekassegui-raw/lux-views.png "interfaces do LUX")
 
 **O "business" está completamente embarcado no DB**, possibilitando montagem de outras UIs em qualquer linguagem/tecnologia, manejo em aplicativos para gestão de banco de dados ou até mesmo via CLI, dado que o esquema do DB é para o **SQLite**.
-![diagrama ER do LUX](https://github.com/dekassegui/lux/blob/dekassegui-raw/lux.png "diagrama ER do LUX")
+![diagrama ER do DB](https://github.com/dekassegui/lux/blob/dekassegui-raw/lux.png "diagrama ER do DB")
 
 ### pré-requisitos
 

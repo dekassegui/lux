@@ -438,19 +438,22 @@ window.addEventListener('load',
 
     $('obra').addEventListener('change',
       function () {
-        // tenta atualizar as opções do datalist de "exemplares" conforme
-        // "título da obra" selecionado na atualização/criação de registro
+        // tenta atualizar as opções do datalist de "exemplares", "autor
+        // &espirito" e "posição" conforme "título da obra" selecionado na
+        // atualização ou criação de registro
         if ([newBtn, updateBtn].some(Bt => Bt.classList.contains('working'))) {
-          $('exemplar').value = '';
+          $('exemplar').value = $('autor').value = $('posicao').value = '';
           var input = $('obra');
           if (input.value) {
             var code, datalist = $(input.getAttribute('list'));
             // percorre as options do datalist associado ao input "obra"
             // para obter o "code" correspondente ao título selecionado
             for (var titulo=input.value, collection=datalist.options, j=0;
-                 !code && j<collection.length; ++j)
-              if (collection.item(j).value == titulo)
+                 !code && j<collection.length; ++j) {
+              if (collection.item(j).value == titulo) {
                 code = collection.item(j).getAttribute('code');
+              }
+            }
             if (code) {
               var xhr = new XMLHttpRequest();
               xhr.onreadystatechange = function () {

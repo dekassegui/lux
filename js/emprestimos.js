@@ -404,19 +404,24 @@ window.addEventListener('load',
             // percorre as options do datalist associado ao input "obra"
             // para obter o "code" correspondente ao título selecionado
             for (var titulo=input.value, collection=datalist.options, j=0;
-                 !code && j<collection.length; ++j)
-              if (collection.item(j).value == titulo)
+                 !code && j<collection.length; ++j) {
+              if (collection.item(j).value == titulo) {
                 code = collection.item(j).getAttribute('code');
+              }
+            }
             if (code) {
               var xhr = new XMLHttpRequest();
               xhr.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
                   input = $('exemplar');
                   datalist = $(input.getAttribute('list'));
+                  // monta a lista de opções ignorando a primeira linha
+                  var j = this.responseText.indexOf("\n");
+                  var txt = montaOptions(this.responseText.substring(j+1));
                   // substitui todos os itens da lista de opções, que pode
                   // tornar-se vazia caso não hajam exemplares disponíveis
-                  datalist.innerHTML = montaOptions(this.responseText);
-                  if (this.responseText) {
+                  datalist.innerHTML = txt;
+                  if (txt.length > 0) {
                     // preenche o input com a primeira opção
                     input.value = datalist.options.item(0).value;
                   }
