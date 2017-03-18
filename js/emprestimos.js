@@ -392,18 +392,20 @@ window.addEventListener('load',
         setInputsReadonly(true);            // desabilita os inputs dos..
       }, true);
 
-    $('obra').addEventListener('change',
+    // declara o listener de evento 'change' do input 'obra'
+    fields[4].addEventListener('change',
       function () {
         // tenta atualizar as opções do datalist de "exemplares" conforme
         // "título da obra" selecionado na atualização/criação de registro
         if ([newBtn, updateBtn].some(Bt => Bt.classList.contains('working'))) {
-          $('exemplar').value = '';
-          var input = $('obra');
-          if (input.value) {
-            var  code, datalist = $(input.getAttribute('list'));
+          // atualiza o valor do input 'exemplar'
+          fields[5].value = '';
+          // checa se o valor do input 'obra' não está vazio
+          if (fields[4].value) {
+            var  code, datalist = $(fields[4].getAttribute('list'));
             // percorre as options do datalist associado ao input "obra"
             // para obter o "code" correspondente ao título selecionado
-            for (var titulo=input.value, collection=datalist.options, j=0;
+            for (var titulo=fields[4].value, collection=datalist.options, j=0;
                  !code && j<collection.length; ++j) {
               if (collection.item(j).value == titulo) {
                 code = collection.item(j).getAttribute('code');
@@ -413,8 +415,8 @@ window.addEventListener('load',
               var xhr = new XMLHttpRequest();
               xhr.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
-                  input = $('exemplar');
-                  datalist = $(input.getAttribute('list'));
+                  // obtêm o datalist associado ao input 'exemplar'
+                  datalist = $(fields[5].getAttribute('list'));
                   // monta a lista de opções ignorando a primeira linha
                   var j = this.responseText.indexOf("\n");
                   var txt = montaOptions(this.responseText.substring(j+1));
@@ -422,8 +424,9 @@ window.addEventListener('load',
                   // tornar-se vazia caso não hajam exemplares disponíveis
                   datalist.innerHTML = txt;
                   if (txt.length > 0) {
-                    // preenche o input com a primeira opção
-                    input.value = datalist.options.item(0).value;
+                    // preenche o valor do input 'exemplar' com o primeiro
+                    // item do datalist associado
+                    fields[5].value = datalist.options.item(0).value;
                   }
                 }
               };

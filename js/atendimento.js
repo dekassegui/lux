@@ -436,19 +436,22 @@ window.addEventListener('load',
         xhr.send();
       }, true);
 
-    $('obra').addEventListener('change',
+    // declara o listener de evento 'change' no input 'obra'
+    fields[4].addEventListener('change',
       function () {
         // tenta atualizar as opções do datalist de "exemplares", "autor
         // &espirito" e "posição" conforme "título da obra" selecionado na
         // atualização ou criação de registro
         if ([newBtn, updateBtn].some(Bt => Bt.classList.contains('working'))) {
-          $('exemplar').value = $('autor').value = $('posicao').value = '';
-          var input = $('obra');
-          if (input.value) {
-            var code, datalist = $(input.getAttribute('list'));
+          // esvazia os valores dos inputs 'exemplar', 'autor' e 'posicao'
+          for (var i=5; i<8; ++i) fields[i].value = '';
+          // checa se o valor do input 'obra' não está vazio
+          if (fields[4].value) {
+            // obtem o datalist associado ao input 'obra'
+            var code, datalist = $(fields[4].getAttribute('list'));
             // percorre as options do datalist associado ao input "obra"
             // para obter o "code" correspondente ao título selecionado
-            for (var titulo=input.value, collection=datalist.options, j=0;
+            for (var titulo=fields[4].value, collection=datalist.options, j=0;
                  !code && j<collection.length; ++j) {
               if (collection.item(j).value == titulo) {
                 code = collection.item(j).getAttribute('code');
@@ -458,22 +461,25 @@ window.addEventListener('load',
               var xhr = new XMLHttpRequest();
               xhr.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
-                  // mostra o nome do autor da obra escolhida
+                  // obtem a posição do primeiro separador de valores
                   var j = this.responseText.indexOf('|');
-                  $('autor').value = this.responseText.substring(0, j);
+                  // atualiza o valor do input 'autor'
+                  fields[5].value = this.responseText.substring(0, j);
                   // mostra a posição dos exemplares da obra escolhida
                   var m = k = this.responseText.indexOf('\n');
                   if (this.responseText.charAt(k-1) == '\r') --m;
-                  $('posicao').value = this.responseText.substring(j+1, m);
-                  input = $('exemplar');
-                  datalist = $(input.getAttribute('list'));
+                  // atualiza o valor do input 'posicao'
+                  fields[7].value = this.responseText.substring(j+1, m);
+                  // obtem o datalist associado ao input 'exemplar'
+                  datalist = $(fields[6].getAttribute('list'));
                   // substitui todos os itens da lista de opções, que pode
                   // tornar-se vazia caso não hajam exemplares disponíveis
                   var txt = montaOptions(this.responseText.substring(k+1));
                   datalist.innerHTML = txt;
                   if (txt.length > 0) {
-                    // preenche o input com a primeira opção
-                    input.value = datalist.options.item(0).value;
+                    // atualiza o valor do input 'exemplar' com o valor
+                    // do primeiro item do datalist
+                    fields[6].value = datalist.options.item(0).value;
                   }
                 }
               };
