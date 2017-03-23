@@ -313,16 +313,40 @@ window.addEventListener('load',
             if (this.readyState == 4 && this.status == 200) {
               if (this.responseText.startsWith('Advertência')
                   || this.responseText.startsWith('Warning')) {
-                var text = 'Não há dados que satisfaçam a pesquisa.';
-                //print('> ' + text);
+                let text = 'Não há dados que satisfaçam a pesquisa.';
+                // FOR DEBUG PURPOSE: print('> ' + text);
                 show(text);
               } else {
-                var n = this.responseText.split(/\r\n|\n|\r/g).length;
-                var text = 'Sucesso, localizou ' + n + ' registro(s)';
-                print('> ' + text + ':');
-                show(text + '!');
+                let n = this.responseText.split(/\r\n|\n|\r/g).length;
+                if (n == 1) {
+                  let r = this.responseText.split('|');
+                  // atualiza o índice do registro corrente
+                  counter.value = indexRec = r[0];
+                  counter.disabled = false;
+                  setDisabled([firstBtn, previousBtn], indexRec <= 1);
+                  setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
+                  // atualiza valores apresentados no formulário
+                  r[0] = r.splice(3, 1)[0];
+                  setInputsValues(r);
+                  setInputsReadonly(true);
+                  // restaura os botões
+                  setDisabled(actionButtons, true);
+                  saveBtn.value = OKchar + ' Salvar';
+                  commandButtons.forEach(function (b) { b.disabled = false; });
+                  searchBtn.classList.remove('working');
+                  // "desfoca" algum input focado
+                  for (var i=0; i<fields.length; ++i)
+                    if (document.activeElement == fields[i]) {
+                      fields[i].blur();
+                      break;
+                    }
+                } else {
+                  let text = 'Sucesso, localizou ' + n + ' registro(s)';
+                  print('> ' + text + ':');
+                  show(text + '!');
+                  print(this.responseText);
+                }
               }
-              print(this.responseText);
             }
           };
           par.push('?action=SEARCH');
