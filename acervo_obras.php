@@ -11,18 +11,14 @@
     die($e->getMessage());
   }
 
-  $text = '';
   $result = $db->query(<<<EOT
-   SELECT DISTINCT acervo.obra, obras.titulo
+   SELECT DISTINCT acervo.obra || '|' || obras.titulo
    FROM acervo JOIN obras ON acervo.obra == obras.code
 EOT
     );
-  if ($result !== FALSE AND $row = $result->fetch(PDO::FETCH_NUM)) {
-    $text .= join('|', $row);
-    while ($row = $result->fetch(PDO::FETCH_NUM)) {
-      $text .= PHP_EOL.join('|', $row);
-    }
+  if ($result !== FALSE AND $row = $result->fetchcolumn()) {
+    echo $row;
+    while ($row = $result->fetchColumn()) echo PHP_EOL, $row;
   }
-  echo $text;
 
 ?>

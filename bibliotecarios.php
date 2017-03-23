@@ -120,15 +120,11 @@ EOT;
       break;
 
     case 'GETALL':
-      $text = '';
-      $result = $db->query('SELECT code, nome FROM bibliotecarios');
-      if ($row = $result->fetch(PDO::FETCH_NUM)) {
-        $text .= join('|', $row);
-        while ($row = $result->fetch(PDO::FETCH_NUM)) {
-          $text .= PHP_EOL.join('|', $row);
-        }
+      $result = $db->query('SELECT code || "|" || nome FROM bibliotecarios');
+      if ($result !== FALSE AND $row = $result->fetchColumn()) {
+        echo $row;
+        while ($row = $result->fetchColumn()) echo PHP_EOL, $row;
       }
-      echo $text;
       break;
   }
 

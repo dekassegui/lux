@@ -495,6 +495,7 @@ window.addEventListener('load',
       }, true);
 
     {
+      let aUri = uri.substring(0, uri.lastIndexOf("/")+1);
       // preenche datalists cujos ids correspondem ao nome (sem extensão)
       // do script server side que atende a requisição dos seus dados
       ['bibliotecarios', 'leitores', 'acervo_obras',
@@ -507,9 +508,7 @@ window.addEventListener('load',
               $(iD).innerHTML = montaOptions(this.responseText);
           };
           // monta a uri do script backend incumbente
-          var aUri = uri.substring(0, uri.lastIndexOf("/")+1)
-            + iD + ".php?action=GETALL";
-          xhr.open("GET", aUri, true);
+          xhr.open("GET", aUri + iD + ".php?action=GETALL", true);
           xhr.send();
         });
     }
