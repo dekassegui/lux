@@ -317,11 +317,11 @@ window.addEventListener('load',
                 // FOR DEBUG PURPOSE: print('> ' + text);
                 show(text);
               } else {
-                let n = this.responseText.split(/\r\n|\n|\r/g).length;
-                if (n == 1) {
-                  let r = this.responseText.split('|');
+                let r = this.responseText.split(/\r\n|\n|\r/g);
+                if (r.length == 1) {
+                  r = r[0].split('|');
                   // atualiza o índice do registro corrente
-                  counter.value = indexRec = r[0];
+                  indexRec = parseInt(counter.value = r[0]);
                   counter.disabled = false;
                   setDisabled([firstBtn, previousBtn], indexRec <= 1);
                   setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
@@ -329,22 +329,27 @@ window.addEventListener('load',
                   r[0] = r.splice(3, 1)[0];
                   setInputsValues(r);
                   setInputsReadonly(true);
-                  // restaura os botões
+                  // restaura status dos botões
+                  searchBtn.classList.remove('working');
+                  commandButtons.forEach(function (b) { b.disabled = false; });
                   setDisabled(actionButtons, true);
                   saveBtn.value = OKchar + ' Salvar';
-                  commandButtons.forEach(function (b) { b.disabled = false; });
-                  searchBtn.classList.remove('working');
                   // "desfoca" algum input focado
-                  for (var i=0; i<fields.length; ++i)
-                    if (document.activeElement == fields[i]) {
-                      fields[i].blur();
-                      break;
-                    }
+                  let elm = document.activeElement;
+                  if (elm.tagName == 'INPUT' && elm.type == 'text') elm.blur();
                 } else {
-                  let text = 'Sucesso, localizou ' + n + ' registro(s)';
+                  let text = 'Sucesso, localizou ' + r.length + ' registro(s)';
                   print('> ' + text + ':');
                   show(text + '!');
-                  print(this.responseText);
+                  r.forEach(
+                    function (record) {
+                      print('');
+                      record.split('|').forEach(
+                        function (field, n) {
+                          const label = ['     #Registro', '    Emprestimo', '     Devolução', '        Agente', '        Leitor', '        Título', 'Autor&Espírito', '      Exemplar', '       Posição', '    Comentário'];
+                          print('  ' + label[n] + ': ' + field);
+                        })
+                    });
                 }
               }
             }
