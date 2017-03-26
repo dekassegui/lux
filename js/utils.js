@@ -70,4 +70,8 @@ function setDisabled(array, boolValue) {
   array.forEach( function (item) { item.disabled = boolValue; } );
 }
 
-var OKchar = String.fromCodePoint(0xf00c);  // check mark
+function leftPad(text, size) {
+  return " ".repeat( Math.max(0, size-text.length) ) + text;
+}
+
+const OKchar = String.fromCodePoint(0xf00c);  // check mark

@@ -318,6 +318,7 @@ window.addEventListener('load',
                 show(text);
               } else {
                 let r = this.responseText.split(/\r\n|\n|\r/g);
+                // checa se resultado da pesquisa é registro único
                 if (r.length == 1) {
                   r = r[0].split('|');
                   // atualiza o índice do registro corrente
@@ -346,8 +347,8 @@ window.addEventListener('load',
                       print('');
                       record.split('|').forEach(
                         function (field, n) {
-                          const label = ['     #Registro', '    Emprestimo', '     Devolução', '        Agente', '        Leitor', '        Título', 'Autor&Espírito', '      Exemplar', '       Posição', '    Comentário'];
-                          print('  ' + label[n] + ': ' + field);
+                          const label = ['#Registro', 'Emprestimo', 'Devolução', 'Agente', 'Leitor', 'Título', 'Autor&Espírito', 'Exemplar', 'Posição', 'Comentário'];
+                          print(leftPad(label[n], 20) + ': ' + field);
                         })
                     });
                 }
