@@ -296,28 +296,31 @@ window.addEventListener('load',
               } else {
                 let r = this.responseText.split(/\r\n|\n|\r/g);
                 let text = 'Sucesso: Localizou ' + r.length + ' registro(s)';
-                show(text + '.');
+                // show(text + '.');
                 print('> ' + text + ':');
                 const nomes = {
-                  'autores': ['#Registro', 'Código', 'Nome', 'Espírito(s)'],
+                  'autores': ['#Registro', 'Código', 'Nome', 'Espíritos'],
                   'generos': ['#Registro', 'Código', 'Nome'],
-                  'obras': ['#Registro', 'Código', 'Título' , 'Autor', 'Gênero'],
+                  'obras': ['#Registro', 'Código', 'Título' , 'Autores', 'Gênero'],
                   'acervo': ['#Registro', 'Obra', 'Exemplar', 'Posição', 'Comentário'],
                   'bibliotecarios': ['#Registro', 'Código', 'Nome'],
                   'leitores': ['#Registro', 'Código', 'Nome', 'Telefone', 'e-Mail']
                 };
+                // extrai a chave da uri da página corrente
                 let key = location.pathname.substring(1);
                 key = key.substring(key.indexOf('/')+1, key.indexOf('.'));
+                // calcula o comprimento dos labels das colunas
                 let m = Math.max.apply(null,
                   nomes[key].map(function (s) { return s.length; })) + 2;
+                // monta labels alinhados a direita
                 let labels = nomes[key].map(
                   function (s) { return leftPad(s, m) + ': '; });
+                // monta a lista de registros
                 text = '';
-                for (var fields, i=0; i<r.length; ++i) {
-                  text += '\n';
+                for (var fields, k=labels.length, j, i=0; i<r.length; ++i) {
                   fields = r[i].split('|');
-                  for (var j=0; j<fields.length; ++j)
-                    text += labels[j] + fields[j] + '\n';
+                  text += '\n';
+                  for (j=0; j<k; ++j) text += labels[j] + fields[j] + '\n';
                 }
                 print(text);
               }

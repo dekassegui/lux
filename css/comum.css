@@ -45,7 +45,10 @@ header {
 }
 h2 { display: none; visibility: hidden; }
 
-label { display: inline-block; }
+label {
+  display: inline-block;
+  letter-spacing: .03125em;
+}
 
 input[type="text"], input[type="tel"], input[type="email"] {
   padding: 2px 5px;
@@ -71,7 +74,7 @@ input[type="text"]:focus, input[type="tel"]:focus, input[type="email"]:focus, in
   box-shadow: 0px 0px 2px #ccc;
 }
 input[list]:focus { border-color: #c9f; }
-input[type="text"][readonly]:focus { color: #c99; }
+input[type="text"][readonly]:focus { color: #966; }
 
 input#counter {
   width: 2.5em;
@@ -104,7 +107,7 @@ input[type="button"] {
   transition-timing-function: linear;
 }
 input[type="button"]:hover { color: red; }
-input#saveBtn:hover { color: green; }
+input#saveBtn:hover { color: #006600; }
 input[type="button"]:focus { color: #90c; }
 input#saveBtn:focus { color: #06c; }
 input[type="button"]:disabled, input#saveBtn:disabled { color: #b9b9b9; }
@@ -121,7 +124,20 @@ div#cmd * + p { margin-top: .125em; }
 div#cmd p * + input { margin-left: 5px; }
 
 #newBtn.working, #searchBtn.working, #updateBtn.working, #delBtn.working {
-  color: #90c;
+  color: #c06;
+  text-shadow: 1px 1px 0px white;
+  background: #bbb;
+  border: solid 1px #aaa;
+  border-radius: 3px;
+}
+
+input#saveBtn:enabled, input#cancelBtn:enabled {
+  text-shadow: 1px 1px 0px white;
+  background-image: linear-gradient(to top, #fc6, #ffc);
+  border: solid 1px #999;
+  border-left-color: #aaa;
+  border-top-color: #bbb;
+  border-radius: 3px;
 }
 
 textarea {
@@ -157,3 +173,16 @@ footer p {
   color: black;
 }
 body:not([id]) footer { display: none; visibility: hidden; }
+
+/* ajustes exclusivos para Webkit */
+@media (-webkit-min-device-pixel-ratio:0) {
+
+  input[type="button"] {
+    height: 2.5em;
+  }
+
+  input#saveBtn:enabled, input#cancelBtn:enabled {
+    background-image: -webkit-linear-gradient(to top, #fc6, #ffc);
+  }
+
+}
