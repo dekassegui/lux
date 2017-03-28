@@ -124,7 +124,6 @@ EOT;
 EOT;
         // for debug purpose --> $text = $sql."\n";
         // consulta o DB
-        // consulta o DB
         $result = $db->query($sql);
         // montagem da lista de resultados
         if ($result !== FALSE AND $row = $result->fetch(PDO::FETCH_NUM)) {

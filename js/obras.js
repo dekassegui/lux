@@ -293,36 +293,62 @@ window.addEventListener('load',
               if (this.responseText.startsWith('Advertência')
                   || this.responseText.startsWith('Warning')) {
                 show('Não há dados que satisfaçam a pesquisa.');
+                print('SQL: ' + this.responseText);
               } else {
                 let r = this.responseText.split(/\r\n|\n|\r/g);
-                let text = 'Sucesso: Localizou ' + r.length + ' registro(s)';
-                // show(text + '.');
-                print('> ' + text + ':');
-                const nomes = {
-                  'autores': ['#Registro', 'Código', 'Nome', 'Espíritos'],
-                  'generos': ['#Registro', 'Código', 'Nome'],
-                  'obras': ['#Registro', 'Código', 'Título' , 'Autores', 'Gênero'],
-                  'acervo': ['#Registro', 'Obra', 'Exemplar', 'Posição', 'Comentário'],
-                  'bibliotecarios': ['#Registro', 'Código', 'Nome'],
-                  'leitores': ['#Registro', 'Código', 'Nome', 'Telefone', 'e-Mail']
-                };
-                // extrai a chave da uri da página corrente
-                let key = location.pathname.substring(1);
-                key = key.substring(key.indexOf('/')+1, key.indexOf('.'));
-                // calcula o comprimento dos labels das colunas
-                let m = Math.max.apply(null,
-                  nomes[key].map(function (s) { return s.length; })) + 2;
-                // monta labels alinhados a direita
-                let labels = nomes[key].map(
-                  function (s) { return leftPad(s, m) + ': '; });
-                // monta a lista de registros
-                text = '';
-                for (var fields, k=labels.length, j, i=0; i<r.length; ++i) {
-                  fields = r[i].split('|');
-                  text += '\n';
-                  for (j=0; j<k; ++j) text += labels[j] + fields[j] + '\n';
+                // checa se o resultado da pesquisa é único registro
+                if (r.length == 1) {
+                  // monta o array dos valores dos campos
+                  r = r[0].split('|');
+                  // atualiza o contador do registro corrente
+                  indexRec = parseInt(counter.value = r[0]);
+                  counter.disabled = false;
+                  // habilita/desabilita botões de acesso sequencial
+                  setDisabled([firstBtn, previousBtn], indexRec <= 1);
+                  setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
+                  // remove o primeiro dos valores...
+                  r.shift();
+                  // atualiza visualização e desabilita edição dos valores...
+                  setInputsValues(r);
+                  setInputsReadonly(true);
+                  // encerra o modo pesquisa e habilita os botões de comando
+                  searchBtn.classList.remove('working');
+                  commandButtons.forEach(function (b) { b.disabled = false; });
+                  // desabilita os botões de ação
+                  setDisabled(actionButtons, true);
+                  saveBtn.value = OKchar + ' Salvar';
+                  // "desfoca" algum input focado
+                  let elm = document.activeElement;
+                  if (elm.tagName == 'INPUT' && elm.type == 'text') elm.blur();
+                } else {
+                  let text = 'Sucesso: Localizou ' + r.length + ' registros:';
+                  print('> ' + text);
+                  const nomes = {
+                    'autores': ['#Registro', 'Código', 'Nome', 'Espíritos'],
+                    'generos': ['#Registro', 'Código', 'Nome'],
+                    'obras': ['#Registro', 'Código', 'Título' , 'Autores', 'Gênero'],
+                    'acervo': ['#Registro', 'Obra', 'Exemplar', 'Posição', 'Comentário'],
+                    'bibliotecarios': ['#Registro', 'Código', 'Nome'],
+                    'leitores': ['#Registro', 'Código', 'Nome', 'Telefone', 'e-Mail']
+                  };
+                  // extrai a chave da uri da página corrente
+                  let key = location.pathname.substring(1);
+                  key = key.substring(key.indexOf('/')+1, key.indexOf('.'));
+                  // calcula o comprimento dos labels das colunas
+                  let m = Math.max.apply(null,
+                    nomes[key].map(function (s) { return s.length; })) + 2;
+                  // monta labels alinhados a direita
+                  let labels = nomes[key].map(
+                    function (s) { return leftPad(s, m) + ': '; });
+                  // monta a lista de registros pesquisados
+                  text = '';
+                  for (var fields, k=labels.length, j, i=0; i<r.length; ++i) {
+                    fields = r[i].split('|');
+                    text += '\n';
+                    for (j=0; j<k; ++j) text += labels[j] + fields[j] + '\n';
+                  }
+                  print(text);
                 }
-                print(text);
               }
             }
           };

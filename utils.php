@@ -160,7 +160,7 @@
    *         retorna-o com haspas simples.
   */
   function chk($text) {
-    return strlen(trim($text)) == 0 ? 'NULL' : "'$text'";
+    return strlen(trim($text)) == 0 ? 'NULL' : '"'.$text.'"';
   }
 
   /**
@@ -305,7 +305,7 @@
       // default :: comparação simples
       } else {
 
-        $constraints[] = $negate."$name == '$needle'";
+        $constraints[] = $negate."$name == ".'"'.$needle.'"';
 
       }
     }

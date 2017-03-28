@@ -339,18 +339,20 @@ window.addEventListener('load',
                   let elm = document.activeElement;
                   if (elm.tagName == 'INPUT' && elm.type == 'text') elm.blur();
                 } else {
-                  let text = 'Sucesso, localizou ' + r.length + ' registro(s)';
+                  let text = 'Sucesso: Localizou ' + r.length + ' registros';
                   print('> ' + text + ':');
                   show(text + '!');
-                  r.forEach(
-                    function (record) {
-                      print('');
-                      record.split('|').forEach(
-                        function (field, n) {
-                          const label = ['#Registro', 'Emprestimo', 'Devolução', 'Agente', 'Leitor', 'Título', 'Autor&Espírito', 'Exemplar', 'Posição', 'Comentário'];
-                          print(leftPad(label[n], 20) + ': ' + field);
-                        })
-                    });
+                  // monta o array de labels dos campos dos registros
+                  const labels = ['#Registro', 'Emprestimo', 'Devolução', 'Agente', 'Leitor', 'Título', 'Autor&Espírito', 'Exemplar', 'Posição', 'Comentário'].map(
+                    function (s) { return leftPad(s, 16) + ': '; });
+                  // monta a lista dos registros pesquisados
+                  text = '';
+                  for (var fields, n=labels.length, i, j=0; j<r.length; ++j) {
+                    text += '\n';
+                    fields = r[j].split('|');
+                    for (i=0; i<n; ++i) text += labels[i] + fields[i] + '\n';
+                  }
+                  print(text);
                 }
               }
             }

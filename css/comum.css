@@ -100,45 +100,42 @@ input[type="button"] {
   font-size: 66%;
   line-height: 200%;
   color: black;
-  /* configura uso de "transition" */
-  -webkit-transition: color .5s;
-  -webkit-transition-timing-function: linear;
-  transition: color .5s;
-  transition-timing-function: linear;
-}
-input[type="button"]:hover { color: red; }
-input#saveBtn:hover { color: #006600; }
-input[type="button"]:focus { color: #90c; }
-input#saveBtn:focus { color: #06c; }
-input[type="button"]:disabled, input#saveBtn:disabled { color: #b9b9b9; }
-input[type="button"].awesome {
-  font-family: FontAwesome, "Open Sans", sans-serif;
-  word-spacing: .1875em;
-}
-/* ajustes exclusivos para Webkit */
-@media (-webkit-min-device-pixel-ratio:0) {
-  input[type="button"] { height: 1.8em; }
-}
-div#cmd p { overflow: auto; }
-div#cmd * + p { margin-top: .125em; }
-div#cmd p * + input { margin-left: 5px; }
-
-#newBtn.working, #searchBtn.working, #updateBtn.working, #delBtn.working {
-  color: #c06;
-  text-shadow: 1px 1px 0px white;
-  background: #bbb;
-  border: solid 1px #aaa;
-  border-radius: 3px;
-}
-
-input#saveBtn:enabled, input#cancelBtn:enabled {
-  text-shadow: 1px 1px 0px white;
-  background-image: linear-gradient(to top, #fc6, #ffc);
+  background-color: #c0c0c0;  /* cor de fundo quando pressionado */
+  background-image: -webkit-linear-gradient(to top, #dcdcdc, #f9f9f9);
+  background-image: linear-gradient(to top, #dcdcdc, #f9f9ff);
   border: solid 1px #999;
   border-left-color: #aaa;
   border-top-color: #bbb;
   border-radius: 3px;
+  /* configura uso de "transition" */
+  -webkit-transition: color .5s, background-image .5s;
+  -webkit-transition-timing-function: linear;
+  transition: color .5s, background-image .5s;
+  transition-timing-function: linear;
 }
+input[type="button"]:hover { color: red; }
+input[type="button"]:enabled:hover {
+  background-image: -webkit-linear-gradient(to top, #c0c0c0, #f0f0d0);
+  background-image: linear-gradient(to top, #c0c0c0, #f0f0d0);
+}
+input[type="button"]:focus { color: #90c; }
+input[type="button"]:disabled { color: #b9b9b9; }
+input[type="button"].awesome {
+  font-family: FontAwesome, "Open Sans", sans-serif;
+  word-spacing: .1875em;
+}
+#newBtn.working, #searchBtn.working, #updateBtn.working, #delBtn.working {
+  color: #30f;
+  text-shadow: 1px 1px 0px white; /* efeito de baixo relevo */
+  background-image: none;         /* botao pressionado :: plano */
+}
+input#saveBtn:enabled, input#cancelBtn:enabled {
+  background-image: -webkit-linear-gradient(to top, #fc6, #ffc);
+  background-image: linear-gradient(to top, #fc6, #ffc);
+}
+div#cmd p { overflow: auto; }
+div#cmd * + p { margin-top: .125em; }
+div#cmd p * + input { margin-left: 5px; }
 
 textarea {
   width: 100%;      /* assume a dimensão do parent element */
@@ -177,12 +174,6 @@ body:not([id]) footer { display: none; visibility: hidden; }
 /* ajustes exclusivos para Webkit */
 @media (-webkit-min-device-pixel-ratio:0) {
 
-  input[type="button"] {
-    height: 2.5em;
-  }
-
-  input#saveBtn:enabled, input#cancelBtn:enabled {
-    background-image: -webkit-linear-gradient(to top, #fc6, #ffc);
-  }
+  input[type="button"] { height: 2em; }
 
 }
