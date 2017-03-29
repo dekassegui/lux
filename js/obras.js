@@ -175,11 +175,11 @@ window.addEventListener('load',
           print('> Erro: Valor do índice do registro ilegal.');
           if (0 < indexRec && indexRec <= numRecs) {
             print('> Restaurando valor do índice do registro corrente.');
-            counter.value = indexRec;
           } else {
             print('> Reiniciando valor do índice do registro corrente.');
-            counter.value = indexRec = 1;
+            indexRec = 1;
           }
+          counter.value = indexRec;
         }
         update();
       }, true);
@@ -293,7 +293,7 @@ window.addEventListener('load',
               if (this.responseText.startsWith('Advertência')
                   || this.responseText.startsWith('Warning')) {
                 show('Não há dados que satisfaçam a pesquisa.');
-                print('SQL: ' + this.responseText);
+                //print('SQL: ' + this.responseText);
               } else {
                 let r = this.responseText.split(/\r\n|\n|\r/g);
                 // checa se o resultado da pesquisa é único registro
@@ -426,8 +426,9 @@ window.addEventListener('load',
     {
       // preenche datalists cujos ids correspondem ao nome (sem extensão)
       // do script server side que atende a requisição dos seus dados
-      var set = $$("section > div#fields > datalist");
+      let set = $$("section > div#fields > datalist");
       if (Array.isArray(set)) {
+        let aUri = uri.substring(0, uri.lastIndexOf("/")+1);
         set.forEach(
           function (datalist) {
             var xhr = new XMLHttpRequest();
@@ -436,10 +437,7 @@ window.addEventListener('load',
                 datalist.innerHTML = montaOptions(this.responseText);
               }
             };
-            // monta a string da uri do script server side incumbente
-            var aUri = uri.substring(0, uri.lastIndexOf("/")+1)
-              + datalist.id + ".php?action=GETALL";
-            xhr.open("GET", aUri, true);
+            xhr.open("GET", aUri + datalist.id + ".php?action=GETALL", true);
             xhr.send();
           });
       }
@@ -484,7 +482,7 @@ window.addEventListener('load',
 
         commandButtons.forEach(
           function (btn) {
-            btn.disabled = false;             // habilita o botão
+            btn.disabled = false;            // habilita o botão
             btn.classList.remove('working'); // remove classe 'working'
           });
 

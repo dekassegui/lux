@@ -157,7 +157,7 @@
    *
    * @param $text String objeto da verificação.
    * @return NULL se o argumento contém apenas espaços em branco, senão
-   *         retorna-o com haspas simples.
+   *         retorna-o com aspas duplas.
   */
   function chk($text) {
     return strlen(trim($text)) == 0 ? 'NULL' : '"'.$text.'"';

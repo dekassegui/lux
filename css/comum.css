@@ -101,31 +101,31 @@ input[type="button"] {
   line-height: 200%;
   color: black;
   background-color: #c0c0c0;  /* cor de fundo quando pressionado */
-  background-image: -webkit-linear-gradient(to top, #dcdcdc, #f9f9f9);
+  background-image: -webkit-linear-gradient(to top, #dcdcdc, #f9f9ff);
   background-image: linear-gradient(to top, #dcdcdc, #f9f9ff);
   border: solid 1px #999;
   border-left-color: #aaa;
   border-top-color: #bbb;
   border-radius: 3px;
   /* configura uso de "transition" */
-  -webkit-transition: color .5s, background-image .5s;
+  -webkit-transition: color .75s, background-image .75s;
   -webkit-transition-timing-function: linear;
-  transition: color .5s, background-image .5s;
+  transition: color .75s, background-image .75s;
   transition-timing-function: linear;
 }
 input[type="button"]:hover { color: red; }
 input[type="button"]:enabled:hover {
-  background-image: -webkit-linear-gradient(to top, #c0c0c0, #f0f0d0);
-  background-image: linear-gradient(to top, #c0c0c0, #f0f0d0);
+  background-image: -webkit-linear-gradient(to top, #fc6, #ffc);
+  background-image: linear-gradient(to top, #fc6, #ffc);
 }
-input[type="button"]:focus { color: #90c; }
+/* input[type="button"]:focus { color: #90c; } */
 input[type="button"]:disabled { color: #b9b9b9; }
 input[type="button"].awesome {
   font-family: FontAwesome, "Open Sans", sans-serif;
   word-spacing: .1875em;
 }
 #newBtn.working, #searchBtn.working, #updateBtn.working, #delBtn.working {
-  color: #30f;
+  color: #f06;
   text-shadow: 1px 1px 0px white; /* efeito de baixo relevo */
   background-image: none;         /* botao pressionado :: plano */
 }
@@ -148,9 +148,9 @@ textarea {
   border-radius: 5px;
   box-shadow: none;
   /* configura uso de "transition" */
-  -webkit-transition: color .5s, background-color .5s, box-shadow .5s;
+  -webkit-transition: color .75s, background-color .75s, box-shadow .75s;
   -webkit-transition-timing-function: linear;
-  transition: color .5s, background-color .5s, box-shadow .5s;
+  transition: color .75s, background-color .75s, box-shadow .75s;
   transition-timing-function: linear;
 }
 textarea:focus {

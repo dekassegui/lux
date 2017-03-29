@@ -152,7 +152,7 @@ END;
 -- conveniência combinando as colunas "nome" e "espirito"
 --
 CREATE VIEW IF NOT EXISTS scribas AS
-  select code, ifnull(nome || " + " || espirito, nome) as autores from autores;
+  SELECT code, ifnull(nome || " + " || espirito, nome) AS autores FROM autores;
 
 CREATE TABLE IF NOT EXISTS generos (
   --
