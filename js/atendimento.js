@@ -255,7 +255,7 @@ window.addEventListener('load',
         disableButtons();
         setInputsValues();
         setInputsReadonly(false);
-        fields[/* 1 */ 0 ].focus();
+        fields[ 4 ].focus();
       }, true);
 
     newBtn.addEventListener('click',
@@ -468,8 +468,8 @@ window.addEventListener('load',
         xhr.send();
       }, true);
 
-    // declara o listener de evento 'change' no input 'obra'
-    fields[4].addEventListener('change',
+    // declara o listener de evento 'input' no input 'obra'
+    fields[4].addEventListener('input',
       function () {
         // tenta atualizar as opções do datalist de "exemplares", "autor
         // &espirito" e "posição" conforme "título da obra" selecionado na
