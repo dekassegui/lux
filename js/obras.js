@@ -184,7 +184,10 @@ window.addEventListener('load',
         update();
       }, true);
 
-    amount.addEventListener('focus', function () { this.blur(); }, true);
+    actionButtons.concat([amount]).forEach(
+      function (elm) {
+        elm.addEventListener('focus', function () { this.blur(); }, true);
+      });
 
     firstBtn.addEventListener('click',
       function () {

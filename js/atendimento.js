@@ -200,10 +200,10 @@ window.addEventListener('load',
         update();
       }, true);
 
-    [amount, infoBtn, leitorBtn].forEach(
-      function (el) {
-        el.addEventListener('focus', function () { this.blur(); });
-      }, true);
+    actionButtons.concat([amount, infoBtn, leitorBtn]).forEach(
+      function (elm) {
+        elm.addEventListener('focus', function () { this.blur(); }, true);
+      });
 
     firstBtn.addEventListener('click',
       function () {
