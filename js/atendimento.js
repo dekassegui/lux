@@ -11,10 +11,13 @@
 window.addEventListener('load',
   function () {
 
+
     $.noConflict();
+
     ["#data_emprestimo", "#data_devolucao"].forEach(
       function (iD) {
         jQuery(iD).datepicker({
+          autoClose: true,
           language: 'pt-BR',
           dateFormat: 'dd-mm-yyyy',
           navTitles: {
@@ -27,15 +30,36 @@ window.addEventListener('load',
           clearButton: true,
           keyboardNav: false,
           onShow: function (dp, animationCompleted) {
-            // esconde o datepicker se a animação recém iniciou e se o
-            // input é readonly :: evita corrupção da data apresentada
-            if (!animationCompleted && dp.el.readOnly) dp.hide();
+            if (!animationCompleted && dp.el.readOnly) {
+              // esconde o datepicker se a animação não está completa e se
+              // o input é ReadOnly :: evita corrupção da data apresentada
+              dp.hide();
+            }
           }
         });
       });
 
+    (
+      function () {
+        var w = jQuery(window);
+        var h = jQuery("header");
+        var d = jQuery("section > div:first-child");
+        var b = true; /* (d.innerHeight() > 0) */
+
+        h.click(function () {
+            const a = ["esconder", "restaurar"];
+            h.attr("title", "clique aqui para " + a[b=!b&1] + " o formulário");
+          }
+        ).click().click(function () {
+            w.scrollTo(0, 400 + (window.scrollY / 100 + 1) * 100);
+            d.slideToggle("slow");
+          }
+        );
+      }
+    )();
+
     // URI do script "server side" que atende requisições ao DB
-    var uri = location.href.replace("html", "php");
+    const uri = location.href.replace("html", "php");
 
     var indexRec,                 // índice do registro corrente
         counter = $('counter');   // input do índice do..
@@ -63,6 +87,14 @@ window.addEventListener('load',
     var MURAL = new Mural();
 
     function print(text) { MURAL.append(text); }
+
+    function scrollTo(y) {
+      var d = window.scrollY;
+      if (y === undefined) {
+        d = y = $("mural").offsetTop - $$("body > header").offsetHeight - 5;
+      }
+      jQuery(window).scrollTo(y, 400 + (d / 100 + 1) * 100, {easing:"swing"});
+    }
 
     function disableButtons() {
       // desabilita botões de navegação & comando
@@ -115,8 +147,7 @@ window.addEventListener('load',
             setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
           }
         };
-        xhr.open("GET", [uri, "?action=GETREC&recnumber=", indexRec]
-                          .join(""), true);
+        xhr.open("GET", uri + "?action=GETREC&recnumber=" + indexRec, true);
         xhr.send();
       } else {
         whenTableIsEmpty();
@@ -238,7 +269,8 @@ window.addEventListener('load',
         updateBtn.classList.add('working');
         disableButtons();
         setInputsReadonly(false);
-        fields[/* fields[2].value.length > 0 ? 0 : 2 */ 0 ].focus();
+        scrollTo(0);
+        fields[ 0 ].focus();
       }, true);
 
     delBtn.addEventListener('click',
@@ -246,6 +278,7 @@ window.addEventListener('load',
         delBtn.classList.add('working');
         saveBtn.value = OKchar + " Confirmar";
         disableButtons();
+        scrollTo(0);
       }, true);
 
     searchBtn.addEventListener('click',
@@ -255,6 +288,7 @@ window.addEventListener('load',
         disableButtons();
         setInputsValues();
         setInputsReadonly(false);
+        scrollTo(0);
         fields[ 4 ].focus();
       }, true);
 
@@ -264,6 +298,7 @@ window.addEventListener('load',
         disableButtons();
         setInputsValues();
         setInputsReadonly(false);
+        scrollTo(0);
         fields[0].focus();
       }, true);
 
@@ -289,9 +324,14 @@ window.addEventListener('load',
               } else {
                 amount.value = ++numRecs;
                 indexRec = parseInt(this.responseText);
-                update();
+                /* update(); */
+                // atualiza o input do índice do registro corrente
+                counter.value = indexRec;
                 counter.maxLength = amount.value.length;
                 counter.disabled = false;
+                // habilita/desabilita botões de navegação
+                setDisabled([firstBtn, previousBtn], indexRec <= 1);
+                setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
                 commandButtons.forEach(
                   function (el) {
                     el.disabled = false;
@@ -341,7 +381,7 @@ window.addEventListener('load',
                 } else {
                   let text = 'Sucesso: Localizou ' + r.length + ' registros';
                   print('> ' + text + ':');
-                  show(text + '!');
+                  /* show(text + '!'); */
                   // monta o array de labels dos campos dos registros
                   const labels = ['#Registro', 'Emprestimo', 'Devolução', 'Agente', 'Leitor', 'Título', 'Autor&Espírito', 'Exemplar', 'Posição', 'Comentário'].map(
                     function (s) { return leftPad(s, 16) + ': '; });
@@ -353,6 +393,7 @@ window.addEventListener('load',
                     for (i=0; i<n; ++i) text += labels[i] + fields[i] + '\n';
                   }
                   print(text);
+                  scrollTo();
                 }
               }
             }
@@ -442,6 +483,7 @@ window.addEventListener('load',
           if (this.readyState == 4 && this.status == 200) {
             if (!MURAL.isEmpty()) print("");
             print(this.responseText);
+            scrollTo();
           }
         };
         // monta a string da uri do script server side incumbente
@@ -459,6 +501,7 @@ window.addEventListener('load',
           if (this.readyState == 4 && this.status == 200) {
             if (!MURAL.isEmpty()) print("");
             print(this.responseText);
+            scrollTo();
           }
         };
         // monta a string da uri do script server side incumbente
@@ -468,12 +511,12 @@ window.addEventListener('load',
         xhr.send();
       }, true);
 
-    // declara o listener de evento 'input' no input 'obra'
+    // declara o listener de evento "input" no input "obra" para atualizar
+    // as opções do datalist de "exemplares", "autor&espirito" e "posição"
+    // conforme "título da obra" selecionado na atualização ou criação de
+    // registros de empréstimo
     fields[4].addEventListener('input',
       function () {
-        // tenta atualizar as opções do datalist de "exemplares", "autor
-        // &espirito" e "posição" conforme "título da obra" selecionado na
-        // atualização ou criação de registro
         if ([newBtn, updateBtn].some(Bt => Bt.classList.contains('working'))) {
           // esvazia os valores dos inputs 'exemplar', 'autor' e 'posicao'
           for (var i=5; i<8; ++i) fields[i].value = '';

@@ -38,3 +38,11 @@ div#fields input { display: block; margin-top: .125em; }
 
 div#cmd { clear: left; margin-top: .5em; }
 div#cmd p input { width: 123px; }
+
+body > header > * { /* evita seleção de texto ao clicar no canvas */
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}

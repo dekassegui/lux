@@ -98,53 +98,52 @@ input[type="button"] {
   display: inline;
   float: left;
   font-size: 66%;
+  font-family: FontAwesome, "Open Sans", sans-serif;
   line-height: 200%;
+  word-spacing: .1875em;
   color: black;
-  background-color: #c0c0c0;  /* cor de fundo quando pressionado */
+  background-color: #ffc;  /* cor de fundo a priori */
   background-image: -webkit-linear-gradient(to top, #dcdcdc, #f9f9ff);
   background-image: linear-gradient(to top, #dcdcdc, #f9f9ff);
   border: solid 1px #999;
   border-left-color: #aaa;
   border-top-color: #bbb;
-  border-radius: 3px;
+  border-radius: 5px;
   /* configura uso de "transition" */
-  -webkit-transition: color .5s, background-image .5s;
-  -webkit-transition-timing-function: cubic-bezier(.05,1,1,.3);
-  transition: color .5s, background-image .5s;
-  transition-timing-function: cubic-bezier(.05,1,1,.3);
+  -webkit-transition: color .5s, background-color .5s;
+  -webkit-transition-timing-function: ease-in;
+  transition: color .5s, background-color .5s;
+  transition-timing-function: ease-in;
 }
-input[type="button"]:hover {
-  color: red;
+input[type="button"]:disabled { color: #b9b9b9; }
+input[type="button"]:disabled.working {
+  color: #609;
+  text-shadow: 1px 1px 0px white; /* efeito de "esculpido" */
+  border: solid 1px #777;
+  border-right-color: #aaa;
+  border-bottom-color: #999;
+  background-image: none;         /* botao pressionado :: plano */
+  background-color: #fc6;
 }
 input[type="button"]:enabled:hover {
+  color: red;
+  border-color: #c63;
+  border-top-color: #fc9;
+  border-left-color: #f96;
+}
+input[type="button"]:enabled:hover, #saveBtn:enabled, #cancelBtn:enabled {
   background-image: -webkit-linear-gradient(to top, #fc6, #ffc);
   background-image: linear-gradient(to top, #fc6, #ffc);
-  border-color: darkorange;
-  border-top-color: orange;
-  border-left-color: orange;
 }
-input[type="button"]:enabled:active {
-  box-shadow: inset 0 0 1px 1px #f40; /* efeito de botão clicado */
+input[type="button"]:enabled:active, #saveBtn:enabled:active, #cancelBtn:enabled:active {
+  background-image: -webkit-linear-gradient(to bottom, #fc6, #ffc);
+  background-image: linear-gradient(to bottom, #fc6, #ffc);
 }
 input[type="button"]:enabled:focus {
   color: #f40;
-  border-color: darkorange;
-  border-top-color: orange;
-  border-left-color: orange;
-}
-input[type="button"]:disabled { color: #b9b9b9; }
-input[type="button"].awesome {
-  font-family: FontAwesome, "Open Sans", sans-serif;
-  word-spacing: .1875em;
-}
-#newBtn.working, #searchBtn.working, #updateBtn.working, #delBtn.working {
-  color: #f06;
-  text-shadow: 1px 1px 0px white; /* efeito de baixo relevo */
-  background-image: none;         /* botao pressionado :: plano */
-}
-input#saveBtn:enabled, input#cancelBtn:enabled {
-  background-image: -webkit-linear-gradient(to top, #fc6, #ffc);
-  background-image: linear-gradient(to top, #fc6, #ffc);
+  border-color: #c63;
+  border-top-color: #fc9;
+  border-left-color: #f96;
 }
 div#cmd p { overflow: auto; }
 div#cmd * + p { margin-top: .125em; }
