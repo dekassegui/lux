@@ -30,12 +30,20 @@ window.addEventListener('load',
           clearButton: true,
           keyboardNav: false,
           onShow: function (dp, animationCompleted) {
-            if (!animationCompleted && dp.el.readOnly) {
-              // esconde o datepicker se a animação não está completa e se
-              // o input é ReadOnly :: evita corrupção da data apresentada
-              dp.hide();
+            if (dp.el.readOnly && !animationCompleted) {
+              jQuery(dp.el).data("preserved", dp.el.value);
             }
-          }
+          },
+          onHide: function (dp, animationCompleted) {
+            var inp = dp.el;
+            if (inp.readOnly && inp.value != jQuery(inp).data("preserved")) {
+              if (animationCompleted) {
+                inp.value = jQuery(inp).data("preserved");
+              } else {
+                show('<strong>READ ONLY</strong><br>O campo está disponível <b>somente&nbsp;para&nbsp;leitura</b>.');
+              }
+            }
+          },
         });
       });
 
@@ -44,14 +52,17 @@ window.addEventListener('load',
         var w = jQuery(window);
         var h = jQuery("header");
         var d = jQuery("section > div:first-child");
-        var b = true; /* (d.innerHeight() > 0) */
+        var b = true; /* a priori: d.innerHeight() > 0 */
 
         h.click(function () {
+            // atualização do tooltip do header
             const a = ["esconder", "restaurar"];
             h.attr("title", "clique aqui para " + a[b=!b&1] + " o formulário");
           }
-        ).click().click(function () {
+        ).click( /* atualização inicial */ ).click(function () {
+            // posiciona window no topo
             w.scrollTo(0, 400 + (window.scrollY / 100 + 1) * 100);
+            // alterna a visualização do formulário
             d.slideToggle("slow");
           }
         );
@@ -270,7 +281,7 @@ window.addEventListener('load',
         disableButtons();
         setInputsReadonly(false);
         scrollTo(0);
-        fields[ 0 ].focus();
+        if (fields[2].value.length == 0) fields[2].focus();
       }, true);
 
     delBtn.addEventListener('click',
