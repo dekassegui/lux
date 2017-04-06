@@ -11,7 +11,6 @@
 window.addEventListener('load',
   function () {
 
-
     $.noConflict();
 
     ["#data_emprestimo", "#data_devolucao"].forEach(
@@ -71,6 +70,8 @@ window.addEventListener('load',
 
     // URI do script "server side" que atende requisições ao DB
     const uri = location.href.replace("html", "php");
+
+    const aUri = uri.substring(0, uri.lastIndexOf("/")+1);
 
     var indexRec,                 // índice do registro corrente
         counter = $('counter');   // input do índice do..
@@ -146,20 +147,19 @@ window.addEventListener('load',
       // testa o índice do registro corrente para atualizar os
       // respectivos dados ou preparar inserção na tabela vazia
       if (indexRec > 0) {
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function () {
-          if (this.readyState == 4 && this.status == 200) {
-            // atualiza o input do índice do registro corrente
-            counter.value = indexRec;
-            // atualiza os inputs dos campos do registro corrente
-            setInputsValues(this.responseText.split('|'));
-            // habilita/desabilita botões de navegação
-            setDisabled([firstBtn, previousBtn], indexRec <= 1);
-            setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
-          }
-        };
-        xhr.open("GET", uri + "?action=GETREC&recnumber=" + indexRec, true);
-        xhr.send();
+        jQuery.get(
+          uri + "?action=GETREC&recnumber=" + indexRec,
+          function (data, status) {
+            if (status == 'success') {
+              // atualiza o input do índice do registro corrente
+              counter.value = indexRec;
+              // atualiza os inputs dos campos do registro corrente
+              setInputsValues(data.split('|'));
+              // habilita/desabilita botões de navegação
+              setDisabled([firstBtn, previousBtn], indexRec <= 1);
+              setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
+            }
+          });
       } else {
         whenTableIsEmpty();
       }
@@ -209,13 +209,11 @@ window.addEventListener('load',
               indexRec = valor;
               update();
             } else {
-              //print('> Erro: Número de registro é ilegal.');
               show('Erro: Número de registro é ilegal.');
               ev.preventDefault();
             }
           }
         } else {
-          //print('> Erro: A tabela está vazia.');
           show('Erro: A tabela está vazia.');
         }
       }, true);
@@ -226,14 +224,11 @@ window.addEventListener('load',
         if (0 < valor && valor <= numRecs) {  // input do índice do registro
           indexRec = valor;                   // corrente, atualizando-o
         } else {
-          print('> Erro: Valor do índice do registro ilegal.');
-          text = 'Erro: Valor do índice do registro ilegal.';
+          var text = 'Erro: Valor do índice do registro ilegal.';
           if (0 < indexRec && indexRec <= numRecs) {
-            //print('> Restaurando valor do índice do registro corrente.');
             text += '<br>Restaurando valor do índice do registro corrente.';
             counter.value = indexRec;
           } else {
-            //print('> Reiniciando valor do índice do registro corrente.');
             text += '<br>Reiniciando valor do índice do registro corrente.';
             counter.value = indexRec = 1;
           }
@@ -315,7 +310,7 @@ window.addEventListener('load',
 
     saveBtn.addEventListener('click',
       function () {
-        var par = [uri];
+        var funktion, par = [uri];
 
         function addDataFields() {
           fields.forEach(
@@ -324,25 +319,20 @@ window.addEventListener('load',
             });
         }
 
-        var xhr = new XMLHttpRequest();
         if (newBtn.classList.contains('working')) {
 
-          xhr.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-              if (this.responseText.startsWith('Error')) {
-                //print('> Inserção mal sucedida.' + this.responseText);
-                show('Inserção mal sucedida.<br>' + this.responseText);
+          funktion = function (data, status) {
+            if (status == 'success') {
+              if (data.startsWith('Error')) {
+                show('Inserção mal sucedida.<br>' + data);
               } else {
                 amount.value = ++numRecs;
-                indexRec = parseInt(this.responseText);
-                /* update(); */
-                // atualiza o input do índice do registro corrente
-                counter.value = indexRec;
+                indexRec = parseInt(data);
                 counter.maxLength = amount.value.length;
                 counter.disabled = false;
-                // habilita/desabilita botões de navegação
-                setDisabled([firstBtn, previousBtn], indexRec <= 1);
-                setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
+                // atualiza para apresentar a data limite :: comentário
+                update();
+                // habilita/desabilita botões de comando
                 commandButtons.forEach(
                   function (el) {
                     el.disabled = false;
@@ -350,7 +340,6 @@ window.addEventListener('load',
                   });
                 setDisabled(actionButtons, true);
                 setInputsReadonly(true);
-                //print('> Inserção bem sucedida.');
                 show('Inserção bem sucedida.');
               }
             }
@@ -360,15 +349,12 @@ window.addEventListener('load',
 
         } else if (searchBtn.classList.contains('working')) {
 
-          xhr.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-              if (this.responseText.startsWith('Advertência')
-                  || this.responseText.startsWith('Warning')) {
-                let text = 'Não há dados que satisfaçam a pesquisa.';
-                // FOR DEBUG PURPOSE: print('> ' + text);
-                show(text);
+          funktion = function (data, status) {
+            if (status == 'success') {
+              if (/^(?:Advertência|Warning)/.test(data)) {
+                show('Não há dados que satisfaçam a pesquisa.');
               } else {
-                let r = this.responseText.split(/\r\n|\n|\r/g);
+                let r = data.split(/\r\n|\n|\r/g);
                 // checa se resultado da pesquisa é registro único
                 if (r.length == 1) {
                   r = r[0].split('|');
@@ -390,14 +376,12 @@ window.addEventListener('load',
                   let elm = document.activeElement;
                   if (elm.tagName == 'INPUT' && elm.type == 'text') elm.blur();
                 } else {
-                  let text = 'Sucesso: Localizou ' + r.length + ' registros';
-                  print('> ' + text + ':');
-                  /* show(text + '!'); */
+                  print('> Sucesso: Localizou ' + r.length + ' registros:');
                   // monta o array de labels dos campos dos registros
                   const labels = ['#Registro', 'Emprestimo', 'Devolução', 'Agente', 'Leitor', 'Título', 'Autor&Espírito', 'Exemplar', 'Posição', 'Comentário'].map(
                     function (s) { return leftPad(s, 16) + ': '; });
                   // monta a lista dos registros pesquisados
-                  text = '';
+                  let text = '';
                   for (var fields, n=labels.length, i, j=0; j<r.length; ++j) {
                     text += '\n';
                     fields = r[j].split('|');
@@ -414,17 +398,23 @@ window.addEventListener('load',
 
         } else if (updateBtn.classList.contains('working')) {
 
-          xhr.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-              if (this.responseText.startsWith('Error')) {
-                //print('> Atualização mal sucedida.' + this.responseText);
-                show('Atualização mal sucedida.<br>' + this.responseText);
+          funktion = function (data, status) {
+            if (status == 'success') {
+              if (data.startsWith('Error')) {
+                show('Atualização mal sucedida.<br>' + data);
               } else {
-                var n = parseInt(this.responseText);
+                var n = parseInt(data);
                 if (n != indexRec) indexRec = n;
-                //print('> Atualização bem sucedida.');
                 show('Atualização bem sucedida.');
-                cancelBtn.click();
+                update();
+                commandButtons.forEach(
+                  function (elm) {
+                    elm.disabled = false;
+                    elm.classList.remove('working');
+                  });
+                setDisabled(actionButtons, true);
+                counter.disabled = false;
+                setInputsReadonly(true);
               }
             }
           };
@@ -433,17 +423,15 @@ window.addEventListener('load',
 
         } else if (delBtn.classList.contains('working')) {
 
-          xhr.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-              if (this.responseText.startsWith('Error')) {
-                //print('> Exclusão mal sucedida.' + this.responseText);
-                show('Exclusão mal sucedida.<br>' + this.responseText);
+          funktion = function (data, status) {
+            if (status == 'success') {
+              if (data.startsWith('Error')) {
+                show('Exclusão mal sucedida.<br>' + data);
                 cancelBtn.click();
               } else {
                 amount.value = --numRecs;
                 if (indexRec > numRecs) --indexRec;
                 counter.maxLength = amount.value.length;
-                //print('> Exclusão bem sucedida.');
                 show('Exclusão bem sucedida.');
                 if (indexRec > 0) {
                   cancelBtn.click();
@@ -467,8 +455,9 @@ window.addEventListener('load',
           par.push("?action=DELETE&recnumber=", indexRec);
 
         }
-        xhr.open("GET", par.join(""), true);
-        xhr.send();
+
+        jQuery.get(par.join(""), funktion);
+
       }, true);
 
     cancelBtn.addEventListener('click',
@@ -485,42 +474,32 @@ window.addEventListener('load',
         setInputsReadonly(true);            // desabilita edição dos inputs
       }, true);
 
-    infoBtn.addEventListener('click',
-      function () {
+    jQuery(infoBtn).click(function () {
         // requisita listagem dos empréstimos esperado no dia corrente
         // e dos exemplares disponíveis no acervo, agrupados por título
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function () {
-          if (this.readyState == 4 && this.status == 200) {
-            if (!MURAL.isEmpty()) print("");
-            print(this.responseText);
-            scrollTo();
-          }
-        };
-        // monta a string da uri do script server side incumbente
-        var aUri = uri.substring(0, uri.lastIndexOf("/")+1)
-          + "reporter.php?action=INFO";
-        xhr.open("GET", aUri, true);
-        xhr.send();
-      }, true);
+        jQuery.get(
+          aUri + "reporter.php?action=INFO",
+          function (data, status) {
+            if (status == 'success') {
+              if (!MURAL.isEmpty()) print("");
+              print(data);
+              scrollTo();
+            }
+          });
+      });
 
-    leitorBtn.addEventListener('click',
-      function () {
+    jQuery(leitorBtn).click(function () {
         // requisita listagem dos leitores/obras com empréstimos em atraso
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function () {
-          if (this.readyState == 4 && this.status == 200) {
-            if (!MURAL.isEmpty()) print("");
-            print(this.responseText);
-            scrollTo();
-          }
-        };
-        // monta a string da uri do script server side incumbente
-        var aUri = uri.substring(0, uri.lastIndexOf("/")+1)
-          + "reporter.php?action=LEITOR";
-        xhr.open("GET", aUri, true);
-        xhr.send();
-      }, true);
+        jQuery.get(
+          aUri + "reporter.php?action=LEITOR",
+          function (data, status) {
+            if (status == 'success') {
+              if (!MURAL.isEmpty()) print("");
+              print(data);
+              scrollTo();
+            }
+          });
+      });
 
     // declara o listener de evento "input" no input "obra" para atualizar
     // as opções do datalist de "exemplares", "autor&espirito" e "posição"
@@ -544,60 +523,50 @@ window.addEventListener('load',
               }
             }
             if (code) {
-              var xhr = new XMLHttpRequest();
-              xhr.onreadystatechange = function () {
-                if (this.readyState == 4 && this.status == 200) {
-                  // obtem a posição do primeiro separador de valores
-                  var j = this.responseText.indexOf('|');
-                  // atualiza o valor do input 'autor'
-                  fields[5].value = this.responseText.substring(0, j);
-                  // mostra a posição dos exemplares da obra escolhida
-                  var m = k = this.responseText.indexOf('\n');
-                  if (this.responseText.charAt(k-1) == '\r') --m;
-                  // atualiza o valor do input 'posicao'
-                  fields[7].value = this.responseText.substring(j+1, m);
-                  // obtem o datalist associado ao input 'exemplar'
-                  datalist = $(fields[6].getAttribute('list'));
-                  // substitui todos os itens da lista de opções, que pode
-                  // tornar-se vazia caso não hajam exemplares disponíveis
-                  var txt = montaOptions(this.responseText.substring(k+1));
-                  datalist.innerHTML = txt;
-                  if (txt.length > 0) {
-                    // atualiza o valor do input 'exemplar' com o valor
-                    // do primeiro item do datalist
-                    fields[6].value = datalist.options.item(0).value;
+              jQuery.get(
+                aUri + 'acervo_exemplares.php?code=' + code,
+                function (data, status) {
+                  if (status == 'success') {
+                    // obtem a posição do primeiro separador de valores
+                    var j = data.indexOf('|');
+                    // atualiza o valor do input 'autor'
+                    fields[5].value = data.substring(0, j);
+                    // mostra a posição dos exemplares da obra escolhida
+                    var m = k = data.indexOf('\n');
+                    if (data.charAt(k-1) == '\r') --m;
+                    // atualiza o valor do input 'posicao'
+                    fields[7].value = data.substring(j+1, m);
+                    // obtem o datalist associado ao input 'exemplar'
+                    datalist = $(fields[6].getAttribute('list'));
+                    // substitui todos os itens da lista de opções, que pode
+                    // tornar-se vazia caso não hajam exemplares disponíveis
+                    var txt = montaOptions(data.substring(k+1));
+                    datalist.innerHTML = txt;
+                    if (txt.length > 0) {
+                      // atualiza o valor do input 'exemplar' com o valor
+                      // do primeiro item do datalist
+                      fields[6].value = datalist.options.item(0).value;
+                    }
                   }
-                }
-              };
-              // prepara uri para requisitar "exemplares disponíveis"
-              // da "obra" cujo "code" foi previamente identificado
-              var aUri = uri.substring(0, uri.lastIndexOf('/')+1)
-                + 'acervo_exemplares.php?code=' + code;
-              xhr.open('GET', aUri, true);
-              xhr.send();
+                });
             }
           }
         }
       }, true);
 
-    {
-      let aUri = uri.substring(0, uri.lastIndexOf("/")+1);
-      // preenche datalists cujos ids correspondem ao nome (sem extensão)
-      // do script server side que atende a requisição dos seus dados
-      ['bibliotecarios', 'leitores', 'acervo_obras',
-        'acervo_exemplares'].forEach(
-        function (iD) {
-          var xhr = new XMLHttpRequest();
-          xhr.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200
-                && this.responseText)
-              $(iD).innerHTML = montaOptions(this.responseText);
-          };
-          // monta a uri do script backend incumbente
-          xhr.open("GET", aUri + iD + ".php?action=GETALL", true);
-          xhr.send();
-        });
-    }
+    // preenche datalists cujos ids correspondem ao nome (sem extensão)
+    // do script server side que atende a requisição dos seus dados
+    ['bibliotecarios', 'leitores', 'acervo_obras',
+      'acervo_exemplares'].forEach(
+      function (iD) {
+        jQuery.get(
+          aUri + iD + ".php?action=GETALL",
+          function (data, status) {
+            if (status == 'success' && data) {
+              jQuery("datalist#"+iD).html( montaOptions(data) );
+            }
+          });
+      });
 
     // testa se valores de ambos inputs mostradores de status da tabela não
     // são string vazia, evidenciando que o documento foi atualizado durante
@@ -616,16 +585,14 @@ window.addEventListener('load',
         indexRec = parseInt(counter.value); // extrai o valor do input
 
         // restaura os valores dos inputs consultando o DB por segurança
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function () {
-          if (this.readyState == 4 && this.status == 200) {
-            // atualiza os valores do registro corrente
-            setInputsValues(this.responseText.split('|'));
-          }
-        };
-        xhr.open("GET",
-          [uri, "?action=GETREC&recnumber=", indexRec].join(""), true);
-        xhr.send();
+        jQuery.get(
+          uri + "?action=GETREC&recnumber=" + indexRec,
+          function (data, status) {
+            if (status == 'success') {
+              // atualiza os valores do registro corrente
+              setInputsValues(data.split('|'));
+            }
+          });
 
         // habilita edição e declara a quantidade máxima de
         // caracteres do input do índice do registro corrente
@@ -638,7 +605,7 @@ window.addEventListener('load',
 
         commandButtons.forEach(
           function (btn) {
-            btn.disabled = false;             // habilita o botão
+            btn.disabled = false;            // habilita o botão
             btn.classList.remove('working'); // remove classe 'working'
           });
 
@@ -648,23 +615,22 @@ window.addEventListener('load',
 
     } else {
 
-      var xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-          // declara a quantidade inicial de registros da tabela
-          numRecs = parseInt(amount.value = this.responseText);
-          // declara a quantidade máxima de caracteres do input
-          counter.maxLength = this.responseText.length;
-          // ação inicial conforme quantidade de registros da tabela
-          if (numRecs > 0) {
-            firstBtn.click();   // mostra o primeiro registro
-          } else {
-            whenTableIsEmpty(); // força inserção de registro
+      jQuery.get(
+        uri + "?action=COUNT",
+        function (data, status) {
+          if (status == 'success') {
+            // declara a quantidade inicial de registros da tabela
+            numRecs = parseInt(amount.value = data);
+            // declara a quantidade máxima de caracteres do input
+            counter.maxLength = data.length;
+            // ação inicial conforme quantidade de registros da tabela
+            if (numRecs > 0) {
+              firstBtn.click();   // mostra o primeiro registro
+            } else {
+              whenTableIsEmpty(); // força inserção de registro
+            }
           }
-        }
-      };
-      xhr.open("GET", [uri, "?action=COUNT"].join(""), true);
-      xhr.send();
+        });
 
     }
 

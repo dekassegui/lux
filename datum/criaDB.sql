@@ -956,19 +956,21 @@ END;
 --
 CREATE TRIGGER emprestimos_facil_t1 INSTEAD OF UPDATE ON emprestimos_facil
 BEGIN
-  UPDATE emprestimos SET
-    data_emprestimo=substr(new.data_emprestimo, 7, 4) || "-"
+  DELETE FROM emprestimos WHERE rowid == old.rowid;
+  INSERT INTO emprestimos_calc SELECT
+    substr(new.data_emprestimo, 7, 4) || "-"
       || substr(new.data_emprestimo, 4, 2) || "-"
-      || substr(new.data_emprestimo, 1, 2) || substr(new.data_emprestimo, 11),
-    data_devolucao=substr(new.data_devolucao, 7, 4) || "-"
+      || substr(new.data_emprestimo, 1, 2)
+      || substr(new.data_emprestimo, 11),
+    substr(new.data_devolucao, 7, 4) || "-"
       || substr(new.data_devolucao, 4, 2) || "-"
-      || substr(new.data_devolucao, 1, 2) || substr(new.data_devolucao, 11),
-    bibliotecario=(SELECT code FROM bibliotecarios
-      WHERE nome == new.bibliotecario),
-    leitor=(SELECT code FROM leitores WHERE nome == new.leitor),
-    obra=(SELECT code FROM obras WHERE titulo == new.obra),
-    exemplar=new.exemplar
-  WHERE rowid == old.rowid;
+      || substr(new.data_devolucao, 1, 2)
+      || substr(new.data_devolucao, 11),
+    (SELECT code FROM bibliotecarios WHERE nome == new.bibliotecario),
+    (SELECT code FROM leitores WHERE nome == new.leitor),
+    (SELECT code FROM obras WHERE titulo == new.obra),
+    new.exemplar,
+    null;
 END;
 
 --
