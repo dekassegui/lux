@@ -25,6 +25,8 @@ window.onresize = function () {
 window.addEventListener('load',
   function () {
 
+    $.noConflict();
+
     window.onresize();  // ajuste inicial da largura do elemento 'aside'
 
     // URI do script "server side" que atende requisições ao DB
@@ -93,21 +95,17 @@ window.addEventListener('load',
       // testa o índice do registro corrente para atualizar os
       // respectivos dados ou preparar inserção na tabela vazia
       if (indexRec > 0) {
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function () {
-          if (this.readyState == 4 && this.status == 200) {
+        jQuery.get(
+          uri + "?action=GETREC&recnumber=" + indexRec,
+          function (data) {
             // atualiza o input do índice do registro corrente
             counter.value = indexRec;
             // atualiza os inputs dos campos do registro corrente
-            setInputsValues(this.responseText.split('|'));
+            setInputsValues(data.split('|'));
             // habilita/desabilita botões de navegação
             setDisabled([firstBtn, previousBtn], indexRec <= 1);
             setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
-          }
-        };
-        xhr.open("GET", [uri, "?action=GETREC&recnumber=", indexRec]
-                          .join(""), true);
-        xhr.send();
+          });
       } else {
         whenTableIsEmpty();
       }
@@ -253,7 +251,7 @@ window.addEventListener('load',
 
     saveBtn.addEventListener('click',
       function () {
-        var par = [uri];
+        var funktion, par = [uri];
 
         function addDataFields() {
           fields.forEach(
@@ -262,28 +260,25 @@ window.addEventListener('load',
             });
         }
 
-        var xhr = new XMLHttpRequest();
         if (newBtn.classList.contains('working')) {
 
-          xhr.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-              if (this.responseText.startsWith('Error')) {
-                print(['> Inserção mal sucedida.', this.responseText]);
-              } else {
-                amount.value = ++numRecs;
-                indexRec = parseInt(this.responseText);
-                update();
-                counter.maxLength = amount.value.length;
-                counter.disabled = false;
-                commandButtons.forEach(
-                  function (el) {
-                    el.disabled = false;
-                    el.classList.remove('working');
-                  });
-                setDisabled(actionButtons, true);
-                setInputsReadonly(true);
-                print('> Inserção bem sucedida.');
-              }
+          funktion = function(data) {
+            if (data.startsWith('Error')) {
+              print(['> Inserção mal sucedida.', data]);
+            } else {
+              amount.value = ++numRecs;
+              indexRec = parseInt(data);
+              update();
+              counter.maxLength = amount.value.length;
+              counter.disabled = false;
+              commandButtons.forEach(
+                function (el) {
+                  el.disabled = false;
+                  el.classList.remove('working');
+                });
+              setDisabled(actionButtons, true);
+              setInputsReadonly(true);
+              print('> Inserção bem sucedida.');
             }
           };
           par.push('?action=INSERT');
@@ -291,67 +286,64 @@ window.addEventListener('load',
 
         } else if (searchBtn.classList.contains('working')) {
 
-          xhr.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-              if (this.responseText.startsWith('Advertência')
-                  || this.responseText.startsWith('Warning')) {
-                show('Não há dados que satisfaçam a pesquisa.');
-                //print('SQL: ' + this.responseText);
+          funktion = function(data) {
+            if (/^(?:Advertência|Warning)/.test(data)) {
+              show('Não há dados que satisfaçam a pesquisa.');
+              // FOR DEBUG PURPOSE: print('SQL: ' + data);
+            } else {
+              let r = data.split(/\r\n|\n|\r/g);
+              // checa se o resultado da pesquisa é único registro
+              if (r.length == 1) {
+                // monta o array dos valores dos campos
+                r = r[0].split('|');
+                // atualiza o contador do registro corrente
+                indexRec = parseInt(counter.value = r[0]);
+                counter.disabled = false;
+                // habilita/desabilita botões de acesso sequencial
+                setDisabled([firstBtn, previousBtn], indexRec <= 1);
+                setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
+                // remove o primeiro dos valores...
+                r.shift();
+                // atualiza visualização e desabilita edição dos valores...
+                setInputsValues(r);
+                setInputsReadonly(true);
+                // encerra o modo pesquisa e habilita os botões de comando
+                searchBtn.classList.remove('working');
+                commandButtons.forEach(function (b) { b.disabled = false; });
+                // desabilita os botões de ação
+                setDisabled(actionButtons, true);
+                saveBtn.value = OKchar + ' Salvar';
+                // "desfoca" algum input focado
+                let elm = document.activeElement;
+                if (elm.tagName == 'INPUT' && elm.type == 'text') elm.blur();
               } else {
-                let r = this.responseText.split(/\r\n|\n|\r/g);
-                // checa se o resultado da pesquisa é único registro
-                if (r.length == 1) {
-                  // monta o array dos valores dos campos
-                  r = r[0].split('|');
-                  // atualiza o contador do registro corrente
-                  indexRec = parseInt(counter.value = r[0]);
-                  counter.disabled = false;
-                  // habilita/desabilita botões de acesso sequencial
-                  setDisabled([firstBtn, previousBtn], indexRec <= 1);
-                  setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
-                  // remove o primeiro dos valores...
-                  r.shift();
-                  // atualiza visualização e desabilita edição dos valores...
-                  setInputsValues(r);
-                  setInputsReadonly(true);
-                  // encerra o modo pesquisa e habilita os botões de comando
-                  searchBtn.classList.remove('working');
-                  commandButtons.forEach(function (b) { b.disabled = false; });
-                  // desabilita os botões de ação
-                  setDisabled(actionButtons, true);
-                  saveBtn.value = OKchar + ' Salvar';
-                  // "desfoca" algum input focado
-                  let elm = document.activeElement;
-                  if (elm.tagName == 'INPUT' && elm.type == 'text') elm.blur();
-                } else {
-                  let text = 'Sucesso: Localizou ' + r.length + ' registros:';
-                  print('> ' + text);
-                  const nomes = {
-                    'autores': ['#Registro', 'Código', 'Nome', 'Espíritos'],
-                    'generos': ['#Registro', 'Código', 'Nome'],
-                    'obras': ['#Registro', 'Código', 'Título' , 'Autores', 'Gênero'],
-                    'acervo': ['#Registro', 'Obra', 'Exemplar', 'Posição', 'Comentário'],
-                    'bibliotecarios': ['#Registro', 'Código', 'Nome'],
-                    'leitores': ['#Registro', 'Código', 'Nome', 'Telefone', 'e-Mail']
-                  };
-                  // extrai a chave da uri da página corrente
-                  let key = location.pathname.substring(1);
-                  key = key.substring(key.indexOf('/')+1, key.indexOf('.'));
-                  // calcula o comprimento dos labels das colunas
-                  let m = Math.max.apply(null,
-                    nomes[key].map(function (s) { return s.length; })) + 2;
-                  // monta labels alinhados a direita
-                  let labels = nomes[key].map(
-                    function (s) { return leftPad(s, m) + ': '; });
-                  // monta a lista de registros pesquisados
-                  text = '';
-                  for (var fields, k=labels.length, j, i=0; i<r.length; ++i) {
-                    fields = r[i].split('|');
-                    text += '\n';
-                    for (j=0; j<k; ++j) text += labels[j] + fields[j] + '\n';
-                  }
-                  print(text);
+                let text = 'Sucesso: Localizou ' + r.length + ' registros:';
+                print('> ' + text);
+                const nomes = {
+                  'autores': ['#Registro', 'Código', 'Nome', 'Espíritos'],
+                  'generos': ['#Registro', 'Código', 'Nome'],
+                  'obras': ['#Registro', 'Código', 'Título' , 'Autores', 'Gênero'],
+                  'acervo': ['#Registro', 'Obra', 'Exemplar', 'Posição', 'Comentário'],
+                  'bibliotecarios': ['#Registro', 'Código', 'Nome'],
+                  'leitores': ['#Registro', 'Código', 'Nome', 'Telefone', 'e-Mail']
+                };
+                // extrai a chave da uri da página corrente
+                let key = location.pathname.substring(1);
+                key = key.substring(key.indexOf('/')+1, key.indexOf('.'));
+                // calcula o comprimento dos labels das colunas
+                let m = Math.max.apply(null,
+                  nomes[key].map(function (s) { return s.length; })) + 2;
+                // monta labels alinhados a direita
+                let labels = nomes[key].map(
+                  function (s) { return leftPad(s, m) + ': '; });
+                // monta a lista de registros pesquisados
+                text = '';
+                for (var fields, k=labels.length, j, i=0; i<r.length; ++i) {
+                  fields = r[i].split('|');
+                  text += '\n';
+                  for (j=0; j<k; ++j) text += labels[j] + fields[j] + '\n';
                 }
+                print(text);
               }
             }
           };
@@ -360,16 +352,14 @@ window.addEventListener('load',
 
         } else if (updateBtn.classList.contains('working')) {
 
-          xhr.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-              if (this.responseText.startsWith('Error')) {
-                print(['> Atualização mal sucedida.', this.responseText]);
-              } else {
-                var n = parseInt(this.responseText);
-                if (n != indexRec) indexRec = n;
-                print('> Atualização bem sucedida.');
-                cancelBtn.click();
-              }
+          funktion = function(data) {
+            if (data.startsWith('Error')) {
+              print(['> Atualização mal sucedida.', data]);
+            } else {
+              var n = parseInt(data);
+              if (n != indexRec) indexRec = n;
+              print('> Atualização bem sucedida.');
+              cancelBtn.click();
             }
           };
           par.push("?action=UPDATE&recnumber=", indexRec);
@@ -377,39 +367,38 @@ window.addEventListener('load',
 
         } else if (delBtn.classList.contains('working')) {
 
-          xhr.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-              if (this.responseText.startsWith('Error')) {
-                print(['> Exclusão mal sucedida.', this.responseText]);
+          funktion = function(data) {
+            if (data.startsWith('Error')) {
+              print(['> Exclusão mal sucedida.', data]);
+              cancelBtn.click();
+            } else {
+              amount.value = --numRecs;
+              if (indexRec > numRecs) --indexRec;
+              counter.maxLength = amount.value.length;
+              print('> Exclusão bem sucedida.');
+              if (indexRec > 0) {
                 cancelBtn.click();
               } else {
-                amount.value = --numRecs;
-                if (indexRec > numRecs) --indexRec;
-                counter.maxLength = amount.value.length;
-                print('> Exclusão bem sucedida.');
-                if (indexRec > 0) {
-                  cancelBtn.click();
-                } else {
-                  // alterna de "excluir" para "novo"
-                  counter.value = 0;
-                  delBtn.classList.remove('working');
-                  newBtn.classList.add('working');
-                  // modifica rotulo do botão
-                  saveBtn.value = OKchar + ' Salvar';
-                  // somente permite "salvar"
-                  cancelBtn.disabled = true;
-                  setInputsValues();
-                  setInputsReadonly(false);
-                  fields[0].focus();
-                }
+                // alterna de "excluir" para "novo"
+                counter.value = 0;
+                delBtn.classList.remove('working');
+                newBtn.classList.add('working');
+                // modifica rotulo do botão
+                saveBtn.value = OKchar + ' Salvar';
+                // somente permite "salvar"
+                cancelBtn.disabled = true;
+                setInputsValues();
+                setInputsReadonly(false);
+                fields[0].focus();
               }
             }
           };
           par.push("?action=DELETE&recnumber=", indexRec);
 
         }
-        xhr.open("GET", par.join(""), true);
-        xhr.send();
+
+        jQuery.get(par.join(""), funktion);
+
       }, true);
 
     cancelBtn.addEventListener('click',
@@ -417,7 +406,7 @@ window.addEventListener('load',
         update();
         commandButtons.forEach(
           function (elm) {
-            elm.disabled = false;             // habilita o botão
+            elm.disabled = false;            // habilita o botão
             elm.classList.remove('working'); // remove classe 'working'
           });
         setDisabled(actionButtons, true);   // desabilita 'action buttons'
@@ -434,15 +423,10 @@ window.addEventListener('load',
         let aUri = uri.substring(0, uri.lastIndexOf("/")+1);
         set.forEach(
           function (datalist) {
-            var xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function () {
-              if (this.readyState == 4 && this.status == 200) {
-                datalist.innerHTML = montaOptions(this.responseText);
-              }
-            };
-            xhr.open("GET", aUri + datalist.id + ".php?action=GETALL", true);
-            xhr.send();
-          });
+            jQuery.get(
+              aUri + datalist.id + ".php?action=GETALL",
+              function (data) { jQuery(datalist).html(montaOptions(data)); });
+            });
       }
     }
 
@@ -451,7 +435,7 @@ window.addEventListener('load',
     // pesquisa, atualização, exclusão ou inserção de novo registro
     if ([counter, amount].every(input => input.value.length > 0)) {
 
-      numRecs = parseInt(amount.value); // extrai o valor do input
+      numRecs = parseInt(amount.value); // extrai o valor numérico do input
 
       if (numRecs == 0) {
 
@@ -463,16 +447,12 @@ window.addEventListener('load',
         indexRec = parseInt(counter.value); // extrai o valor do input
 
         // restaura os valores dos inputs consultando o DB por segurança
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function () {
-          if (this.readyState == 4 && this.status == 200) {
+        jQuery.get(
+          uri + "?action=GETREC&recnumber=" + indexRec,
+          function (data) {
             // atualiza os valores do registro corrente
-            setInputsValues(this.responseText.split('|'));
-          }
-        };
-        xhr.open("GET",
-          [uri, "?action=GETREC&recnumber=", indexRec].join(""), true);
-        xhr.send();
+            setInputsValues(data.split('|'));
+          });
 
         // habilita edição e declara a quantidade máxima de
         // caracteres do input do índice do registro corrente
@@ -495,23 +475,20 @@ window.addEventListener('load',
 
     } else {
 
-      var xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
+      jQuery.get(
+        uri + "?action=COUNT",
+        function (data) {
           // declara a quantidade inicial de registros da tabela
-          numRecs = parseInt(amount.value = this.responseText);
+          numRecs = parseInt(amount.value = data);
           // declara a quantidade máxima de caracteres do input
-          counter.maxLength = this.responseText.length;
+          counter.maxLength = data.length;
           // ação inicial conforme quantidade de registros da tabela
           if (numRecs > 0) {
             firstBtn.click();   // mostra o primeiro registro
           } else {
             whenTableIsEmpty(); // força inserção de registro
           }
-        }
-      };
-      xhr.open("GET", [uri, "?action=COUNT"].join(""), true);
-      xhr.send();
+        });
 
     }
 

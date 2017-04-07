@@ -37,7 +37,8 @@ window.addEventListener('load',
             var inp = dp.el;
             if (inp.readOnly && inp.value != jQuery(inp).data("preserved")) {
               if (animationCompleted) {
-                inp.value = jQuery(inp).data("preserved");
+                var valor = jQuery(inp).data("preserved");
+                if (valor !== undefined) inp.value = valor;
               } else {
                 show('<strong>READ ONLY</strong><br>O campo está disponível <b>somente&nbsp;para&nbsp;leitura</b>.');
               }
@@ -47,10 +48,10 @@ window.addEventListener('load',
       });
 
     (
-      function () {
-        var w = jQuery(window);
-        var h = jQuery("header");
-        var d = jQuery("section > div:first-child");
+      function ($) {
+        var w = $(window);
+        var h = $("header");
+        var d = $("section > div:first-child");
         var b = true; /* a priori: d.innerHeight() > 0 */
 
         h.click(function () {
@@ -66,7 +67,7 @@ window.addEventListener('load',
           }
         );
       }
-    )();
+    )(jQuery);
 
     // URI do script "server side" que atende requisições ao DB
     const uri = location.href.replace("html", "php");
@@ -101,11 +102,12 @@ window.addEventListener('load',
     function print(text) { MURAL.append(text); }
 
     function scrollTo(y) {
+      const win = jQuery(window);
       var d = window.scrollY;
       if (y === undefined) {
         d = y = $("mural").offsetTop - $$("body > header").offsetHeight - 5;
       }
-      jQuery(window).scrollTo(y, 400 + (d / 100 + 1) * 100, {easing:"swing"});
+      win.scrollTo(y, 400 + (d / 100 + 1) * 100, {easing:"swing"});
     }
 
     function disableButtons() {
@@ -149,16 +151,14 @@ window.addEventListener('load',
       if (indexRec > 0) {
         jQuery.get(
           uri + "?action=GETREC&recnumber=" + indexRec,
-          function (data, status) {
-            if (status == 'success') {
-              // atualiza o input do índice do registro corrente
-              counter.value = indexRec;
-              // atualiza os inputs dos campos do registro corrente
-              setInputsValues(data.split('|'));
-              // habilita/desabilita botões de navegação
-              setDisabled([firstBtn, previousBtn], indexRec <= 1);
-              setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
-            }
+          function (data) {
+            // atualiza o input do índice do registro corrente
+            counter.value = indexRec;
+            // atualiza os inputs dos campos do registro corrente
+            setInputsValues(data.split('|'));
+            // habilita/desabilita botões de navegação
+            setDisabled([firstBtn, previousBtn], indexRec <= 1);
+            setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
           });
       } else {
         whenTableIsEmpty();
@@ -321,27 +321,25 @@ window.addEventListener('load',
 
         if (newBtn.classList.contains('working')) {
 
-          funktion = function (data, status) {
-            if (status == 'success') {
-              if (data.startsWith('Error')) {
-                show('Inserção mal sucedida.<br>' + data);
-              } else {
-                amount.value = ++numRecs;
-                indexRec = parseInt(data);
-                counter.maxLength = amount.value.length;
-                counter.disabled = false;
-                // atualiza para apresentar a data limite :: comentário
-                update();
-                // habilita/desabilita botões de comando
-                commandButtons.forEach(
-                  function (el) {
-                    el.disabled = false;
-                    el.classList.remove('working');
-                  });
-                setDisabled(actionButtons, true);
-                setInputsReadonly(true);
-                show('Inserção bem sucedida.');
-              }
+          funktion = function (data) {
+            if (data.startsWith('Error')) {
+              show('Inserção mal sucedida.<br>' + data);
+            } else {
+              amount.value = ++numRecs;
+              indexRec = parseInt(data);
+              counter.maxLength = amount.value.length;
+              counter.disabled = false;
+              // atualiza para apresentar a data limite :: comentário
+              update();
+              // habilita/desabilita botões de comando
+              commandButtons.forEach(
+                function (el) {
+                  el.disabled = false;
+                  el.classList.remove('working');
+                });
+              setDisabled(actionButtons, true);
+              setInputsReadonly(true);
+              show('Inserção bem sucedida.');
             }
           };
           par.push('?action=INSERT');
@@ -349,47 +347,45 @@ window.addEventListener('load',
 
         } else if (searchBtn.classList.contains('working')) {
 
-          funktion = function (data, status) {
-            if (status == 'success') {
-              if (/^(?:Advertência|Warning)/.test(data)) {
-                show('Não há dados que satisfaçam a pesquisa.');
+          funktion = function (data) {
+            if (/^(?:Advertência|Warning)/.test(data)) {
+              show('Não há dados que satisfaçam a pesquisa.');
+            } else {
+              let r = data.split(/\r\n|\n|\r/g);
+              // checa se resultado da pesquisa é registro único
+              if (r.length == 1) {
+                r = r[0].split('|');
+                // atualiza o índice do registro corrente
+                indexRec = parseInt(counter.value = r[0]);
+                counter.disabled = false;
+                setDisabled([firstBtn, previousBtn], indexRec <= 1);
+                setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
+                // atualiza valores apresentados no formulário
+                r[0] = r.splice(3, 1)[0];
+                setInputsValues(r);
+                setInputsReadonly(true);
+                // restaura status dos botões
+                searchBtn.classList.remove('working');
+                commandButtons.forEach(function (b) { b.disabled = false; });
+                setDisabled(actionButtons, true);
+                saveBtn.value = OKchar + ' Salvar';
+                // "desfoca" algum input focado
+                let elm = document.activeElement;
+                if (elm.tagName == 'INPUT' && elm.type == 'text') elm.blur();
               } else {
-                let r = data.split(/\r\n|\n|\r/g);
-                // checa se resultado da pesquisa é registro único
-                if (r.length == 1) {
-                  r = r[0].split('|');
-                  // atualiza o índice do registro corrente
-                  indexRec = parseInt(counter.value = r[0]);
-                  counter.disabled = false;
-                  setDisabled([firstBtn, previousBtn], indexRec <= 1);
-                  setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
-                  // atualiza valores apresentados no formulário
-                  r[0] = r.splice(3, 1)[0];
-                  setInputsValues(r);
-                  setInputsReadonly(true);
-                  // restaura status dos botões
-                  searchBtn.classList.remove('working');
-                  commandButtons.forEach(function (b) { b.disabled = false; });
-                  setDisabled(actionButtons, true);
-                  saveBtn.value = OKchar + ' Salvar';
-                  // "desfoca" algum input focado
-                  let elm = document.activeElement;
-                  if (elm.tagName == 'INPUT' && elm.type == 'text') elm.blur();
-                } else {
-                  print('> Sucesso: Localizou ' + r.length + ' registros:');
-                  // monta o array de labels dos campos dos registros
-                  const labels = ['#Registro', 'Emprestimo', 'Devolução', 'Agente', 'Leitor', 'Título', 'Autor&Espírito', 'Exemplar', 'Posição', 'Comentário'].map(
-                    function (s) { return leftPad(s, 16) + ': '; });
-                  // monta a lista dos registros pesquisados
-                  let text = '';
-                  for (var fields, n=labels.length, i, j=0; j<r.length; ++j) {
-                    text += '\n';
-                    fields = r[j].split('|');
-                    for (i=0; i<n; ++i) text += labels[i] + fields[i] + '\n';
-                  }
-                  print(text);
-                  scrollTo();
+                print('> Sucesso: Localizou ' + r.length + ' registros:');
+                // monta o array de labels dos campos dos registros
+                const labels = ['#Registro', 'Emprestimo', 'Devolução', 'Agente', 'Leitor', 'Título', 'Autor&Espírito', 'Exemplar', 'Posição', 'Comentário'].map(
+                  function (s) { return leftPad(s, 16) + ': '; });
+                // monta a lista dos registros pesquisados
+                let text = '';
+                for (var fields, n=labels.length, i, j=0; j<r.length; ++j) {
+                  text += '\n';
+                  fields = r[j].split('|');
+                  for (i=0; i<n; ++i) text += labels[i] + fields[i] + '\n';
                 }
+                print(text);
+                scrollTo();
               }
             }
           };
@@ -398,24 +394,22 @@ window.addEventListener('load',
 
         } else if (updateBtn.classList.contains('working')) {
 
-          funktion = function (data, status) {
-            if (status == 'success') {
-              if (data.startsWith('Error')) {
-                show('Atualização mal sucedida.<br>' + data);
-              } else {
-                var n = parseInt(data);
-                if (n != indexRec) indexRec = n;
-                show('Atualização bem sucedida.');
-                update();
-                commandButtons.forEach(
-                  function (elm) {
-                    elm.disabled = false;
-                    elm.classList.remove('working');
-                  });
-                setDisabled(actionButtons, true);
-                counter.disabled = false;
-                setInputsReadonly(true);
-              }
+          funktion = function (data) {
+            if (data.startsWith('Error')) {
+              show('Atualização mal sucedida.<br>' + data);
+            } else {
+              var n = parseInt(data);
+              if (n != indexRec) indexRec = n;
+              show('Atualização bem sucedida.');
+              update();
+              commandButtons.forEach(
+                function (elm) {
+                  elm.disabled = false;
+                  elm.classList.remove('working');
+                });
+              setDisabled(actionButtons, true);
+              counter.disabled = false;
+              setInputsReadonly(true);
             }
           };
           par.push("?action=UPDATE&recnumber=", indexRec);
@@ -423,32 +417,30 @@ window.addEventListener('load',
 
         } else if (delBtn.classList.contains('working')) {
 
-          funktion = function (data, status) {
-            if (status == 'success') {
-              if (data.startsWith('Error')) {
-                show('Exclusão mal sucedida.<br>' + data);
+          funktion = function (data) {
+            if (data.startsWith('Error')) {
+              show('Exclusão mal sucedida.<br>' + data);
+              cancelBtn.click();
+            } else {
+              amount.value = --numRecs;
+              if (indexRec > numRecs) --indexRec;
+              counter.maxLength = amount.value.length;
+              show('Exclusão bem sucedida.');
+              if (indexRec > 0) {
                 cancelBtn.click();
               } else {
-                amount.value = --numRecs;
-                if (indexRec > numRecs) --indexRec;
-                counter.maxLength = amount.value.length;
-                show('Exclusão bem sucedida.');
-                if (indexRec > 0) {
-                  cancelBtn.click();
-                } else {
-                  // alterna de "excluir" para "novo"
-                  counter.value = 0;
-                  delBtn.classList.remove('working');
-                  newBtn.classList.add('working');
-                  // modifica rotulo do botão
-                  saveBtn.value = OKchar + ' Salvar';
-                  // somente permite "salvar"
-                  cancelBtn.disabled = true;
-                  setInputsValues();
-                  setInputsReadonly(false);
-                  /* TODO: foco inútil devido ao diálogo */
-                  fields[0].focus();
-                }
+                // alterna de "excluir" para "novo"
+                counter.value = 0;
+                delBtn.classList.remove('working');
+                newBtn.classList.add('working');
+                // modifica rotulo do botão
+                saveBtn.value = OKchar + ' Salvar';
+                // somente permite "salvar"
+                cancelBtn.disabled = true;
+                setInputsValues();
+                setInputsReadonly(false);
+                /* TODO: foco inútil devido ao diálogo */
+                fields[0].focus();
               }
             }
           };
@@ -479,12 +471,10 @@ window.addEventListener('load',
         // e dos exemplares disponíveis no acervo, agrupados por título
         jQuery.get(
           aUri + "reporter.php?action=INFO",
-          function (data, status) {
-            if (status == 'success') {
-              if (!MURAL.isEmpty()) print("");
-              print(data);
-              scrollTo();
-            }
+          function (data) {
+            if (!MURAL.isEmpty()) print("");
+            print(data);
+            scrollTo();
           });
       });
 
@@ -492,12 +482,10 @@ window.addEventListener('load',
         // requisita listagem dos leitores/obras com empréstimos em atraso
         jQuery.get(
           aUri + "reporter.php?action=LEITOR",
-          function (data, status) {
-            if (status == 'success') {
-              if (!MURAL.isEmpty()) print("");
-              print(data);
-              scrollTo();
-            }
+          function (data) {
+            if (!MURAL.isEmpty()) print("");
+            print(data);
+            scrollTo();
           });
       });
 
@@ -505,7 +493,7 @@ window.addEventListener('load',
     // as opções do datalist de "exemplares", "autor&espirito" e "posição"
     // conforme "título da obra" selecionado na atualização ou criação de
     // registros de empréstimo
-    fields[4].addEventListener('input',
+    jQuery(fields[4]).bind('input',
       function () {
         if ([newBtn, updateBtn].some(Bt => Bt.classList.contains('working'))) {
           // esvazia os valores dos inputs 'exemplar', 'autor' e 'posicao'
@@ -525,47 +513,45 @@ window.addEventListener('load',
             if (code) {
               jQuery.get(
                 aUri + 'acervo_exemplares.php?code=' + code,
-                function (data, status) {
-                  if (status == 'success') {
-                    // obtem a posição do primeiro separador de valores
-                    var j = data.indexOf('|');
-                    // atualiza o valor do input 'autor'
-                    fields[5].value = data.substring(0, j);
-                    // mostra a posição dos exemplares da obra escolhida
-                    var m = k = data.indexOf('\n');
-                    if (data.charAt(k-1) == '\r') --m;
-                    // atualiza o valor do input 'posicao'
-                    fields[7].value = data.substring(j+1, m);
-                    // obtem o datalist associado ao input 'exemplar'
-                    datalist = $(fields[6].getAttribute('list'));
-                    // substitui todos os itens da lista de opções, que pode
-                    // tornar-se vazia caso não hajam exemplares disponíveis
-                    var txt = montaOptions(data.substring(k+1));
-                    datalist.innerHTML = txt;
-                    if (txt.length > 0) {
-                      // atualiza o valor do input 'exemplar' com o valor
-                      // do primeiro item do datalist
-                      fields[6].value = datalist.options.item(0).value;
-                    }
+                function (data) {
+                  // obtem a posição do primeiro separador de valores
+                  var j = data.indexOf('|');
+                  // atualiza o valor do input 'autor'
+                  fields[5].value = data.substring(0, j);
+                  // mostra a posição dos exemplares da obra escolhida
+                  var m = k = data.indexOf('\n');
+                  if (data.charAt(k-1) == '\r') --m;
+                  // atualiza o valor do input 'posicao'
+                  fields[7].value = data.substring(j+1, m);
+                  // obtem o datalist associado ao input 'exemplar'
+                  datalist = $(fields[6].getAttribute('list'));
+                  // substitui todos os itens da lista de opções, que pode
+                  // tornar-se vazia caso não hajam exemplares disponíveis
+                  var txt = montaOptions(data.substring(k+1));
+                  datalist.innerHTML = txt;
+                  if (txt.length > 0) {
+                    // atualiza o valor do input 'exemplar' com o valor
+                    // do primeiro item do datalist
+                    fields[6].value = datalist.options.item(0).value;
+                  } else {
+                    show("Nenhum exemplar da obra<br>está disponível no momento.");
+                    fields[6].value = "😣 Não achei!";
                   }
                 });
             }
           }
         }
-      }, true);
+      });
 
     // preenche datalists cujos ids correspondem ao nome (sem extensão)
     // do script server side que atende a requisição dos seus dados
-    ['bibliotecarios', 'leitores', 'acervo_obras',
-      'acervo_exemplares'].forEach(
-      function (iD) {
+    jQuery("section > div:first-child datalist").each(
+      function () {
+        var dataList = jQuery(this);
         jQuery.get(
-          aUri + iD + ".php?action=GETALL",
-          function (data, status) {
-            if (status == 'success' && data) {
-              jQuery("datalist#"+iD).html( montaOptions(data) );
-            }
-          });
+          aUri + dataList.attr("id") + ".php?action=GETALL",
+          function (data) { if (data) dataList.html(montaOptions(data)); }
+        );
       });
 
     // testa se valores de ambos inputs mostradores de status da tabela não
@@ -587,11 +573,9 @@ window.addEventListener('load',
         // restaura os valores dos inputs consultando o DB por segurança
         jQuery.get(
           uri + "?action=GETREC&recnumber=" + indexRec,
-          function (data, status) {
-            if (status == 'success') {
-              // atualiza os valores do registro corrente
-              setInputsValues(data.split('|'));
-            }
+          function (data) {
+            // atualiza os valores do registro corrente
+            setInputsValues(data.split('|'));
           });
 
         // habilita edição e declara a quantidade máxima de
@@ -617,18 +601,16 @@ window.addEventListener('load',
 
       jQuery.get(
         uri + "?action=COUNT",
-        function (data, status) {
-          if (status == 'success') {
-            // declara a quantidade inicial de registros da tabela
-            numRecs = parseInt(amount.value = data);
-            // declara a quantidade máxima de caracteres do input
-            counter.maxLength = data.length;
-            // ação inicial conforme quantidade de registros da tabela
-            if (numRecs > 0) {
-              firstBtn.click();   // mostra o primeiro registro
-            } else {
-              whenTableIsEmpty(); // força inserção de registro
-            }
+        function (data) {
+          // declara a quantidade inicial de registros da tabela
+          numRecs = parseInt(amount.value = data);
+          // declara a quantidade máxima de caracteres do input
+          counter.maxLength = data.length;
+          // ação inicial conforme quantidade de registros da tabela
+          if (numRecs > 0) {
+            firstBtn.click();   // mostra o primeiro registro
+          } else {
+            whenTableIsEmpty(); // força inserção de registro
           }
         });
 
