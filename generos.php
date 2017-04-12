@@ -29,7 +29,7 @@
   CREATE TEMP TABLE t AS SELECT * FROM generos ORDER BY nome;
   DELETE FROM generos;
   INSERT INTO generos SELECT * FROM t;
-  -- REINDEX generos_ndx;
+  REINDEX generos;
   COMMIT;
   PRAGMA foreign_keys = ON;
   -- VACUUM;
@@ -53,7 +53,7 @@ EOT;
     case 'UPDATE':
       $code = chk($_GET['code']);
       $nome = chk($_GET['nome']);
-      if ($_GET['action']) {
+      if ($_GET['action'] == 'UPDATE') {
         $sql = <<<EOT
   PRAGMA foreign_keys = ON;
   PRAGMA recursive_triggers = ON;
@@ -69,7 +69,7 @@ EOT;
       }
       // requisita a atualização ou inserção
       if ($db->exec($sql) === FALSE) {
-        echo 'Error: ', $db->lastErrorMsg();
+        echo 'Error: ', $db->lastErrorMsg()."\n\n".$sql;
       } else {
         if (rebuildTable($db)) {
           echo $db->querySingle(

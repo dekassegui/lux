@@ -88,7 +88,7 @@ EOT
       return TRUE;
     } catch (Exception $e) {
       $db->rollBack();
-      $handle = fopen("/home/sergio/Projects/lux/datum/error.txt", 'wb');
+      $handle = fopen(getcwd()."/datum/error.txt", 'wb');
       fwrite($handle, "Failed: ".$e->getMessage());
       fclose($handle);
       return FALSE;
@@ -114,7 +114,6 @@ EOT
 
     case 'INSERT':
     case 'UPDATE':
-      //$handle = fopen("/home/sergio/Projects/lux/datum/saida.txt", 'wb');
       $bibliotecario = chk($_GET['bibliotecario']);
       $data_emprestimo = chk(normalize($_GET['data_emprestimo']));
       $data_devolucao = chk(normalize($_GET['data_devolucao']));
@@ -145,13 +144,11 @@ EOT;
       $exemplar;
 EOT;
       }
-      //fwrite($handle, "$sql\n\n");
       // requisita a atualização ou inserção
       if ($db->exec($sql) === FALSE) {
         echo 'Error: ', $db->lastErrorMsg();
       } else {
-        //fwrite($handle, "Rebuild\n\n");
-        if (rebuildTable($db) === TRUE) {
+        if (rebuildTable($db)) {
           // requisita o número de ordem do registro recém atualizado/inserido
           $d = substr($data_emprestimo, 1, 10);
           $sql = <<<EOT
@@ -160,13 +157,11 @@ EOT;
   WHERE substr(data_emprestimo, 1, 10) == "$d"
     AND leitor == $leitor AND obra == $obra; -- AND exemplar == $exemplar;
 EOT;
-          //fwrite($handle, $sql);
           echo $db->querySingle($sql);
         } else {
           echo '1';
         }
       }
-      //fclose($handle);
       break;
 
     case 'DELETE':
