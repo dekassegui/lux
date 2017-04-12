@@ -624,8 +624,8 @@ CREATE TABLE IF NOT EXISTS emprestimos (
     OR (data_devolucao > data_emprestimo)) --> posterior à data de empréstimo
 );
 
-CREATE INDEX data_emprestimo_ndx ON emprestimos(data_emprestimo DESC);
-CREATE INDEX data_devolucao_ndx ON emprestimos(data_devolucao DESC);
+CREATE INDEX data_emprestimo_ndx ON emprestimos(data_emprestimo ASC);
+CREATE INDEX data_devolucao_ndx ON emprestimos(data_devolucao ASC);
 CREATE INDEX leitor_ndx ON emprestimos(leitor);
 
 --
@@ -674,7 +674,7 @@ END;
 --
 -- check-up sequencial das restrições de empréstimo nas atualizações
 --
-CREATE TRIGGER CHK_UPDATE_ON_EMPRESTIMOS BEFORE UPDATE ON emprestimos
+/*CREATE TRIGGER CHK_UPDATE_ON_EMPRESTIMOS BEFORE UPDATE ON emprestimos
 BEGIN
   SELECT CASE
   WHEN new.leitor NOTNULL AND new.leitor IS NOT old.leitor
@@ -745,7 +745,7 @@ BEGIN
       END
     )
   END;
-END;
+END;*/
 
 --
 -- conveniência exclusivamente para calcular e preencher a coluna
@@ -991,16 +991,15 @@ CREATE VIEW IF NOT EXISTS emprestados AS
 --
 -- listagem de empréstimos atrasados até a data corrente
 --
-CREATE VIEW IF NOT EXISTS atrasados AS
-  SELECT emprestimos.rowid, strftime("%d-%m-%Y", data_emprestimo) AS
-    data_emprestimo, strftime("%d-%m-%Y", data_limite) AS data_limite,
+CREATE VIEW atrasados AS
+  SELECT emprestimos.rowid AS rowid, data_emprestimo, data_limite,
     leitores.nome AS leitor, telefone, email, titulo, autor, exemplar,
     CAST((today - julianday(data_limite)) AS INTEGER) AS atraso
   FROM (SELECT hoje, julianday(hoje) AS today
         FROM (SELECT date("now", "localtime") AS hoje)),
     emprestimos JOIN leitores ON emprestimos.leitor == leitores.code
     JOIN obras_facil ON emprestimos.obra == obras_facil.code
-  WHERE data_devolucao ISNULL AND data_limite < hoje;
+  WHERE data_devolucao ISNULL AND atraso > 0 ORDER BY atraso ASC;
 
 --
 -- contabiliza as quantidades de exemplares de cada obra sob empréstimo

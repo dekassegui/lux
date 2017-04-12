@@ -39,16 +39,17 @@
       $sql = <<<EOT
   SELECT count(1)
   FROM emprestimos_facil
-  WHERE data_devolucao ISNULL AND data_limite <= "$hoje";
+  WHERE data_devolucao ISNULL AND toISOdate(data_limite) <= "$hoje";
 EOT;
       $m = $db->querySingle($sql);
       echo PHP_EOL, '  #Pendências = ', $m;
       if ($m > 0) {
         $sql = <<<EOT
   SELECT rowid, bibliotecario, data_emprestimo, leitor, obra, autor, exemplar,
-    posicao, comentario
+    posicao, comentario, toISOdate(data_limite) as isoDataLimite
   FROM emprestimos_facil
-  WHERE data_devolucao ISNULL AND data_limite <= "$hoje";
+  WHERE data_devolucao ISNULL AND isoDataLimite <= "$hoje"
+  ORDER BY isoDataLimite DESC;
 EOT;
         $result = $db->query($sql);
         while ($row = $result->fetch(PDO::FETCH_ASSOC)) {

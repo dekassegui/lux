@@ -56,8 +56,9 @@ window.addEventListener('load',
 
         h.click(function () {
             // atualização do tooltip do header
-            const a = ["esconder", "restaurar"];
-            h.attr("title", "clique aqui para " + a[b=!b&1] + " o formulário");
+            const a = ["ocultar", "restaurar"];
+            h.attr("title", "clique aqui para " + a[b=!b&1] + " o formulário")
+              .children().css({color:(b?"#060":"#009")});
           }
         ).click( /* atualização inicial */ ).click(function () {
             // posiciona window no topo
@@ -105,7 +106,7 @@ window.addEventListener('load',
       const win = jQuery(window);
       var d = window.scrollY;
       if (y === undefined) {
-        d = y = $("mural").offsetTop - $$("body > header").offsetHeight - 5;
+        d = y = $$("textarea").offsetTop - $$("header").offsetHeight - 5;
       }
       win.scrollTo(y, 400 + (d / 100 + 1) * 100, {easing:"swing"});
     }
