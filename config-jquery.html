@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Lux - Configuração dos Empréstimos via jQuery</title>
+<meta http-equiv="expires" content="0"/>
+<meta http-equiv="pragma" content="no-cache"/>
+<link href="css/reset.css" rel="stylesheet" type="text/css" media="screen">
+<link href="css/config.css" rel="stylesheet" type="text/css" media="screen">
+<link href="js/sweet-alert/sweetalert.css" rel="stylesheet" type="text/css">
+<link href="js/sweet-alert/custom.css" rel="stylesheet" type="text/css">
+<script src="js/jquery-3.1.1.js"></script>
+<script src="js/config-jquery.js"></script>
+<script src="js/sweet-alert/sweetalert.min.js"></script>
+</head>
+<body>
+
+  <header>
+    <h1>Lux - Configuração dos Empréstimos via jQuery</h1>
+  </header>
+
+  <section>
+
+    <h2>Configuração dos Empréstimos</h2>
+
+    <div id="emprestimos">
+      <fieldset>
+
+        <p>
+          <label title="quantidade máxima de exemplares por leitor">pendências: <input type="number" id="pendencias" min="1" tabindex="1"></label>
+        </p>
+
+        <p>
+          <label title="número máximo de dias concedidos por exemplar emprestado">prazo: <input type="number" id="prazo" min="1" tabindex="2"> dias</label>
+        </p>
+
+      </fieldset>
+    </div>
+
+    <div id="weekdays">
+
+      <fieldset>
+
+        <label title="indicador da disponibilidade de atendimento no domingo">domingo <input type="checkbox"></label>
+
+        <label title="indicador da disponibilidade de atendimento na segunda">segunda <input type="checkbox"></label>
+
+        <label title="indicador da disponibilidade de atendimento na terça">terça <input type="checkbox"></label>
+
+        <label title="indicador da disponibilidade de atendimento na quarta">quarta <input type="checkbox"></label>
+
+        <label title="indicador da disponibilidade de atendimento na quinta">quinta <input type="checkbox"></label>
+
+        <label title="indicador da disponibilidade de atendimento na sexta">sexta <input type="checkbox"></label>
+
+        <label title="indicador da disponibilidade de atendimento no sábado">sábado <input type="checkbox"></label>
+
+      </fieldset>
+
+    </div>
+
+    <div id="commands">
+      <input type="button" id="updateBtn" value="&#xf0e7; Atualizar">
+    </div>
+
+  </section>
+
+  <footer>
+    <p>Software Livre para<br>bibliotecas de casas Espíritas.</p>
+  </footer>
+
+</body>
+</html>
