@@ -38,18 +38,18 @@
       $hoje = strftime('%Y-%m-%d');
       $sql = <<<EOT
   SELECT count(1)
-  FROM emprestimos_facil
-  WHERE data_devolucao ISNULL AND toISOdate(data_limite) <= "$hoje";
+  FROM emprestimos
+  WHERE data_devolucao ISNULL AND data_limite <= "$hoje";
 EOT;
       $m = $db->querySingle($sql);
       echo PHP_EOL, '  #Pendências = ', $m;
       if ($m > 0) {
         $sql = <<<EOT
   SELECT rowid, bibliotecario, data_emprestimo, leitor, obra, autor, exemplar,
-    posicao, comentario, toISOdate(data_limite) as isoDataLimite
+    posicao, comentario
   FROM emprestimos_facil
-  WHERE data_devolucao ISNULL AND isoDataLimite <= "$hoje"
-  ORDER BY isoDataLimite DESC;
+  WHERE data_devolucao ISNULL AND data_limite <= "$hoje"
+  ORDER BY data_limite DESC;
 EOT;
         $result = $db->query($sql);
         while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
@@ -65,37 +65,7 @@ EOT;
         }
       }
 
-      echo PHP_EOL, PHP_EOL;
-      mkHeader('Livros Disponíveis para Empréstimo');
-
-      $n = $db->querySingle('SELECT count(1) FROM exemplares_disponiveis');
-      echo PHP_EOL, '  #Exemplares = ', $n;
-      if ($n > 0) {
-        $sql = 'SELECT count(distinct titulo) FROM exemplares_disponiveis';
-        $m = $db->querySingle($sql);
-        echo PHP_EOL, '     #Títulos = ', $m;
-        $sql = <<<EOT
-  SELECT titulo, autores, genero,
-    group_concat(quote(exemplar), ", ") AS exemplares, posicao
-  FROM exemplares_disponiveis
-  GROUP BY titulo;
-EOT;
-        $result = $db->query($sql);
-        while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-          echo PHP_EOL, PHP_EOL, '         Título : ', $row['titulo'];
-          echo PHP_EOL, '  Autor&Espírito: ', $row['autores'];
-          echo PHP_EOL, '          Gênero: ', $row['genero'];
-          $n = strrpos($row['exemplares'], ',');
-          if ($n === FALSE) {
-            echo PHP_EOL, '        Exemplar: ', $row['exemplares'];
-          } else {
-            echo PHP_EOL, '      Exemplares: ',
-              substr($row['exemplares'], 0, $n), ' e',
-              substr($row['exemplares'], $n+1);
-          }
-          echo PHP_EOL, '         Posição: ', $row['posicao'];
-        }
-      }
+      echo PHP_EOL;
 
       break;
 

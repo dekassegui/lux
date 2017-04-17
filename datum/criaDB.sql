@@ -672,82 +672,6 @@ BEGIN
 END;
 
 --
--- check-up sequencial das restrições de empréstimo nas atualizações
---
-/*CREATE TRIGGER CHK_UPDATE_ON_EMPRESTIMOS BEFORE UPDATE ON emprestimos
-BEGIN
-  SELECT CASE
-  WHEN new.leitor NOTNULL AND new.leitor IS NOT old.leitor
-    THEN (
-      SELECT CASE
-      WHEN EXISTS(
-          SELECT 1 FROM emprestimos
-          WHERE data_devolucao ISNULL AND leitor IS new.leitor
-            AND data_limite < date("now", "localtime")
-        )
-        THEN raise(ABORT, "O leitor tem ao menos 1 empréstimo em atraso")
-      WHEN (
-          SELECT count(1) >= pendencias
-          FROM config, emprestimos
-          WHERE data_devolucao ISNULL AND leitor IS new.leitor
-        )
-        THEN raise(ABORT, "O leitor não pode exceder a quantidade máxima de empréstimos pendentes")
-      WHEN EXISTS(
-          SELECT 1 FROM emprestimos
-          WHERE data_devolucao ISNULL AND leitor IS new.leitor
-            AND obra IS ifnull(new.obra, old.obra)
-        )
-        THEN raise(ABORT, "O leitor não pode emprestar mais de um exemplar da mesma obra")
-      END
-    )
-  WHEN new.obra NOTNULL AND new.obra IS NOT old.obra
-    THEN (
-      SELECT CASE
-      WHEN (
-          SELECT (M > 0) AND (N > 0) AND (M == N)
-          FROM (
-              SELECT count(1) AS M FROM acervo WHERE obra IS new.obra
-            ), (
-              SELECT count(1) AS N FROM emprestimos
-              WHERE data_devolucao ISNULL AND obra IS new.obra
-            )
-        )
-        THEN raise(ABORT, "Todos os exemplares da obra estão emprestados")
-      WHEN (
-          SELECT 1 FROM emprestimos
-          WHERE data_devolucao ISNULL AND obra IS new.obra
-            AND exemplar IS ifnull(new.exemplar, old.exemplar)
-        )
-        THEN raise(ABORT, "O exemplar da obra já está emprestado")
-      END
-    )
-  WHEN new.exemplar NOTNULL AND new.exemplar IS NOT old.exemplar
-    THEN (
-      SELECT CASE
-      WHEN (
-          SELECT (M > 0) AND (N > 0) AND (M == N)
-          FROM (
-              SELECT count(1) AS M FROM acervo
-              WHERE obra IS ifnull(new.obra, old.obra)
-            ), (
-              SELECT count(1) AS N FROM emprestimos
-              WHERE data_devolucao ISNULL
-                AND obra IS ifnull(new.obra, old.obra)
-            )
-        )
-        THEN raise(ABORT, "Todos os exemplares da obra estão emprestados")
-      WHEN (
-          SELECT 1 FROM emprestimos
-          WHERE data_devolucao ISNULL AND exemplar IS new.exemplar
-            AND obra IS ifnull(new.obra, old.obra)
-        )
-        THEN raise(ABORT, "O exemplar da obra já está emprestado")
-      END
-    )
-  END;
-END;*/
-
---
 -- conveniência exclusivamente para calcular e preencher a coluna
 -- "data_limite" na inserção de registros de "emprestimos"
 --
@@ -992,7 +916,8 @@ CREATE VIEW IF NOT EXISTS emprestados AS
 -- listagem de empréstimos atrasados até a data corrente
 --
 CREATE VIEW atrasados AS
-  SELECT emprestimos.rowid AS rowid, data_emprestimo, data_limite,
+  SELECT emprestimos.rowid AS rowid, strftime("%d-%m-%Y", data_emprestimo)
+    AS data_emprestimo, strftime("%d-%m-%Y", data_limite) AS data_limite,
     leitores.nome AS leitor, telefone, email, titulo, autor, exemplar,
     CAST((today - julianday(data_limite)) AS INTEGER) AS atraso
   FROM (SELECT hoje, julianday(hoje) AS today

@@ -609,7 +609,7 @@ window.addEventListener('load',
           counter.maxLength = data.length;
           // ação inicial conforme quantidade de registros da tabela
           if (numRecs > 0) {
-            firstBtn.click();   // mostra o primeiro registro
+            lastBtn.click();    // mostra o último registro
           } else {
             whenTableIsEmpty(); // força inserção de registro
           }
