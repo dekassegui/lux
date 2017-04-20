@@ -277,7 +277,6 @@ window.addEventListener('load',
         disableButtons();
         setInputsReadonly(false);
         scrollTo(0);
-        if (fields[2].value.length == 0) fields[2].focus();
       }, true);
 
     delBtn.addEventListener('click',
