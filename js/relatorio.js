@@ -4,8 +4,8 @@
 */
 
 /**
- * Script para apresentação dos relatórios do DB com animação da rolagem,
- * controlada pelo usuário.
+ * Script para rolagem suave da window via plugin jQuery.scrollTo,
+ * parametrizada arbitrariamente e sob controle do usuário final.
 */
 $(document).ready(function WINDOW_SCROLLER() {
 
@@ -14,28 +14,26 @@ $(document).ready(function WINDOW_SCROLLER() {
   const SHORT_TM          = 1000; // curto tempo de rolagem de uma window
   const LONG_TM           = 5000; // longo tempo de rolagem de uma window
 
-  var win = $(window);
-
-  var header = $("header");
-
-  var status = false;
+  var win    = $(window);     // window "enhanced" via jQuery
+  var header = $("header");   // elemento gatilho com posicionamento fixo
+  var status = false;         // status logico da animação
 
   /**
-   * Ativa ou desativa a rolagem da window conforme tecla(s) pressionada
+   * Ativa ou desativa a rolagem da window conforme tecla(s) pressionada(s)
    * simultaneamente tal que <Ctrl> controla a direção e <Shift> a velocidade,
-   * com duração mínima restrita a um valor constante.
+   * com duração mínima restrita a um valor arbitrário constante.
   */
   header.click(function (ev) {
       if (ev.button == MOUSE_LEFT_BUTTON) {
         if (status=!status) {
           var y = ev.ctrlKey ? 0 : window.scrollMaxY; // destino arbitrário
           var len = Math.abs(y - window.scrollY);     // distância até destino
-          var tm = ev.shiftKey ? SHORT_TM : LONG_TM;  // tempo/win arbitrário
+          var tm = ev.shiftKey ? SHORT_TM : LONG_TM;  // tempo arbitrário
           tm *= len / window.innerHeight;             // duração a priori
           win.scrollTo(y, {
               duration: Math.max(tm, MINIMUM_DURATION),
-              onAfter: function () { status = false; },
-              easing: "linear"
+               onAfter: function () { status = false; },
+                easing: "linear"
             });
         } else {
           win.stop();

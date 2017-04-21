@@ -20,3 +20,8 @@ button.confirm {
   letter-spacing: .05em;
   color: black !important;
 }
+.sweet-alert p span {
+  display: block;
+  margin-top: 1em;
+  color: #99ff00;
+}

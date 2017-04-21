@@ -339,7 +339,7 @@ window.addEventListener('load',
                 });
               setDisabled(actionButtons, true);
               setInputsReadonly(true);
-              show('Inserção bem sucedida.');
+              show('Inserção bem sucedida.<span>Informe a data limite para devolução.</span>');
             }
           };
           par.push('?action=INSERT');
