@@ -125,10 +125,8 @@ EOT;
   FROM bibliotecarios
 EOT
         );
-      if ($result !== FALSE AND $row = $result->fetchColumn()) {
-        echo $row;
+      if ($result !== FALSE)
         while ($row = $result->fetchColumn()) echo $row;
-      }
       break;
   }
 

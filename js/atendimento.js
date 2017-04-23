@@ -315,6 +315,7 @@ window.addEventListener('load',
             );
           });
         scrollTo(0);
+        fields[2].value = 'NULL';
         fields[4].focus();  // focaliza no input#obra
       }, true);
 

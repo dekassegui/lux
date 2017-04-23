@@ -18,9 +18,7 @@
   WHERE code IS "{$_GET['code']}"
 EOT;
     $result = $db->query($sql);
-    if ($result !== FALSE AND $row = $result->fetchColumn()) {
-      echo $row, '|';
-    }
+    if ($result !== FALSE AND $row = $result->fetchColumn()) echo $row, '|';
 
     $sql = <<<EOT
   SELECT '<option code="' || exemplar || '">' || exemplar || '</option>'
@@ -38,9 +36,7 @@ EOT;
   }
 
   $result = $db->query($sql);
-  if ($result !== FALSE AND $row = $result->fetchColumn()) {
-    echo $row;
+  if ($result !== FALSE)
     while ($row = $result->fetchColumn()) echo $row;
-  }
 
 ?>

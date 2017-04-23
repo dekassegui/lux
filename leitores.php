@@ -126,21 +126,16 @@ EOT;
 
     case 'GETALL':
       $result = $db->query('SELECT code, nome FROM leitores');
-      if ($result !== FALSE AND $row = $result->fetch(PDO::FETCH_NUM)) {
-        echo '<option code="', $row[0], '">', $row[1], '</option>';
+      if ($result !== FALSE)
         while ($row = $result->fetch(PDO::FETCH_NUM))
           echo '<option code="', $row[0], '">', $row[1], '</option>';
-      }
       break;
 
     case 'PESQUISA':
       $result = $db->query('SELECT DISTINCT leitor, nome FROM emprestimos JOIN leitores ON leitor IS code ORDER BY nome;');
-      if ($result !== FALSE AND $row = $result->fetch(PDO::FETCH_NUM)) {
-        echo '<option code="', $row[0], '">', $row[1], '</option>';
+      if ($result !== FALSE)
         while ($row = $result->fetch(PDO::FETCH_NUM))
           echo '<option code="', $row[0], '">', $row[1], '</option>';
-      }
-
       break;
 
   }

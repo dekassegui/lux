@@ -137,10 +137,8 @@ EOT;
   SELECT '<option code="' || code || '">' || titulo || '</option>' FROM obras
 EOT
       );
-      if ($row = $result->fetchColumn()) {
-        echo $row;
+      if ($result !== FALSE)
         while ($row = $result->fetchColumn()) echo $row;
-      }
       break;
   }
 

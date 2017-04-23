@@ -227,6 +227,10 @@
       $needle = trim($_GET[$name]);
       if (strlen($needle) == 0) continue;
 
+      // workaround de conveniência, devido ao uso de letras maiúsculas nos
+      // títulos de obras e nomes de espíritos encarnados e desencarnados
+      $needle = mb_strtoupper($needle, 'UTF-8');
+
       // checa se a expressão é uma negação
       $negate = '';
       if (preg_match('/^NOT\s+(.+)$/i', $needle, $matches)) {

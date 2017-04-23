@@ -132,10 +132,8 @@ EOT;
   SELECT '<option code="' || code || '">' || IFNULL(nome || " + " || espirito, nome) || '</option>' FROM autores
 EOT
       );
-      if ($row = $result->fetchColumn()) {
-        echo $row;
+      if ($result !== FALSE)
         while ($row = $result->fetchColumn()) echo $row;
-      }
       break;
   }
 
