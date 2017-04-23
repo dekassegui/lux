@@ -425,7 +425,7 @@ window.addEventListener('load',
           function (datalist) {
             jQuery.get(
               aUri + datalist.id + ".php?action=GETALL",
-              function (data) { jQuery(datalist).html(montaOptions(data)); });
+              function (data) { jQuery(datalist).html(data); });
             });
       }
     }

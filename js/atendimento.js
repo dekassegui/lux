@@ -276,6 +276,14 @@ window.addEventListener('load',
         updateBtn.classList.add('working');
         disableButtons();
         setInputsReadonly(false);
+        ["acervo_obras", "leitores"].forEach(
+          function (iD) {
+            var dataList = jQuery("datalist#" + iD);
+            jQuery.get(
+              aUri + iD + ".php?action=GETALL",
+              function (data) { dataList.empty().append(data); }
+            );
+          });
         scrollTo(0);
       }, true);
 
@@ -294,8 +302,20 @@ window.addEventListener('load',
         disableButtons();
         setInputsValues();
         setInputsReadonly(false);
+        ["acervo_obras", "leitores"].forEach(
+          function (iD) {
+            var dataList = jQuery("datalist#" + iD);
+            var inputField = dataList.prev();
+            inputField.val("ATUALIZANDO LISTA!");
+            jQuery.get(
+              aUri + iD + ".php?action=PESQUISA",
+              function (data) { dataList.empty().append(data); }
+            ).done(
+              function () { inputField.val(""); }
+            );
+          });
         scrollTo(0);
-        fields[ 4 ].focus();
+        fields[4].focus();  // focaliza no input#obra
       }, true);
 
     newBtn.addEventListener('click',
@@ -304,8 +324,20 @@ window.addEventListener('load',
         disableButtons();
         setInputsValues();
         setInputsReadonly(false);
+        ["acervo_obras", "leitores"].forEach(
+          function (iD) {
+            var dataList = jQuery("datalist#" + iD);
+            var inputField = dataList.prev();
+            inputField.val("ATUALIZANDO LISTA!");
+            jQuery.get(
+              aUri + iD + ".php?action=GETALL",
+              function (data) { dataList.empty().append(data); }
+            ).done(
+              function () { inputField.val(""); }
+            );
+          });
         scrollTo(0);
-        fields[0].focus();
+        fields[0].focus();  // focaliza no input#bibliotecario
       }, true);
 
     saveBtn.addEventListener('click',
@@ -501,7 +533,7 @@ window.addEventListener('load',
           // checa se o valor do input 'obra' não está vazio
           if (fields[4].value) {
             // obtem o datalist associado ao input 'obra'
-            var code, datalist = $(fields[4].getAttribute('list'));
+            var code, datalist = $('acervo_obras');
             // percorre as options do datalist associado ao input "obra"
             // para obter o "code" correspondente ao título selecionado
             for (var titulo=fields[4].value, collection=datalist.options, j=0;
@@ -514,22 +546,17 @@ window.addEventListener('load',
               jQuery.get(
                 aUri + 'acervo_exemplares.php?code=' + code,
                 function (data) {
-                  // obtem a posição do primeiro separador de valores
-                  var j = data.indexOf('|');
+                  var values = data.split('|');
                   // atualiza o valor do input 'autor'
-                  fields[5].value = data.substring(0, j);
-                  // mostra a posição dos exemplares da obra escolhida
-                  var m = k = data.indexOf('\n');
-                  if (data.charAt(k-1) == '\r') --m;
+                  fields[5].value = values[0];
                   // atualiza o valor do input 'posicao'
-                  fields[7].value = data.substring(j+1, m);
+                  fields[7].value = values[1];
                   // obtem o datalist associado ao input 'exemplar'
-                  datalist = $(fields[6].getAttribute('list'));
+                  datalist = $('acervo_exemplares');
                   // substitui todos os itens da lista de opções, que pode
                   // tornar-se vazia caso não hajam exemplares disponíveis
-                  var txt = montaOptions(data.substring(k+1));
-                  datalist.innerHTML = txt;
-                  if (txt.length > 0) {
+                  datalist.innerHTML = values[2];
+                  if (values[2].length > 0) {
                     // atualiza o valor do input 'exemplar' com o valor
                     // do primeiro item do datalist
                     fields[6].value = datalist.options.item(0).value;
@@ -544,15 +571,18 @@ window.addEventListener('load',
       });
 
     // preenche datalists cujos ids correspondem ao nome (sem extensão)
-    // do script server side que atende a requisição dos seus dados
-    jQuery("section > div:first-child datalist").each(
+    // do script backend que atende a requisição dos seus dados
+    (
       function () {
-        var dataList = jQuery(this);
-        jQuery.get(
-          aUri + dataList.attr("id") + ".php?action=GETALL",
-          function (data) { if (data) dataList.html(montaOptions(data)); }
-        );
-      });
+        ["bibliotecarios", "acervo_exemplares"].forEach(
+          function (iD) {
+            var dataList = jQuery("datalist#" + iD);
+            jQuery.get(
+              aUri + iD + ".php?action=GETALL",
+              function (data) { dataList.html( data); });
+          });
+      }
+    )();
 
     // testa se valores de ambos inputs mostradores de status da tabela não
     // são string vazia, evidenciando que o documento foi atualizado durante

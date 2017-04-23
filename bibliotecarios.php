@@ -120,10 +120,14 @@ EOT;
       break;
 
     case 'GETALL':
-      $result = $db->query('SELECT code || "|" || nome FROM bibliotecarios');
+      $result = $db->query(<<<EOT
+  SELECT '<option code="' || code || '">' || nome || '</option>'
+  FROM bibliotecarios
+EOT
+        );
       if ($result !== FALSE AND $row = $result->fetchColumn()) {
         echo $row;
-        while ($row = $result->fetchColumn()) echo PHP_EOL, $row;
+        while ($row = $result->fetchColumn()) echo $row;
       }
       break;
   }

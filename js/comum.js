@@ -2,20 +2,6 @@
  * Este script é parte do projeto LUX.
 */
 
-// Montagem de string container de sequência de options preenchidas
-// com pares "code|valor" extraídos das linhas da string argumento.
-function montaOptions(text) {
-  var buffer = '';
-  var i, j, k, m, r=(text.indexOf("\r\n") != -1)|0;
-  for (i=0; (j=text.indexOf('|', i)) != -1; i=k+1) {
-    k = text.indexOf("\n", j+1);
-    m = (k != -1) ? (k - r) : (k = text.length);
-    buffer += '<option code="' + text.substring(i, j) + '">'
-      + text.substring(j+1, m) + '</option>';
-  }
-  return buffer;
-}
-
 function Mural(iD) {
 
   var mural = $(iD || 'mural');  // área de notificações ao usuário

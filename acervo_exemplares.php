@@ -19,24 +19,28 @@
 EOT;
     $result = $db->query($sql);
     if ($result !== FALSE AND $row = $result->fetchColumn()) {
-      echo $row, PHP_EOL;
+      echo $row, '|';
     }
 
     $sql = <<<EOT
-  SELECT exemplar || "|" || exemplar FROM disponiveis_acervo
+  SELECT '<option code="' || exemplar || '">' || exemplar || '</option>'
+  FROM disponiveis_acervo
   WHERE obra == "{$_GET['code']}"
 EOT;
 
   } else {
 
-    $sql = 'SELECT DISTINCT exemplar || "|" || exemplar FROM acervo';
+    $sql = <<<EOT
+  SELECT '<option code="' || exemplar || '">' || exemplar || '</option>'
+  FROM (SELECT DISTINCT exemplar FROM acervo)
+EOT;
 
   }
 
   $result = $db->query($sql);
   if ($result !== FALSE AND $row = $result->fetchColumn()) {
     echo $row;
-    while ($row = $result->fetchColumn()) echo PHP_EOL, $row;
+    while ($row = $result->fetchColumn()) echo $row;
   }
 
 ?>

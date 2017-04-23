@@ -11,14 +11,31 @@
     die($e->getMessage());
   }
 
-  $result = $db->query(<<<EOT
-   SELECT DISTINCT acervo.obra || '|' || obras.titulo
-   FROM acervo JOIN obras ON acervo.obra == obras.code
-EOT
-    );
-  if ($result !== FALSE AND $row = $result->fetchcolumn()) {
-    echo $row;
-    while ($row = $result->fetchColumn()) echo PHP_EOL, $row;
+  switch ($_GET['action']) {
+
+    case 'GETALL':
+      $sql =<<<EOT
+   SELECT DISTINCT obra, titulo
+   FROM disponiveis_acervo JOIN obras ON obra is code
+   ORDER BY titulo ASC;
+EOT;
+      break;
+
+    case 'PESQUISA':
+      $sql =<<<EOT
+   SELECT DISTINCT obra, titulo
+   FROM emprestimos JOIN obras ON obra IS code
+   ORDER BY titulo ASC;
+EOT;
+      break;
+  }
+
+  $result = $db->query($sql);
+
+  if ($result !== FALSE AND $row = $result->fetch(PDO::FETCH_NUM)) {
+    echo '<option code="', $row[0], '">', $row[1], '</option>';
+    while ($row = $result->fetch(PDO::FETCH_NUM))
+      echo '<option code="', $row[0], '">', $row[1], '</option>';
   }
 
 ?>

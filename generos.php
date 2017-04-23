@@ -120,15 +120,14 @@ EOT;
       break;
 
     case 'GETALL':
-      $text = '';
-      $result = $db->query('SELECT code, nome FROM generos');
-      if ($row = $result->fetch(PDO::FETCH_NUM)) {
-        $text .= $row[0].'|'.$row[1];
-        while ($row = $result->fetch(PDO::FETCH_NUM)) {
-          $text .= PHP_EOL.$row[0].'|'.$row[1];
-        }
+      $result = $db->query(<<<EOT
+  SELECT '<option code="' || code || '">' || nome || '</option>' FROM generos
+EOT
+      );
+      if ($row = $result->fetchColumn()) {
+        echo $row;
+        while ($row = $result->fetchColumn()) echo $row;
       }
-      echo $text;
       break;
   }
 

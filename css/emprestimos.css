@@ -1,3 +1,0 @@
-section { overflow: auto; }
-#data_emprestimo, #data_devolucao { width: 240px; border-color: #fcc; }
-#bibliotecario, #leitor, #obra, #exemplar, #comentario { width: 440px; }

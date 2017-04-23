@@ -128,16 +128,14 @@ EOT;
       break;
 
     case 'GETALL':
-      $text = '';
-      $result = $db->query(
-        'SELECT code, ifnull(nome||" + "||espirito, nome) FROM autores');
-      if ($row = $result->fetch(PDO::FETCH_NUM)) {
-        $text .= join('|', $row);
-        while ($row = $result->fetch(PDO::FETCH_NUM)) {
-          $text .= PHP_EOL.join('|', $row);
-        }
+      $result = $db->query(<<<EOT
+  SELECT '<option code="' || code || '">' || IFNULL(nome || " + " || espirito, nome) || '</option>' FROM autores
+EOT
+      );
+      if ($row = $result->fetchColumn()) {
+        echo $row;
+        while ($row = $result->fetchColumn()) echo $row;
       }
-      echo $text;
       break;
   }
 

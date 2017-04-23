@@ -14,7 +14,7 @@
     {
       if ($m++ > 0) echo PHP_EOL;
       $code = $x.$n;
-      echo "$code|$code";
+      echo '<option code="', $code, '">', $code, '</option>';
     }
   }
 
