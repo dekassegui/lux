@@ -38,6 +38,23 @@ function Mural(iD) {
 
   this.isEmpty = function() { return mural.textLength == 0; };
 
+  // adiciona botão para esvaziar o mural quando clicado
+  jQuery(mural).parent()
+    .append('<span id="cleaner">Limpar</span>').children().last()
+    .click(function () { mural.value = ""; mural.oninput(); });
+
+  var cleaner = $("cleaner");
+
+  mural.onresize = function () {
+    var h = parseInt(getCSSproperty(mural, "height"));
+    cleaner.style.top = "-" + (h + 4) + "px";
+    var w = parseInt(getCSSproperty(mural, "width"));
+    cleaner.style.left = (w - cleaner.offsetWidth - 18) + "px";
+    console.log("> " + w + " " + h);
+  };
+
+  mural.onresize();
+
   // inicia o mural com saudação em função da hora local
   mural.value = ["> Boa noite!", "> Bom dia!", "> Boa tarde!"]
     [Math.floor(new Date().getHours() / 6) % 3];

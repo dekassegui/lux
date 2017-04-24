@@ -173,6 +173,26 @@ textarea:focus {
 }
 textarea.empty { font-style: italic; color: #99c; }
 
+#cleaner {
+  position: relative;
+  padding: 0px 8px 2px 8px;
+  font: 400 .7em "Open Sans", sans-serif;
+  letter-spacing: .03125em;
+  color: #888;
+  background: -webkit-linear-gradient(to bottom, transparent, #bbb) #eee;
+  background: linear-gradient(to bottom, transparent, #bbb) #eee;
+  border: 1px solid #afafaf;
+  border-radius: 8px;
+  cursor: pointer;
+}
+#cleaner:hover {
+  background-color: #fff;
+}
+#cleaner:active {
+  background-color: #eee;
+  background-image: none;
+}
+
 footer { margin-top: .5em; }
 footer p {
   text-align: center;
