@@ -39,21 +39,21 @@ function Mural(iD) {
   this.isEmpty = function() { return mural.textLength == 0; };
 
   // adiciona botão para esvaziar o mural quando clicado
-  jQuery(mural).parent()
-    .append('<span id="cleaner">Limpar</span>').children().last()
-    .click(function () { mural.value = ""; mural.oninput(); });
-
-  var cleaner = $("cleaner");
-
-  mural.onresize = function () {
-    var h = parseInt(getCSSproperty(mural, "height"));
-    cleaner.style.top = "-" + (h + 4) + "px";
-    var w = parseInt(getCSSproperty(mural, "width"));
-    cleaner.style.left = (w - cleaner.offsetWidth - 18) + "px";
-    console.log("> " + w + " " + h);
+  var cleaner = document.createElement("span");
+  cleaner.id = "cleaner";
+  cleaner.textContent = "Esvaziar";
+  mural.parentElement.appendChild(cleaner);
+  cleaner.onclick = function () {
+    mural.value = "";
+    mural.oninput();
+  };
+  // reposiciona "cleaner" no topo do "mural"
+  window.onresize = function () {
+    cleaner.style.top = "-" + (mural.clientHeight + 6) + "px";
+    cleaner.style.left = (mural.clientWidth - cleaner.offsetWidth - 16) + "px";
   };
 
-  mural.onresize();
+  window.onresize();
 
   // inicia o mural com saudação em função da hora local
   mural.value = ["> Boa noite!", "> Bom dia!", "> Boa tarde!"]

@@ -186,10 +186,10 @@ textarea.empty { font-style: italic; color: #99c; }
   cursor: pointer;
 }
 #cleaner:hover {
-  background-color: #fff;
+  background-color: #eff;
 }
 #cleaner:active {
-  background-color: #eee;
+  background-color: #dee;
   background-image: none;
 }
 
