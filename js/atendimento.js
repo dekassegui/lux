@@ -580,7 +580,7 @@ window.addEventListener('load',
             var dataList = jQuery("datalist#" + iD);
             jQuery.get(
               aUri + iD + ".php?action=GETALL",
-              function (data) { dataList.html( data); });
+              function (data) { dataList.html(data); });
           });
       }
     )();

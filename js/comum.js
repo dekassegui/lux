@@ -10,9 +10,11 @@ function Mural(iD) {
 
   mural.oninput = function () {
     if (mural.textLength == 0) {
-      mural.classList.add('empty');
+      mural.classList.add("empty");
+      cleaner.disabled = true;
     } else {
-      mural.classList.remove('empty');
+      mural.classList.remove("empty");
+      cleaner.disabled = false;
     }
   };
 
@@ -39,7 +41,7 @@ function Mural(iD) {
   this.isEmpty = function() { return mural.textLength == 0; };
 
   // adiciona botão para esvaziar o mural quando clicado
-  var cleaner = document.createElement("span");
+  var cleaner = document.createElement("BUTTON");
   cleaner.id = "cleaner";
   cleaner.textContent = "Esvaziar";
   mural.parentElement.appendChild(cleaner);
@@ -47,13 +49,16 @@ function Mural(iD) {
     mural.value = "";
     mural.oninput();
   };
-  // reposiciona "cleaner" no topo do "mural"
-  window.onresize = function () {
+
+  // posiciona "cleaner" no topo do "mural" :: vide CSS
+  function posiciona() {
     cleaner.style.top = "-" + (mural.clientHeight + 6) + "px";
     cleaner.style.left = (mural.clientWidth - cleaner.offsetWidth - 16) + "px";
-  };
+  }
 
-  window.onresize();
+  window.addEventListener("resize", posiciona, true);
+
+  posiciona();  // posicionamento inicial do button
 
   // inicia o mural com saudação em função da hora local
   mural.value = ["> Boa noite!", "> Bom dia!", "> Boa tarde!"]

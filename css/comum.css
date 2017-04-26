@@ -178,17 +178,22 @@ textarea.empty { font-style: italic; color: #99c; }
   padding: 0px 8px 2px 8px;
   font: 400 .7em "Open Sans", sans-serif;
   letter-spacing: .03125em;
-  color: #888;
+  color: #777;
   background: -webkit-linear-gradient(to bottom, transparent, #bbb) #eee;
   background: linear-gradient(to bottom, transparent, #bbb) #eee;
   border: 1px solid #afafaf;
   border-radius: 8px;
   cursor: pointer;
 }
-#cleaner:hover {
+#cleaner:disabled {
+  background-image: none;
+  color: #c0c0c0;
+  border-color: #c0c0c0;
+}
+#cleaner:enabled:hover {
   background-color: #eff;
 }
-#cleaner:active {
+#cleaner:enabled:active {
   background-color: #dee;
   background-image: none;
 }
