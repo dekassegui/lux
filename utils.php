@@ -88,6 +88,14 @@
       function ($x) { return Metaphone::getMetaphone($x); }, $phrase, $needle);
   }
 
+  function toupper($text) {
+    return mb_strtoupper($text, 'UTF-8');
+  }
+
+  function tolower($text) {
+    return mb_strtolower($text, 'UTF-8');
+  }
+
   define('DB_FILENAME', 'datum/lux.sqlite');
 
   /**
@@ -111,6 +119,8 @@
       $this->sqliteCreateFunction('toISOdate', 'toISOdate', 1);
       $this->sqliteCreateFunction('sondx', 'sondx', 2);
       $this->sqliteCreateFunction('sonat', 'sonat', 2);
+      $this->sqliteCreateFunction('tolower', 'tolower', 1);
+      $this->sqliteCreateFunction('toupper', 'toupper', 1);
     }
 
     /**
@@ -227,10 +237,6 @@
       $needle = trim($_GET[$name]);
       if (strlen($needle) == 0) continue;
 
-      // workaround de conveniência, devido ao uso de letras maiúsculas nos
-      // títulos de obras e nomes de espíritos encarnados e desencarnados
-      $needle = mb_strtoupper($needle, 'UTF-8');
-
       // checa se a expressão é uma negação
       $negate = '';
       if (preg_match('/^NOT\s+(.+)$/i', $needle, $matches)) {
@@ -256,7 +262,7 @@
       } else if (preg_match('/^(GLOB|LIKE|IS)\s+(.+)\s*$/i', $needle,
                             $matches)) {
 
-        $constraints[] = $negate."$name {$matches[1]} '{$matches[2]}'";
+        $constraints[] = $negate."toupper($name) {$matches[1]} toupper(\"{$matches[2]}\")";
 
       // checa uso de REGEXP também detectando aliases
       } else if (preg_match('/^(I|)(?:REGEXP?|MATCH(?:ES)?)\s+(.+)\s*$/i',
@@ -291,13 +297,13 @@
       } else if (!(strpos($needle, '*') === FALSE
                    && strpos($needle, '?') === FALSE)) {
 
-        $constraints[] = $negate."$name GLOB '$needle'";
+        $constraints[] = $negate."toupper($name) GLOB toupper(\"$needle\")";
 
       // checa uso implícito de LIKE
       } else if (!(strpos($needle, '%') === FALSE
                    && strpos($needle, '_') === FALSE)) {
 
-        $constraints[] = $negate."$name LIKE '$needle'";
+        $constraints[] = $negate."$name LIKE \"$needle\"";
 
       // checa comparação com NULL
       } else if (preg_match('/((?:IS|NOT|)NULL)/i', $needle, $matches)) {
@@ -309,7 +315,7 @@
       // default :: comparação simples
       } else {
 
-        $constraints[] = $negate."$name == ".'"'.$needle.'"';
+        $constraints[] = $negate."toupper($name) == toupper(\"$needle\")";
 
       }
     }
