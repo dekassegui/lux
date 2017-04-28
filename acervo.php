@@ -112,7 +112,6 @@ EOT;
     case 'SEARCH':
       $constraints = buildConstraints(
         array('obra', 'exemplar', 'posicao', 'comentario'));
-      $text = '';
       // requisita a pesquisa se a montagem foi bem sucedida
       if (count($constraints) > 0) {
         $restricoes = join(' AND ', $constraints);
@@ -122,36 +121,33 @@ EOT;
   FROM acervo_facil
   WHERE $restricoes;
 EOT;
-        // for debug purpose --> $text = $sql."\n";
+        // for DEBUG PURPOSE: echo $sql."\n";
         // consulta o DB
         $result = $db->query($sql);
         // montagem da lista de resultados
         if ($result !== FALSE AND $row = $result->fetch(PDO::FETCH_NUM)) {
-          $text .= join('|', $row);
+          echo join('|', $row);
           while ($row = $result->fetch(PDO::FETCH_NUM)) {
-            $text .= PHP_EOL.join('|', $row);
+            echo PHP_EOL, join('|', $row);
           }
         } else {
-          $text = 'Advertência: Não há dados que satisfaçam a requisição:'.PHP_EOL.$sql;
+          echo 'Advertência: Não há dados que satisfaçam a requisição:', PHP_EOL, $sql;
         }
       } else {
-        $text = 'Advertência: Parâmetros insuficientes para montagem das restrições de pesquisa.';
+        echo 'Advertência: Parâmetros insuficientes para montagem das restrições de pesquisa.';
       }
-      echo $text;
       break;
 
     case 'GETALL': // TODO: eliminar este trecho se não utilizado
-      $text = '';
       $result = $db->query(
         'SELECT code, obra || " (" || exemplar || " - " || posicao || ")" FROM acervo_facil'
         );
       if ($row = $result->fetch(PDO::FETCH_NUM)) {
-        $text .= join('|', $row);
+        echo join('|', $row);
         while ($row = $result->fetch(PDO::FETCH_NUM)) {
-          $text .= PHP_EOL.join('|', $row);
+          echo PHP_EOL, join('|', $row);
         }
       }
-      echo $text;
       break;
   }
 

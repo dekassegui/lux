@@ -96,6 +96,23 @@
     return mb_strtolower($text, 'UTF-8');
   }
 
+  function compara($str1, $str2) {
+    if ($str1 === NULL && $str2 === NULL) return 0;
+    if ($str1 === NULL) return -1;
+    if ($str2 === NULL) return 1;
+    $letras = array(
+      'À'=>'A', 'Á'=>'A', 'Â'=>'A', 'Ã'=>'A',
+      'à'=>'a', 'á'=>'a', 'â'=>'a', 'ã'=>'a',
+      'È'=>'E', 'É'=>'E', 'Ê'=>'E', 'è'=>'e', 'é'=>'e', 'ê'=>'e',
+      'Ì'=>'I', 'Í'=>'I', 'ì'=>'i', 'í'=>'i',
+      'Ò'=>'O', 'Ó'=>'O', 'Ô'=>'O', 'Õ'=>'O',
+      'ò'=>'o', 'ó'=>'o', 'ô'=>'o', 'õ'=>'o',
+      'Ù'=>'U', 'Ú'=>'U', 'Û'=>'U', 'ù'=>'u', 'ú'=>'u', 'û'=>'u',
+      'Ç'=>'C', 'ç'=>'c'
+    );
+    return strcmp(strtr($str1, $letras), strtr($str2, $letras));
+  }
+
   define('DB_FILENAME', 'datum/lux.sqlite');
 
   /**
@@ -121,6 +138,7 @@
       $this->sqliteCreateFunction('sonat', 'sonat', 2);
       $this->sqliteCreateFunction('tolower', 'tolower', 1);
       $this->sqliteCreateFunction('toupper', 'toupper', 1);
+      $this->sqliteCreateCollation('pt_BR', 'compara');
     }
 
     /**
