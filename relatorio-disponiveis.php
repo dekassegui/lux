@@ -55,15 +55,14 @@
 
   echo '<div>', PHP_EOL;
   $sql = <<<EOT
-  --
-  -- workaround para bug do collation via pdo
-  --
-  SELECT * FROM (
-    SELECT titulo, autores, genero,
-      group_concat(quote(exemplar), ", ") AS exemplares, posicao
-    FROM exemplares_disponiveis
-    GROUP BY titulo ORDER BY titulo COLLATE pt_BR DESC
-  ) ORDER BY titulo COLLATE pt_BR ASC;
+SELECT obra, books.titulo AS titulo, autores, posicao,
+  generos.nome AS genero, group_concat(exemplar, ", ") AS exemplares
+FROM disponiveis_acervo JOIN (
+    SELECT * FROM obras ORDER BY titulo COLLATE portuguese ASC
+  ) AS books ON books.code == disponiveis_acervo.obra
+  JOIN scribas ON scribas.code == books.autor
+  JOIN generos ON generos.code == books.genero
+GROUP BY books.titulo ORDER BY books.titulo COLLATE portuguese ASC;
 EOT;
   $result = $db->query($sql);
   while ($row = $result->fetch(PDO::FETCH_ASSOC)) {

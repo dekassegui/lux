@@ -97,19 +97,20 @@
   }
 
   function compara($str1, $str2) {
-    if ($str1 === NULL && $str2 === NULL) return 0;
-    if ($str1 === NULL) return -1;
+    if ($str1 === NULL) return ($str2 === NULL) ? 0 : -1;
     if ($str2 === NULL) return 1;
     $letras = array(
       'À'=>'A', 'Á'=>'A', 'Â'=>'A', 'Ã'=>'A',
       'à'=>'a', 'á'=>'a', 'â'=>'a', 'ã'=>'a',
-      'È'=>'E', 'É'=>'E', 'Ê'=>'E', 'è'=>'e', 'é'=>'e', 'ê'=>'e',
-      'Ì'=>'I', 'Í'=>'I', 'ì'=>'i', 'í'=>'i',
+      'È'=>'E', 'É'=>'E', 'Ê'=>'E',
+      'è'=>'e', 'é'=>'e', 'ê'=>'e',
+      'Ì'=>'I', 'Í'=>'I',
+      'ì'=>'i', 'í'=>'i',
       'Ò'=>'O', 'Ó'=>'O', 'Ô'=>'O', 'Õ'=>'O',
       'ò'=>'o', 'ó'=>'o', 'ô'=>'o', 'õ'=>'o',
-      'Ù'=>'U', 'Ú'=>'U', 'Û'=>'U', 'ù'=>'u', 'ú'=>'u', 'û'=>'u',
-      'Ç'=>'C', 'ç'=>'c'
-    );
+      'Ù'=>'U', 'Ú'=>'U',
+      'ù'=>'u', 'ú'=>'u',
+      'Ç'=>'C', 'ç'=>'c' );
     return strcmp(strtr($str1, $letras), strtr($str2, $letras));
   }
 
@@ -132,13 +133,14 @@
     {
       parent::__construct('sqlite:'.$dsn);
 
-      $this->sqliteCreateFunction('preg_match', 'preg_match', 2);
+      $this->sqliteCreateFunction('mb_ereg', 'mb_ereg', 2);
+      $this->sqliteCreateFunction('mb_eregi', 'mb_eregi', 2);
       $this->sqliteCreateFunction('toISOdate', 'toISOdate', 1);
       $this->sqliteCreateFunction('sondx', 'sondx', 2);
       $this->sqliteCreateFunction('sonat', 'sonat', 2);
       $this->sqliteCreateFunction('tolower', 'tolower', 1);
       $this->sqliteCreateFunction('toupper', 'toupper', 1);
-      $this->sqliteCreateCollation('pt_BR', 'compara');
+      $this->sqliteCreateCollation('portuguese', 'compara');
     }
 
     /**
@@ -286,20 +288,18 @@
       } else if (preg_match('/^(I|)(?:REGEXP?|MATCH(?:ES)?)\s+(.+)\s*$/i',
                             $needle, $matches)) {
 
-        // extrai opção "ignorecase" opcionalmente declarada
-        $ignorecase = strtolower($matches[1]);
-        $constraints[] =
-          $negate."preg_match('/{$matches[2]}/$ignorecase', $name)";
+        $constraints[] = $negate.'mb_ereg'.strtolower($matches[1])
+          ."(\"{$matches[2]}\", $name)";
 
       // checa uso de SONAT aka METAPHONE
       } else if (preg_match('/^SONAT\s+(.+)\s*$/i', $needle, $matches)) {
 
-        $constraints[] = $negate."sonat($name, '{$matches[1]}')";
+        $constraints[] = $negate."sonat($name, \"{$matches[1]}\")";
 
       // checa uso de SONDX aka SOUNDEX
       } else if (preg_match('/^SONDX\s+(.+)\s*$/i', $needle, $matches)) {
 
-        $constraints[] = $negate."sondx($name, '{$matches[1]}')";
+        $constraints[] = $negate."sondx($name, \"{$matches[1]}\")";
 
       // checa uso do operador IN
       } else if (preg_match('/^IN\s+\((.+)\)\s*$/i', $needle, $matches)) {
@@ -307,7 +307,7 @@
         $lista = '';
         foreach (preg_split('/,\s*/', $matches[1]) as $item) {
           if (strlen($lista) > 0) $lista .= ',';
-          $lista .= "'$item'";
+          $lista .= '"'.$item.'"';
         }
         $constraints[] = $negate."$name IN ($lista)";
 
