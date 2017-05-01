@@ -55,8 +55,8 @@
 
   echo '<div>', PHP_EOL;
   $sql = <<<EOT
-SELECT obra, books.titulo AS titulo, autores, posicao,
-  generos.nome AS genero, group_concat(exemplar, ", ") AS exemplares
+SELECT books.titulo AS titulo, autores, posicao, generos.nome AS genero,
+  group_concat(exemplar, ", ") AS exemplares
 FROM disponiveis_acervo JOIN (
     SELECT * FROM obras ORDER BY titulo COLLATE portuguese ASC
   ) AS books ON books.code == disponiveis_acervo.obra

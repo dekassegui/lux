@@ -571,6 +571,20 @@ window.addEventListener('load',
         }
       });
 
+    jQuery('label[for="data_emprestimo"]').addClass("alive").click(
+      function (ev) {
+        if ([updateBtn, delBtn, searchBtn, newBtn].some(Bt => Bt.classList.contains('working'))) return;
+        ev.preventDefault();
+        newBtn.click();
+      });
+
+    jQuery('label[for="data_devolucao"]').addClass("alive").click(
+      function () {
+        if ([updateBtn, delBtn, searchBtn, newBtn].some(Bt => Bt.classList.contains('working'))) return;
+        updateBtn.click();
+        fields[4].click();
+      });
+
     // preenche datalists cujos ids correspondem ao nome (sem extensão)
     // do script backend que atende a requisição dos seus dados
     (

@@ -46,3 +46,27 @@ body > header > * { /* evita seleção de texto ao clicar no canvas */
   -o-user-select: none;
   user-select: none;
 }
+
+.alive {
+  color: #609960;
+  text-shadow: 1px 1px #bbb;
+  cursor: pointer;
+}
+.alive:before {
+  font-family: FontAwesome, "Open Sans", sans-serif;
+  font-size: .77em;
+  padding-left: 5px;
+  padding-right: 10px;
+}
+.alive[for="data_devolucao"]:before {
+  content: "\f040";
+}
+.alive[for="data_emprestimo"]:before {
+  content: "\f067";
+}
+.alive:hover {
+  color: #0c0;
+}
+.alive:active {
+  color: #0f0;
+}
