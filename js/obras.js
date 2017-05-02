@@ -114,13 +114,12 @@ window.addEventListener('load',
     fields.forEach(
       function (input) {
         // incrementa a responsividade do input no evento 'keydown'
-        input.addEventListener('keydown',
+        jQuery(input).keydown(
           function (ev) {
             // rejeita o evento na exclusão de registros
             if (delBtn.classList.contains('working')) return;
             // testa se 'action buttons' estão habilitados
             if (actionButtons.every(item => item.disabled == false)) {
-              ev = ev || event;
               if (ev.keyCode == 13) {
                 // rejeita o evento se o input é associado a datalist
                 // e nao foi pressionado <Ctrl> simultaneamente
@@ -131,13 +130,12 @@ window.addEventListener('load',
                 ev.target.blur();  // remove o foco do input
               }
             }
-          }, true);
+          });
       });
 
-    counter.addEventListener('keydown',
+    jQuery(counter).keydown(
       function (ev) {
         if (numRecs > 0) {
-          ev = ev || event;
           // cancela o evento se a tecla pressionada não for digito entre
           // 0 e 9 (inclusive as do Numpad), Enter, Tab, Del, Backspace,
           // Left, Right, Home, End, Escape e Ctrl-Z
@@ -162,7 +160,7 @@ window.addEventListener('load',
         } else {
           print('> Erro: A tabela está vazia.');
         }
-      }, true);
+      });
 
     counter.addEventListener('blur',
       function () {
@@ -226,14 +224,14 @@ window.addEventListener('load',
     delBtn.addEventListener('click',
       function () {
         delBtn.classList.add('working');
-        saveBtn.value = OKchar + " Confirmar";
+        saveBtn.value = "\uF00C Confirmar";
         disableButtons();
       }, true);
 
     searchBtn.addEventListener('click',
       function () {
         searchBtn.classList.add('working');
-        saveBtn.value = OKchar + ' Executar';
+        saveBtn.value = '\uF00C Executar';
         disableButtons();
         setInputsValues();
         setInputsReadonly(false);
@@ -312,7 +310,7 @@ window.addEventListener('load',
                 commandButtons.forEach(function (b) { b.disabled = false; });
                 // desabilita os botões de ação
                 setDisabled(actionButtons, true);
-                saveBtn.value = OKchar + ' Salvar';
+                saveBtn.value = '\uF00C Salvar';
                 // "desfoca" algum input focado
                 let elm = document.activeElement;
                 if (elm.tagName == 'INPUT' && elm.type == 'text') elm.blur();
@@ -384,7 +382,7 @@ window.addEventListener('load',
                 delBtn.classList.remove('working');
                 newBtn.classList.add('working');
                 // modifica rotulo do botão
-                saveBtn.value = OKchar + ' Salvar';
+                saveBtn.value = '\uF00C Salvar';
                 // somente permite "salvar"
                 cancelBtn.disabled = true;
                 setInputsValues();
@@ -411,7 +409,7 @@ window.addEventListener('load',
           });
         setDisabled(actionButtons, true);   // desabilita 'action buttons'
         counter.disabled = false;           // habilita edição no input..
-        saveBtn.value = OKchar + ' Salvar'; // restaura o rotulo do botão
+        saveBtn.value = '\uF00C Salvar';    // restaura o rotulo do botão
         setInputsReadonly(true);            // desabilita os inputs dos..
       }, true);
 

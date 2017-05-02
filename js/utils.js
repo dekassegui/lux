@@ -73,5 +73,3 @@ function setDisabled(array, boolValue) {
 function leftPad(text, size) {
   return " ".repeat( Math.max(0, size-text.length) ) + text;
 }
-
-const OKchar = String.fromCodePoint(0xf00c);  // check mark

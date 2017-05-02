@@ -98,6 +98,40 @@ window.addEventListener('load',
 
     var actionButtons = [saveBtn, cancelBtn];
 
+    // montador/gestor de elementos do tipo LABEL adaptados como BUTTON
+    // para acionar a atualização e criação de registros de empréstimos
+    var FAKE_BUTTONS = (
+      function ($) {
+
+        function busy() {
+          var i=3;
+          while (i>=0 && !commandButtons[i].classList.contains("working")) --i;
+          return i>=0;
+        }
+
+        var b0 = $('label[for="data_emprestimo"]').addClass("alive").click(
+          function (ev) {
+            if (busy()) return;
+            ev.preventDefault();
+            newBtn.click();
+          });
+
+        var b1 = $('label[for="data_devolucao"]').addClass("alive").click(
+          function () {
+            if (busy()) return;
+            updateBtn.click();
+            fields[4].click();
+          });
+
+        this.enhance = function (bool) {
+          b0.toggleClass("alive", bool);
+          b1.toggleClass("alive", bool);
+        }
+
+        return this;
+      }
+    )(jQuery);
+
     var MURAL = new Mural();
 
     function print(text) { MURAL.append(text); }
@@ -169,13 +203,12 @@ window.addEventListener('load',
     fields.forEach(
       function (input) {
         // incrementa a responsividade do input no evento 'keydown'
-        input.addEventListener('keydown',
+        jQuery(input).keydown(
           function (ev) {
             // rejeita o evento na exclusão de registros
             if (delBtn.classList.contains('working')) return;
             // testa se 'action buttons' estão habilitados
             if (actionButtons.every(item => item.disabled == false)) {
-              ev = ev || event;
               if (ev.keyCode == 13) {
                 // rejeita o evento se o input é associado a datalist
                 // e nao foi pressionado <Ctrl> simultaneamente
@@ -186,13 +219,12 @@ window.addEventListener('load',
                 ev.target.blur();  // remove o foco do input
               }
             }
-          }, true);
+          });
       });
 
-    counter.addEventListener('keydown',
+    jQuery(counter).keydown(
       function (ev) {
         if (numRecs > 0) {
-          ev = ev || event;
           // cancela o evento se a tecla pressionada não for digito entre
           // 0 e 9 (inclusive as do Numpad), Enter, Tab, Del, Backspace,
           // Left, Right, Home, End, Escape e Ctrl-Z
@@ -217,7 +249,7 @@ window.addEventListener('load',
         } else {
           show('Erro: A tabela está vazia.');
         }
-      }, true);
+      });
 
     counter.addEventListener('blur',
       function () {
@@ -284,21 +316,23 @@ window.addEventListener('load',
               function (data) { dataList.empty().append(data); }
             );
           });
+        FAKE_BUTTONS.enhance(false);
         scrollTo(0);
       }, true);
 
     delBtn.addEventListener('click',
       function () {
         delBtn.classList.add('working');
-        saveBtn.value = OKchar + " Confirmar";
+        saveBtn.value = "\uF00C Confirmar";
         disableButtons();
+        FAKE_BUTTONS.enhance(false);
         scrollTo(0);
       }, true);
 
     searchBtn.addEventListener('click',
       function () {
         searchBtn.classList.add('working');
-        saveBtn.value = OKchar + ' Executar';
+        saveBtn.value = '\uF00C Executar';
         disableButtons();
         setInputsValues();
         setInputsReadonly(false);
@@ -314,6 +348,7 @@ window.addEventListener('load',
               function () { inputField.val(""); }
             );
           });
+        FAKE_BUTTONS.enhance(false);
         scrollTo(0);
         fields[2].value = 'NULL';
         fields[4].focus();  // focaliza no input#obra
@@ -337,6 +372,7 @@ window.addEventListener('load',
               function () { inputField.val(""); }
             );
           });
+        FAKE_BUTTONS.enhance(false);
         scrollTo(0);
         fields[0].focus();  // focaliza no input#bibliotecario
       }, true);
@@ -372,6 +408,7 @@ window.addEventListener('load',
                 });
               setDisabled(actionButtons, true);
               setInputsReadonly(true);
+              FAKE_BUTTONS.enhance(true);
               show('Inserção bem sucedida.<span>Informe a data limite para devolução.</span>');
             }
           };
@@ -382,7 +419,7 @@ window.addEventListener('load',
 
           funktion = function (data) {
             if (/^(?:Advertência|Warning)/.test(data)) {
-              show('Não há dados que satisfaçam a pesquisa.');
+              show("\u2639 Não há dados que satisfaçam a pesquisa.");
             } else {
               let r = data.split(/\r\n|\n|\r/g);
               // checa se resultado da pesquisa é registro único
@@ -401,10 +438,11 @@ window.addEventListener('load',
                 searchBtn.classList.remove('working');
                 commandButtons.forEach(function (b) { b.disabled = false; });
                 setDisabled(actionButtons, true);
-                saveBtn.value = OKchar + ' Salvar';
+                saveBtn.value = '\uF00C Salvar';
                 // "desfoca" algum input focado
                 let elm = document.activeElement;
                 if (elm.tagName == 'INPUT' && elm.type == 'text') elm.blur();
+                FAKE_BUTTONS.enhance(true);
               } else {
                 print('> Sucesso: Localizou ' + r.length + ' registros:');
                 // monta o array de labels dos campos dos registros
@@ -443,6 +481,7 @@ window.addEventListener('load',
               setDisabled(actionButtons, true);
               counter.disabled = false;
               setInputsReadonly(true);
+              FAKE_BUTTONS.enhance(true);
             }
           };
           par.push("?action=UPDATE&recnumber=", indexRec);
@@ -467,11 +506,12 @@ window.addEventListener('load',
                 delBtn.classList.remove('working');
                 newBtn.classList.add('working');
                 // modifica rotulo do botão
-                saveBtn.value = OKchar + ' Salvar';
+                saveBtn.value = '\uF00C Salvar';
                 // somente permite "salvar"
                 cancelBtn.disabled = true;
                 setInputsValues();
                 setInputsReadonly(false);
+                FAKE_BUTTONS.enhance(true);
                 /* TODO: foco inútil devido ao diálogo */
                 fields[0].focus();
               }
@@ -495,8 +535,9 @@ window.addEventListener('load',
           });
         setDisabled(actionButtons, true);   // desabilita 'action buttons'
         counter.disabled = false;           // habilita edição no input..
-        saveBtn.value = OKchar + ' Salvar'; // restaura o rotulo do botão
+        saveBtn.value = '\uF00C Salvar';    // restaura o rotulo do botão
         setInputsReadonly(true);            // desabilita edição dos inputs
+        FAKE_BUTTONS.enhance(true);
       }, true);
 
     jQuery(infoBtn).click(function () {
@@ -563,26 +604,12 @@ window.addEventListener('load',
                     fields[6].value = datalist.options.item(0).value;
                   } else {
                     show("Nenhum exemplar da obra<br>está disponível no momento.");
-                    fields[6].value = "😣 Não achei!";
+                    fields[6].value = "\u2639 Não achei!";
                   }
                 });
             }
           }
         }
-      });
-
-    jQuery('label[for="data_emprestimo"]').addClass("alive").click(
-      function (ev) {
-        if ([updateBtn, delBtn, searchBtn, newBtn].some(Bt => Bt.classList.contains('working'))) return;
-        ev.preventDefault();
-        newBtn.click();
-      });
-
-    jQuery('label[for="data_devolucao"]').addClass("alive").click(
-      function () {
-        if ([updateBtn, delBtn, searchBtn, newBtn].some(Bt => Bt.classList.contains('working'))) return;
-        updateBtn.click();
-        fields[4].click();
       });
 
     // preenche datalists cujos ids correspondem ao nome (sem extensão)

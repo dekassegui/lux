@@ -49,7 +49,7 @@ body > header > * { /* evita seleção de texto ao clicar no canvas */
 
 .alive {
   color: #609960;
-  text-shadow: 1px 1px #bbb;
+  text-shadow: 1px 1px #ddd;
   cursor: pointer;
 }
 .alive:before {
