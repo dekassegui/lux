@@ -414,17 +414,17 @@ window.addEventListener('load',
       }, true);
 
     {
-      // preenche datalists cujos ids correspondem ao nome (sem extensão)
-      // do script server side que atende a requisição dos seus dados
-      let set = $$("section > div#fields > datalist");
-      if (Array.isArray(set)) {
-        let aUri = uri.substring(0, uri.lastIndexOf("/")+1);
-        set.forEach(
-          function (datalist) {
+      // preenche DATALISTs cujos IDs correspondem ao nome (sem extensão)
+      // do script backend que atende a requisição dos seus dados
+      let listas = jQuery("#fields > datalist");
+      if (listas.length > 0) {
+        let URI = uri.substring(0, uri.lastIndexOf("/")+1);
+        listas.each(
+          function (index, dataList) {
             jQuery.get(
-              aUri + datalist.id + ".php?action=GETALL",
-              function (data) { jQuery(datalist).html(data); });
-            });
+              URI + dataList.id + ".php?action=GETALL",
+              function (options) { jQuery(dataList).html(options); });
+          });
       }
     }
 

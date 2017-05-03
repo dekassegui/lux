@@ -73,7 +73,7 @@ input[type="text"]:focus, input[type="tel"]:focus, input[type="email"]:focus, in
   border-color: #9E9;
   box-shadow: 0px 0px 2px #ccc;
 }
-input[list]:focus { border-color: #c9f; }
+input[list]:focus { border-color: #f9c; }
 input[type="text"][readonly]:focus { color: #966; }
 
 input#counter {

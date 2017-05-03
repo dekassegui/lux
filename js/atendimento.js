@@ -49,22 +49,22 @@ window.addEventListener('load',
 
     (
       function ($) {
-        var w = $(window);
-        var h = $("header");
-        var d = $("section > div:first-child");
-        var b = true; /* a priori: d.innerHeight() > 0 */
+        var $w = $(window);
+        var $h = $("header");
+        var $d = $("section > div:first-child");
+        var b = true; /* a priori: $d.innerHeight() > 0 */
 
-        h.click(function () {
+        $h.click(function () {
             // atualização do tooltip do header
             const a = ["ocultar", "restaurar"];
-            h.attr("title", "clique aqui para " + a[b=!b&1] + " o formulário")
+            $h.attr("title", "clique aqui para " + a[b=!b&1] + " o formulário")
               .children().css({color:(b?"#060":"#009")});
           }
         ).click( /* atualização inicial */ ).click(function () {
             // posiciona window no topo
-            w.scrollTo(0, 400 + (window.scrollY / 100 + 1) * 100);
+            $w.scrollTo(0, 400 + (window.scrollY / 100 + 1) * 100);
             // alterna a visualização do formulário
-            d.slideToggle("slow");
+            $d.slideToggle("slow");
           }
         );
       }
@@ -109,14 +109,14 @@ window.addEventListener('load',
           return i>=0;
         }
 
-        var b0 = $('label[for="data_emprestimo"]').addClass("alive").click(
+        var $b0 = $('label[for="data_emprestimo"]').addClass("alive").click(
           function (ev) {
             if (busy()) return;
             ev.preventDefault();
             newBtn.click();
           });
 
-        var b1 = $('label[for="data_devolucao"]').addClass("alive").click(
+        var $b1 = $('label[for="data_devolucao"]').addClass("alive").click(
           function () {
             if (busy()) return;
             updateBtn.click();
@@ -124,8 +124,8 @@ window.addEventListener('load',
           });
 
         this.enhance = function (bool) {
-          b0.toggleClass("alive", bool);
-          b1.toggleClass("alive", bool);
+          $b0.toggleClass("alive", bool);
+          $b1.toggleClass("alive", bool);
         }
 
         return this;
@@ -134,15 +134,17 @@ window.addEventListener('load',
 
     var MURAL = new Mural();
 
+    var $listas = [jQuery("#acervo_obras"), jQuery("#leitores")];
+
     function print(text) { MURAL.append(text); }
 
     function scrollTo(y) {
-      const win = jQuery(window);
+      const $win = jQuery(window);
       var d = window.scrollY;
       if (y === undefined) {
         d = y = $$("textarea").offsetTop - $$("header").offsetHeight - 5;
       }
-      win.scrollTo(y, 400 + (d / 100 + 1) * 100, {easing:"swing"});
+      $win.scrollTo(y, 400 + (d / 100 + 1) * 100, {easing:"swing"});
     }
 
     function disableButtons() {
@@ -175,7 +177,7 @@ window.addEventListener('load',
 
     function setInputsReadonly(boolValue) {
       // declara os valores do atributo readonly dos inputs de campos..
-      (boolValue || searchBtn.classList.contains('working') ?
+      (boolValue || searchBtn.classList.contains("working") ?
         [0, 1, 2, 3, 4, 5, 6, 7, 8] : [0, 1, 2, 3, 4, 6]).forEach(
           function (index) { fields[index].readOnly = boolValue; });
     }
@@ -206,7 +208,7 @@ window.addEventListener('load',
         jQuery(input).keydown(
           function (ev) {
             // rejeita o evento na exclusão de registros
-            if (delBtn.classList.contains('working')) return;
+            if (delBtn.classList.contains("working")) return;
             // testa se 'action buttons' estão habilitados
             if (actionButtons.every(item => item.disabled == false)) {
               if (ev.keyCode == 13) {
@@ -275,13 +277,13 @@ window.addEventListener('load',
         elm.addEventListener('focus', function () { this.blur(); }, true);
       });
 
-    firstBtn.addEventListener('click',
+    firstBtn.addEventListener("click",
       function () {
         indexRec = 1;
         update();
       }, true);
 
-    previousBtn.addEventListener('click',
+    previousBtn.addEventListener("click",
       function () {
         if (indexRec-1 > 0) { // evita o "bug do botão pressionado", cuja
           --indexRec;         // habilitação sai de sincronia com o índice
@@ -289,7 +291,7 @@ window.addEventListener('load',
         }                     // servidor e do DB para atender requisições
       }, true);
 
-    nextBtn.addEventListener('click',
+    nextBtn.addEventListener("click",
       function () {
         if (indexRec+1 <= numRecs) {
           ++indexRec;
@@ -297,87 +299,97 @@ window.addEventListener('load',
         }
       }, true);
 
-    lastBtn.addEventListener('click',
+    lastBtn.addEventListener("click",
       function () {
         indexRec = numRecs;
         update();
       }, true);
 
-    updateBtn.addEventListener('click',
+    updateBtn.addEventListener("click",
       function () {
-        updateBtn.classList.add('working');
+        updateBtn.classList.add("working");
         disableButtons();
         setInputsReadonly(false);
-        ["acervo_obras", "leitores"].forEach(
-          function (iD) {
-            var dataList = jQuery("datalist#" + iD);
+        $listas.forEach(
+          function ($dataList, index) {
             jQuery.get(
-              aUri + iD + ".php?action=GETALL",
-              function (data) { dataList.empty().append(data); }
+              aUri + $dataList[0].id + ".php?action=GETALL",
+              function (data) { $dataList.empty().append(data); }
+            ).done(
+              function () {
+                if (index == 1) {
+                  FAKE_BUTTONS.enhance(false);
+                  scrollTo(0);
+                }
+              }
             );
           });
-        FAKE_BUTTONS.enhance(false);
-        scrollTo(0);
       }, true);
 
-    delBtn.addEventListener('click',
+    delBtn.addEventListener("click",
       function () {
-        delBtn.classList.add('working');
+        delBtn.classList.add("working");
         saveBtn.value = "\uF00C Confirmar";
         disableButtons();
         FAKE_BUTTONS.enhance(false);
         scrollTo(0);
       }, true);
 
-    searchBtn.addEventListener('click',
+    searchBtn.addEventListener("click",
       function () {
-        searchBtn.classList.add('working');
-        saveBtn.value = '\uF00C Executar';
+        searchBtn.classList.add("working");
+        saveBtn.value = "\uF00C Executar";
         disableButtons();
         setInputsValues();
         setInputsReadonly(false);
-        ["acervo_obras", "leitores"].forEach(
-          function (iD) {
-            var dataList = jQuery("datalist#" + iD);
-            var inputField = dataList.prev();
-            inputField.val("ATUALIZANDO LISTA!");
+        $listas.forEach(
+          function ($dataList, index) {
+            var $inputField = $dataList.prev();
+            $inputField.val("ATUALIZANDO LISTA!");
             jQuery.get(
-              aUri + iD + ".php?action=PESQUISA",
-              function (data) { dataList.empty().append(data); }
+              aUri + $dataList[0].id + ".php?action=PESQUISA",
+              function (data) { $dataList.empty().append(data); }
             ).done(
-              function () { inputField.val(""); }
+              function () {
+                $inputField.val("");
+                if (index == 1) {
+                  FAKE_BUTTONS.enhance(false);
+                  scrollTo(0);
+                  fields[2].value = "NULL";
+                  fields[4].focus();        // focaliza no input#obra
+                }
+              }
             );
           });
-        FAKE_BUTTONS.enhance(false);
-        scrollTo(0);
-        fields[2].value = 'NULL';
-        fields[4].focus();  // focaliza no input#obra
       }, true);
 
-    newBtn.addEventListener('click',
+    newBtn.addEventListener("click",
       function () {
-        newBtn.classList.add('working');
+        newBtn.classList.add("working");
         disableButtons();
         setInputsValues();
         setInputsReadonly(false);
-        ["acervo_obras", "leitores"].forEach(
-          function (iD) {
-            var dataList = jQuery("datalist#" + iD);
-            var inputField = dataList.prev();
-            inputField.val("ATUALIZANDO LISTA!");
+        $listas.forEach(
+          function ($dataList, index) {
+            var $inputField = $dataList.prev();
+            $inputField.val("ATUALIZANDO LISTA!");
             jQuery.get(
-              aUri + iD + ".php?action=GETALL",
-              function (data) { dataList.empty().append(data); }
+              aUri + $dataList[0].id + ".php?action=GETALL",
+              function (data) { $dataList.empty().append(data); }
             ).done(
-              function () { inputField.val(""); }
+              function () {
+                $inputField.val("");
+                if (index == 1) {
+                  FAKE_BUTTONS.enhance(false);
+                  scrollTo(0);
+                  fields[0].focus();  // focaliza no input#bibliotecario
+                }
+              }
             );
           });
-        FAKE_BUTTONS.enhance(false);
-        scrollTo(0);
-        fields[0].focus();  // focaliza no input#bibliotecario
       }, true);
 
-    saveBtn.addEventListener('click',
+    saveBtn.addEventListener("click",
       function () {
         var funktion, par = [uri];
 
@@ -388,7 +400,7 @@ window.addEventListener('load',
             });
         }
 
-        if (newBtn.classList.contains('working')) {
+        if (newBtn.classList.contains("working")) {
 
           funktion = function (data) {
             if (data.startsWith('Error')) {
@@ -404,7 +416,7 @@ window.addEventListener('load',
               commandButtons.forEach(
                 function (el) {
                   el.disabled = false;
-                  el.classList.remove('working');
+                  el.classList.remove("working");
                 });
               setDisabled(actionButtons, true);
               setInputsReadonly(true);
@@ -415,7 +427,7 @@ window.addEventListener('load',
           par.push('?action=INSERT');
           addDataFields();
 
-        } else if (searchBtn.classList.contains('working')) {
+        } else if (searchBtn.classList.contains("working")) {
 
           funktion = function (data) {
             if (/^(?:Advertência|Warning)/.test(data)) {
@@ -435,7 +447,7 @@ window.addEventListener('load',
                 setInputsValues(r);
                 setInputsReadonly(true);
                 // restaura status dos botões
-                searchBtn.classList.remove('working');
+                searchBtn.classList.remove("working");
                 commandButtons.forEach(function (b) { b.disabled = false; });
                 setDisabled(actionButtons, true);
                 saveBtn.value = '\uF00C Salvar';
@@ -463,7 +475,7 @@ window.addEventListener('load',
           par.push('?action=SEARCH');
           addDataFields();
 
-        } else if (updateBtn.classList.contains('working')) {
+        } else if (updateBtn.classList.contains("working")) {
 
           funktion = function (data) {
             if (data.startsWith('Error')) {
@@ -476,7 +488,7 @@ window.addEventListener('load',
               commandButtons.forEach(
                 function (elm) {
                   elm.disabled = false;
-                  elm.classList.remove('working');
+                  elm.classList.remove("working");
                 });
               setDisabled(actionButtons, true);
               counter.disabled = false;
@@ -487,7 +499,7 @@ window.addEventListener('load',
           par.push("?action=UPDATE&recnumber=", indexRec);
           addDataFields();
 
-        } else if (delBtn.classList.contains('working')) {
+        } else if (delBtn.classList.contains("working")) {
 
           funktion = function (data) {
             if (data.startsWith('Error')) {
@@ -503,17 +515,14 @@ window.addEventListener('load',
               } else {
                 // alterna de "excluir" para "novo"
                 counter.value = 0;
-                delBtn.classList.remove('working');
-                newBtn.classList.add('working');
+                delBtn.classList.remove("working");
+                newBtn.classList.add("working");
                 // modifica rotulo do botão
                 saveBtn.value = '\uF00C Salvar';
                 // somente permite "salvar"
                 cancelBtn.disabled = true;
                 setInputsValues();
                 setInputsReadonly(false);
-                FAKE_BUTTONS.enhance(true);
-                /* TODO: foco inútil devido ao diálogo */
-                fields[0].focus();
               }
             }
           };
@@ -525,13 +534,13 @@ window.addEventListener('load',
 
       }, true);
 
-    cancelBtn.addEventListener('click',
+    cancelBtn.addEventListener("click",
       function () {
         update();
         commandButtons.forEach(
           function (elm) {
             elm.disabled = false;             // habilita o botão
-            elm.classList.remove('working');  // remove classe 'working'
+            elm.classList.remove("working");  // remove classe "working"
           });
         setDisabled(actionButtons, true);   // desabilita 'action buttons'
         counter.disabled = false;           // habilita edição no input..
@@ -569,7 +578,7 @@ window.addEventListener('load',
     // registros de empréstimo
     jQuery(fields[4]).bind('input',
       function () {
-        if ([newBtn, updateBtn].some(Bt => Bt.classList.contains('working'))) {
+        if ([newBtn, updateBtn].some(Bt => Bt.classList.contains("working"))) {
           // esvazia os valores dos inputs 'exemplar', 'autor' e 'posicao'
           for (var i=5; i<8; ++i) fields[i].value = '';
           // checa se o valor do input 'obra' não está vazio
@@ -618,10 +627,10 @@ window.addEventListener('load',
       function () {
         ["bibliotecarios", "acervo_exemplares"].forEach(
           function (iD) {
-            var dataList = jQuery("datalist#" + iD);
+            var $dataList = jQuery("datalist#" + iD);
             jQuery.get(
               aUri + iD + ".php?action=GETALL",
-              function (data) { dataList.html(data); });
+              function (data) { $dataList.html(data); });
           });
       }
     )();
@@ -662,7 +671,7 @@ window.addEventListener('load',
         commandButtons.forEach(
           function (btn) {
             btn.disabled = false;            // habilita o botão
-            btn.classList.remove('working'); // remove classe 'working'
+            btn.classList.remove("working"); // remove classe "working"
           });
 
         setDisabled(actionButtons, true); // desabilita os 'action buttons'
