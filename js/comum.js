@@ -2,11 +2,11 @@
  * Este script é parte do projeto LUX.
 */
 
-function Mural(iD) {
+function Mural(iD) { // ÁREA DE NOTIFICAÇÕES AO USUÁRIO
 
-  var mural = $(iD || 'mural');  // área de notificações ao usuário
+  var mural = document.getElementById(iD || "mural");
 
-  var lineHeight = parseInt(getCSSproperty(mural, 'line-height'));
+  var lineHeight = parseInt(jQuery(mural).css("line-height"));
 
   mural.oninput = function () {
     if (mural.textLength == 0) {
@@ -27,7 +27,7 @@ function Mural(iD) {
       var a = mural.clientHeight,   // altura do canvas
           b = mural.scrollHeight;   // altura do conteúdo a priori
       if (mural.textLength > 0) {
-        mural.value = [mural.value, text].join("\n");
+        mural.value += "\n" + text;
       } else {
         mural.value = text;
         mural.oninput();
@@ -50,7 +50,7 @@ function Mural(iD) {
     mural.oninput();
   };
 
-  // posiciona "cleaner" no topo do "mural" :: vide CSS
+  // posiciona botão à direita no topo :: vide CSS
   function posiciona() {
     cleaner.style.top = "-" + (mural.clientHeight + 6) + "px";
     cleaner.style.left = (mural.clientWidth - cleaner.offsetWidth - 16) + "px";

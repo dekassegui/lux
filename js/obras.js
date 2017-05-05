@@ -4,30 +4,23 @@
 */
 
 /**
- * Listener que ativa comandos para controle "full time" de dimensões
- * de elementos do documento que serve de interface entre o usuário e a
- * aplicação para gestão de tabelas persistentes do projeto LUX, em
- * complemento às suas declarações CSS.
-*/
-window.onresize = function () {
-  // estabelece dinamicamente a largura do elemento 'aside'
-  // em função da largura da janela (aka document.body)
-  var w = parseInt(document.body.clientWidth);
-  var x = (w < 1000) ? w-20 : w-parseInt($$('section').clientWidth)-30;
-  $$('aside').style.width = x + 'px';
-}
-
-/**
  * Listener que ativa comandos para controle "full time" do aplicativo
  * para gestão de tabelas persistentes do projeto LUX, até o fim do seu
  * "life cycle", indiferente a recargas do documento interface.
 */
-window.addEventListener('load',
+window.addEventListener("load",
   function () {
 
     $.noConflict();
 
-    window.onresize();  // ajuste inicial da largura do elemento 'aside'
+    // ajuste dinâmico da largura do elemento ASIDE container do TEXTAREA
+    jQuery(window).resize(
+      function () {
+        var w = jQuery(document.body).innerWidth();
+        w -= (w < 1000) ? 20 : jQuery("section").innerWidth()+30;
+        jQuery("aside").css("width", w);
+      }
+    ).resize( /* ajuste inicial */ );
 
     // URI do script "server side" que atende requisições ao DB
     var uri = location.href.replace("html", "php");
@@ -38,7 +31,7 @@ window.addEventListener('load',
     var numRecs,                  // quantidade de registros da tabela
         amount  = $('amount');    // input da quantidade de..
 
-    var fields = $$('section > div#fields > input');
+    var fields = jQuery("#fields > input");
 
     // número de ordem do input a focar quando iniciar atualização ou pesquisa
     var FOCUS_NDX = (fields[0].id == "code") ? 1 : 0;
@@ -78,9 +71,9 @@ window.addEventListener('load',
     function setInputsValues(array) {
       // preenche os inputs com componentes do argumento do tipo Array
       // ou com strings vazias se o argumento for indeterminado
-      fields.forEach(
-        (array === undefined) ? function (input) { input.value = ''; }
-          : function (input, index) {
+      fields.each(
+        (array === undefined) ? function (index, input) { input.value = ''; }
+          : function (index, input) {
               input.value = (array[index] == 'NULL') ? '' : array[index];
             }
       );
@@ -88,7 +81,7 @@ window.addEventListener('load',
 
     function setInputsReadonly(boolValue) {
       // declara os valores do atributo readonly dos inputs de campos..
-      fields.forEach(function (input) { input.readOnly = boolValue; });
+      fields.each(function (index, input) { input.readOnly = boolValue; });
     }
 
     function update() {
@@ -97,11 +90,11 @@ window.addEventListener('load',
       if (indexRec > 0) {
         jQuery.get(
           uri + "?action=GETREC&recnumber=" + indexRec,
-          function (data) {
+          function (texto) {
             // atualiza o input do índice do registro corrente
             counter.value = indexRec;
             // atualiza os inputs dos campos do registro corrente
-            setInputsValues(data.split('|'));
+            setInputsValues(texto.split('|'));
             // habilita/desabilita botões de navegação
             setDisabled([firstBtn, previousBtn], indexRec <= 1);
             setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
@@ -111,8 +104,8 @@ window.addEventListener('load',
       }
     }
 
-    fields.forEach(
-      function (input) {
+    fields.each(
+      function (index, input) {
         // incrementa a responsividade do input no evento 'keydown'
         jQuery(input).keydown(
           function (ev) {
@@ -252,20 +245,20 @@ window.addEventListener('load',
         var funktion, par = [uri];
 
         function addDataFields() {
-          fields.forEach(
-            function (input) {
+          fields.each(
+            function (index, input) {
               par.push('&', input.id, '=', encodeURIComponent(input.value));
             });
         }
 
         if (newBtn.classList.contains('working')) {
 
-          funktion = function(data) {
-            if (data.startsWith('Error')) {
-              print(['> Inserção mal sucedida.', data]);
+          funktion = function(texto) {
+            if (texto.startsWith('Error')) {
+              print(['> Inserção mal sucedida.', texto]);
             } else {
               amount.value = ++numRecs;
-              indexRec = parseInt(data);
+              indexRec = parseInt(texto);
               update();
               counter.maxLength = amount.value.length;
               counter.disabled = false;
@@ -284,12 +277,12 @@ window.addEventListener('load',
 
         } else if (searchBtn.classList.contains('working')) {
 
-          funktion = function(data) {
-            if (/^(?:Advertência|Warning)/.test(data)) {
+          funktion = function(texto) {
+            if (/^(?:Advertência|Warning)/.test(texto)) {
               show('Não há dados que satisfaçam a pesquisa.');
-              // FOR DEBUG PURPOSE: print('SQL: ' + data);
+              // FOR DEBUG PURPOSE: print('SQL: ' + texto);
             } else {
-              let r = data.split(/\r\n|\n|\r/g);
+              let r = texto.split(/\r\n|\n|\r/g);
               // checa se o resultado da pesquisa é único registro
               if (r.length == 1) {
                 // monta o array dos valores dos campos
@@ -336,10 +329,10 @@ window.addEventListener('load',
                   function (s) { return leftPad(s, m) + ': '; });
                 // monta a lista de registros pesquisados
                 text = '';
-                for (var fields, k=labels.length, j, i=0; i<r.length; ++i) {
-                  fields = r[i].split('|');
+                for (var values, k=labels.length, j, i=0; i<r.length; ++i) {
+                  values = r[i].split('|');
                   text += '\n';
-                  for (j=0; j<k; ++j) text += labels[j] + fields[j] + '\n';
+                  for (j=0; j<k; ++j) text += labels[j] + values[j] + '\n';
                 }
                 print(text);
               }
@@ -350,11 +343,11 @@ window.addEventListener('load',
 
         } else if (updateBtn.classList.contains('working')) {
 
-          funktion = function(data) {
-            if (data.startsWith('Error')) {
-              print(['> Atualização mal sucedida.', data]);
+          funktion = function(texto) {
+            if (texto.startsWith('Error')) {
+              print(['> Atualização mal sucedida.', texto]);
             } else {
-              var n = parseInt(data);
+              var n = parseInt(texto);
               if (n != indexRec) indexRec = n;
               print('> Atualização bem sucedida.');
               cancelBtn.click();
@@ -365,9 +358,9 @@ window.addEventListener('load',
 
         } else if (delBtn.classList.contains('working')) {
 
-          funktion = function(data) {
-            if (data.startsWith('Error')) {
-              print(['> Exclusão mal sucedida.', data]);
+          funktion = function(texto) {
+            if (texto.startsWith('Error')) {
+              print(['> Exclusão mal sucedida.', texto]);
               cancelBtn.click();
             } else {
               amount.value = --numRecs;
@@ -447,9 +440,9 @@ window.addEventListener('load',
         // restaura os valores dos inputs consultando o DB por segurança
         jQuery.get(
           uri + "?action=GETREC&recnumber=" + indexRec,
-          function (data) {
+          function (texto) {
             // atualiza os valores do registro corrente
-            setInputsValues(data.split('|'));
+            setInputsValues(texto.split('|'));
           });
 
         // habilita edição e declara a quantidade máxima de
@@ -475,11 +468,11 @@ window.addEventListener('load',
 
       jQuery.get(
         uri + "?action=COUNT",
-        function (data) {
+        function (texto) {
           // declara a quantidade inicial de registros da tabela
-          numRecs = parseInt(amount.value = data);
+          numRecs = parseInt(amount.value = texto);
           // declara a quantidade máxima de caracteres do input
-          counter.maxLength = data.length;
+          counter.maxLength = texto.length;
           // ação inicial conforme quantidade de registros da tabela
           if (numRecs > 0) {
             firstBtn.click();   // mostra o primeiro registro
@@ -490,5 +483,4 @@ window.addEventListener('load',
 
     }
 
-  },
-  true);
+  }, true);

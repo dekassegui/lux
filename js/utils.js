@@ -4,28 +4,28 @@
 
 function $(id) { return document.getElementById(id); }
 
-function $$(selector) {
+/* function $$(selector) {
   // pesquisa elementos conforme 'CSS selector' então
   // transforma o container do tipo NodeList em Array
   var array = Array.prototype.slice.call(
                 document.querySelectorAll(selector));
   // retorna único elemento ou array de elementos
   return (array.length == 1) ? array[0] : array;
-}
+} */
 
-function removeChildNodes(node) {
+/* function removeChildNodes(node) {
   while (node.firstChild) {
     removeChildNodes(node.firstChild);
     node.removeChild(node.firstChild);
   }
-}
+} */
 
-function getCSSproperty(elm, property) {
+/* function getCSSproperty(elm, property) {
   return elm.style[property]
           || window.getComputedStyle(elm, null).getPropertyValue(property);
-}
+} */
 
-function once(fn, context) {
+/* function once(fn, context) {
   var result;
   return function() {
     if (fn) {
@@ -34,13 +34,13 @@ function once(fn, context) {
     }
     return result;
   };
-}
+} */
 
-function uCase(charCode) {
+/* function uCase(charCode) {
   return ((charCode-97 >>> 0 <= 25) || (charCode-224 >>> 0 <= 31)) ? charCode-32 : charCode;
-}
+} */
 
-function asciiVowel(charCode) {
+/* function asciiVowel(charCode) {
   var code = uCase(charCode);
   if (code-192 >>> 0 <= 5) return 65; // A
   if (code-200 >>> 0 <= 3) return 69; // E
@@ -48,7 +48,7 @@ function asciiVowel(charCode) {
   if (code-210 >>> 0 <= 4) return 79; // O
   if (code-217 >>> 0 <= 3) return 85; // U
   return charCode;
-}
+} */
 
 function binarySearch(array, key) {
   var lo = 0, hi = array.length - 1, mid, element;

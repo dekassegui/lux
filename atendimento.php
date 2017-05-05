@@ -181,7 +181,6 @@ EOT;
       $constraints = buildConstraints(
         array('data_emprestimo', 'data_devolucao', 'bibliotecario', 'leitor',
           'obra', 'autor', 'exemplar', 'posicao', 'comentario'));
-      $text = '';
       // requisita a pesquisa se a montagem foi bem sucedida
       if (count($constraints) > 0) {
         $restricoes = join(' AND ', $constraints);
@@ -192,22 +191,21 @@ EOT;
   FROM emprestimos_facil
   WHERE $restricoes ORDER BY rowid;
 EOT;
-        // for debug purpose --> $text = $sql."\n";
+        // for debug purpose --> echo $sql, "\n";
         // consulta o DB
         $result = $db->query($sql);
         // montagem da lista de resultados
         if ($result !== FALSE AND $row = $result->fetch(PDO::FETCH_NUM)) {
-          $text .= join('|', $row);
+          echo join('|', $row);
           while ($row = $result->fetch(PDO::FETCH_NUM)) {
-            $text .= PHP_EOL.join('|', $row);
+            echo PHP_EOL, join('|', $row);
           }
         } else {
-          $text = 'Advertência: Não há dados que satisfaçam a requisição:'.PHP_EOL.$sql;
+          echo 'Advertência: Não há dados que satisfaçam a requisição:', PHP_EOL, $sql;
         }
       } else {
-        $text = 'Advertência: Parâmetros insuficientes para montagem das restrições de pesquisa.';
+        echo 'Advertência: Parâmetros insuficientes para montagem das restrições de pesquisa.';
       }
-      echo $text;
       break;
   }
 
