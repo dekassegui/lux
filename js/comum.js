@@ -78,3 +78,23 @@ function show(text) {
       allowEscapeKey: true,
     });
 }
+
+function binarySearch(array, key) {
+  var lo = 0, hi = array.length - 1, mid, element;
+  while (lo <= hi) {
+    mid = ((lo + hi) >> 1);
+    element = array[mid];
+    if (element < key) {
+      lo = mid + 1;
+    } else if (element > key) {
+      hi = mid - 1;
+    } else {
+      return mid;
+    }
+  }
+  return -1;
+}
+
+function setDisabled(array, bool) {
+  array.forEach(function (item) { item[0].disabled = bool; });
+}

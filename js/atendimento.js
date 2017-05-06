@@ -5,25 +5,10 @@
 $(document).ready(
   function () {
 
-    function binarySearch(array, key) {
-      var lo = 0, hi = array.length - 1, mid, element;
-      while (lo <= hi) {
-        mid = ((lo + hi) >> 1);
-        element = array[mid];
-        if (element < key) {
-          lo = mid + 1;
-        } else if (element > key) {
-          hi = mid - 1;
-        } else {
-          return mid;
-        }
-      }
-      return -1;
-    }
+    // URI do script backend que atende requisições ao DB
+    const uri = location.href.replace("html", "php");
 
-    function setDisabled(array, bool) {
-      array.forEach(function (item) { item[0].disabled = bool; });
-    }
+    const aUri = uri.substring(0, uri.lastIndexOf("/")+1);
 
     ["#data_emprestimo", "#data_devolucao"].forEach(
       function (expression) {
@@ -96,11 +81,6 @@ $(document).ready(
         return this;
       }
     )();
-
-    // URI do script backend que atende requisições ao DB
-    const uri = location.href.replace("html", "php");
-
-    const aUri = uri.substring(0, uri.lastIndexOf("/")+1);
 
     var indexRec,                 // índice do registro corrente
         counter = $("#counter");  // input do índice do..
@@ -223,9 +203,9 @@ $(document).ready(
       }
     }
 
+    // incrementa a responsividade dos INPUTs no evento "keydown"
     fields.forEach(
       function (input) {
-        // incrementa a responsividade do input no evento "keydown"
         input.keydown(
           function (ev) {
             // rejeita o evento na exclusão de registros
@@ -595,7 +575,7 @@ $(document).ready(
     // declara o listener de evento "input" no INPUT "obra" para atualizar
     // as opções do DATALIST de "exemplares", "autor&espirito" e "posição"
     // conforme "título da obra" selecionado na atualização ou criação de
-    // registros de empréstimo
+    // novo registro de empréstimo
     fields[4].bind("input",
       function () {
         if ([newBtn, updateBtn].some(Bt => Bt.hasClass("working"))) {
@@ -604,11 +584,21 @@ $(document).ready(
           // checa se o valor do INPUT "obra" não está vazio
           if (fields[4].val()) {
             var code;
-            // percorre as OPTIONS do DATALIST associado ao INPUT "obra"
-            // para obter o "code" correspondente ao título selecionado
-            for (var t=fields[4].val(), c=DATALIST_OBRAS[0].options, j=0;
-                 !code && j<c.length; ++j) {
-              if (c.item(j).value == t) code = c.item(j).getAttribute("code");
+            // pesquisa via busca binária da OPTION selecionada no DATALIST
+            // associado ao INPUT de obras, para extrair o valor do atributo
+            // "code" correspondente se a pesquisa foi bem sucedida
+            for (var collection = DATALIST_OBRAS.get(0).options, element,
+              key = fields[4].val(), lo = 0, hi = collection.length - 1, mid;
+              !code && lo <= hi;) {
+              mid = ((lo + hi) >> 1);
+              element = collection.item(mid);
+              if (element.value < key) {
+                lo = mid + 1;
+              } else if (element.value > key) {
+                hi = mid - 1;
+              } else {
+                code = element.getAttribute("code");
+              }
             }
             if (code) {
               $.get(
@@ -649,7 +639,7 @@ $(document).ready(
       }
     )();
 
-    // testa se valores de ambos inputs mostradores de status da tabela não
+    // testa se valores de ambos INPUTs mostradores de status da tabela não
     // são string vazia, evidenciando que o documento foi atualizado durante
     // pesquisa, atualização, exclusão ou inserção de novo registro
     if (counter[0].value.length > 0 && amount[0].value.length > 0) {
