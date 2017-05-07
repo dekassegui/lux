@@ -2,21 +2,33 @@
  * Este script é parte do projeto LUX.
 */
 
-function Mural(iD) { // ÁREA DE NOTIFICAÇÕES AO USUÁRIO
+/**
+ * Gestor de TEXTAREA que agrega BUTTON para esvaziar o conteúdo.
+ *
+ * @param expression String de pesquisa do elemento, ou o próprio, do tipo
+ *          TEXTAREA, com valor default "textarea".
+*/
+function Mural(expression) {
 
-  var mural = document.getElementById(iD || "mural");
+  var mural = $(expression || "textarea");
 
-  var lineHeight = parseInt(jQuery(mural).css("line-height"));
+  mural.parent().append('<button id="cleaner">Esvaziar</button>');
 
-  mural.oninput = function () {
-    if (mural.textLength == 0) {
-      mural.classList.add("empty");
-      cleaner.disabled = true;
-    } else {
-      mural.classList.remove("empty");
-      cleaner.disabled = false;
-    }
-  };
+  var cleaner = $("#cleaner").click(
+    function () {
+      mural.val("").trigger("input");
+    });
+
+  this.isEmpty = function() { return mural[0].textLength == 0; };
+
+  var self = this;
+
+  mural.bind("input",
+    function () {
+      mural.toggleClass("empty", cleaner[0].disabled = self.isEmpty());
+    });
+
+  var lineHeight = parseInt(mural.css("line-height"));
 
   // agrega 'text' como apêndice do conteúdo da textarea cujo canvas
   // escorre até que 'text' seja visível tão ao topo quanto possível
@@ -24,48 +36,31 @@ function Mural(iD) { // ÁREA DE NOTIFICAÇÕES AO USUÁRIO
     if (text.map) {
       text.map(this.append);
     } else {
-      var a = mural.clientHeight,   // altura do canvas
-          b = mural.scrollHeight;   // altura do conteúdo a priori
-      if (mural.textLength > 0) {
-        mural.value += "\n" + text;
+      var a = mural[0].clientHeight,   // altura do canvas
+          b = mural[0].scrollHeight;   // altura do conteúdo a priori
+      if (mural[0].textLength > 0) {
+        mural[0].value += "\n" + text;
       } else {
-        mural.value = text;
-        mural.oninput();
+        mural.val(text).trigger("input");
       }
       if (b > a) {
-        mural.scrollTop = b - lineHeight;
+        mural[0].scrollTop = b - lineHeight;
       }
     }
   };
 
-  this.isEmpty = function() { return mural.textLength == 0; };
-
-  // adiciona botão para esvaziar o mural quando clicado
-  var cleaner = document.createElement("BUTTON");
-  cleaner.id = "cleaner";
-  cleaner.textContent = "Esvaziar";
-  mural.parentElement.appendChild(cleaner);
-  cleaner.onclick = function () {
-    mural.value = "";
-    mural.oninput();
-  };
-
-  // posiciona botão à direita no topo :: vide CSS
-  function posiciona() {
-    cleaner.style.top = "-" + (mural.clientHeight + 6) + "px";
-    cleaner.style.left = (mural.clientWidth - cleaner.offsetWidth - 16) + "px";
-  }
-
-  window.addEventListener("resize", posiciona, true);
-
-  posiciona();  // posicionamento inicial do button
+  // posiciona #cleaner à direita no topo :: vide CSS
+  $(window).resize(
+    function () {
+      cleaner.css("top", "-" + (mural.outerHeight() + 4) + "px")
+        .css("left", (mural.outerWidth() - cleaner.outerWidth() - 18) + "px");
+    }).resize( /* posicionamento inicial */ );
 
   // inicia o mural com saudação em função da hora local
-  mural.value = ["> Boa noite!", "> Bom dia!", "> Boa tarde!"]
+  mural[0].value = ["> Boa noite!", "> Bom dia!", "> Boa tarde!"]
     [Math.floor(new Date().getHours() / 6) % 3];
 
   return this;
-
 }
 
 function show(text) {
@@ -96,5 +91,5 @@ function binarySearch(array, key) {
 }
 
 function setDisabled(array, bool) {
-  array.forEach(function (item) { item[0].disabled = bool; });
+  array.forEach(function ($item) { $item[0].disabled = bool; });
 }

@@ -23,9 +23,9 @@ $(document).ready(
     var numRecs,                   // quantidade de registros da tabela
         amount  = $("#amount");    // input da quantidade de..
 
-    var fields = $.map($("#fields > input"), function(x){return $(x);});
+    var fields = $("#fields > input").toArray().map($);
 
-    // número de ordem do input focado quando iniciar atualização ou pesquisa
+    // número de ordem do INPUT focado ao iniciar atualização ou pesquisa
     var FOCUS_NDX = (fields[0].attr("id") == "code") ? 1 : 0;
 
     var firstBtn  = $("#firstBtn"),  previousBtn = $("#previousBtn"),
@@ -94,9 +94,9 @@ $(document).ready(
       }
     }
 
+    // incrementa a responsividade ao digitar nos INPUTs do registro
     fields.forEach(
       function (input) {
-        // incrementa a responsividade do input no evento "keydown"
         input.keydown(
           function (ev) {
             // rejeita o evento na exclusão de registros
@@ -116,6 +116,7 @@ $(document).ready(
           });
       });
 
+    // incrementa a responsividade ao digitar no INPUT #counter
     counter.keydown(
       function (ev) {
         if (numRecs > 0) {
@@ -145,25 +146,27 @@ $(document).ready(
         }
       });
 
+    // incrementa a responsividade na perda de foco do INPUT #counter
     counter.blur(
       function () {
         var valor = parseInt(counter[0].value); // aborta edição pendente do
         if (0 < valor && valor <= numRecs) {    // input do índice do registro
           indexRec = valor;                     // corrente, atualizando-o
         } else {
-          var text = "Erro: Número de registro é ilegal.";
+          var text = "Erro: Número de registro é ilegal.<br><span>";
           if (0 < indexRec && indexRec <= numRecs) {
-            text += "<br><span>Restaurando valor do índice do registro corrente.</span>";
+            text += "Restaurando";
           } else {
-            text += "<br><span>Reiniciando valor do índice do registro corrente.</span>";
+            text += "Reiniciando";
             indexRec = 1;
           }
-          show(text);
+          show(text + " valor do índice do registro corrente.</span>");
           counter[0].value = indexRec;
         }
         update();
       });
 
+    // desabilita foco nos botões de comando e no INPUT #amount
     actionButtons.concat([amount]).forEach(
       function (elm) {
         elm.focus(function () { this.blur(); });
@@ -244,7 +247,7 @@ $(document).ready(
 
         if (newBtn.hasClass("working")) {
 
-          funktion = function(texto) {
+          funktion = function (texto) {
             if (texto.startsWith("Error")) {
               show("Erro: Inserção mal sucedida.<br><span>"+texto+"</span>");
             } else {
@@ -267,7 +270,7 @@ $(document).ready(
 
         } else if (searchBtn.hasClass("working")) {
 
-          funktion = function(texto) {
+          funktion = function (texto) {
             if (/^(?:Advertência|Warning)/.test(texto)) {
               show("Não há dados que satisfaçam a pesquisa.");
               // FOR DEBUG PURPOSE: MURAL.append("SQL: " + texto);
@@ -294,7 +297,7 @@ $(document).ready(
                   function (Bt) { Bt[0].disabled = false; });
                 // desabilita os botões de ação
                 setDisabled(actionButtons, true);
-                saveBtn.value = "\uF00C Salvar";
+                saveBtn[0].value = "\uF00C Salvar";
                 // "desfoca" algum input focado
                 let elm = document.activeElement;
                 if (elm.tagName == "INPUT" && elm.type == "text") elm.blur();
@@ -336,7 +339,7 @@ $(document).ready(
 
         } else if (updateBtn.hasClass("working")) {
 
-          funktion = function(texto) {
+          funktion = function (texto) {
             if (texto.startsWith("Error")) {
               show("Erro: Atualização mal sucedida.<br><span>"+texto+"</span>");
             } else {
@@ -351,7 +354,7 @@ $(document).ready(
 
         } else if (delBtn.hasClass("working")) {
 
-          funktion = function(texto) {
+          funktion = function (texto) {
             if (texto.startsWith("Error")) {
               show("Erro: Exclusão mal sucedida.<br><span>"+texto+"</span>");
               cancelBtn.click();
@@ -398,10 +401,10 @@ $(document).ready(
         setInputsReadonly(true);            // desabilita os inputs dos..
       });
 
+    // preenche DATALISTs cujos IDs correspondem ao nome (sem extensão)
+    // do script backend que atende a requisição dos seus dados
     {
-      // preenche DATALISTs cujos IDs correspondem ao nome (sem extensão)
-      // do script backend que atende a requisição dos seus dados
-      let listas = $.map($("#fields > datalist"), function(x){return $(x);});
+      let listas = $("#fields > datalist").toArray().map($);
       if (listas.length > 0) {
         let URI = uri.substring(0, uri.lastIndexOf("/")+1);
         listas.forEach(

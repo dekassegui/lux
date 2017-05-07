@@ -31,11 +31,11 @@ $(document).ready(
             }
           },
           onHide: function (dp, animationCompleted) {
-            var inp = dp.el;
-            if (inp.readOnly && inp.value != $(inp).data("preserved")) {
+            var inp = $(dp.el);
+            if (inp[0].readOnly && inp[0].value != inp.data("preserved")) {
               if (animationCompleted) {
-                var valor = $(inp).data("preserved");
-                if (valor !== undefined) inp.value = valor;
+                var valor = inp.data("preserved");
+                if (valor !== undefined) inp[0].value = valor;
               } else {
                 show("<strong>READ ONLY</strong><br>O campo está disponível <b>somente&nbsp;para&nbsp;leitura</b>.");
               }
@@ -203,7 +203,7 @@ $(document).ready(
       }
     }
 
-    // incrementa a responsividade dos INPUTs no evento "keydown"
+    // incrementa a responsividade ao digitar nos INPUTs do registro
     fields.forEach(
       function (input) {
         input.keydown(
@@ -225,6 +225,7 @@ $(document).ready(
           });
       });
 
+    // incrementa a responsividade ao digitar no INPUT #counter
     counter.keydown(
       function (ev) {
         if (numRecs > 0) {
@@ -254,25 +255,27 @@ $(document).ready(
         }
       });
 
+    // incrementa a responsividade na perda de foco do INPUT #counter
     counter.blur(
       function () {
         var valor = parseInt(counter[0].value);  // aborta edição pendente do
         if (0 < valor && valor <= numRecs) {  // input do índice do registro
           indexRec = valor;                   // corrente, atualizando-o
         } else {
-          var text = "Erro: Valor do índice do registro ilegal.";
+          var text = "Erro: Valor do índice do registro ilegal.<br><span>";
           if (0 < indexRec && indexRec <= numRecs) {
-            text += "<br>Restaurando valor do índice do registro corrente.";
+            text += "Restaurando";
             counter[0].value = indexRec;
           } else {
-            text += "<br>Reiniciando valor do índice do registro corrente.";
+            text += "Reiniciando";
             counter[0].value = indexRec = 1;
           }
-          show(text);
+          show(text+" valor do índice do registro corrente.<>/span");
         }
         update();
       });
 
+    // desabilita foco nos botões de comando/relatório e no INPUT #amount
     actionButtons.concat([amount, infoBtn, leitorBtn]).forEach(
       function (elm) {
         elm.focus(function () { this.blur(); });
@@ -572,7 +575,7 @@ $(document).ready(
           });
       });
 
-    // declara o listener de evento "input" no INPUT "obra" para atualizar
+    // declara o listener de evento "input" no INPUT #obra para atualizar
     // as opções do DATALIST de "exemplares", "autor&espirito" e "posição"
     // conforme "título da obra" selecionado na atualização ou criação de
     // novo registro de empréstimo
@@ -587,7 +590,7 @@ $(document).ready(
             // pesquisa via busca binária da OPTION selecionada no DATALIST
             // associado ao INPUT de obras, para extrair o valor do atributo
             // "code" correspondente se a pesquisa foi bem sucedida
-            for (var collection = DATALIST_OBRAS.get(0).options, element,
+            for (var collection = DATALIST_OBRAS[0].options, element,
               key = fields[4].val(), lo = 0, hi = collection.length - 1, mid;
               !code && lo <= hi;) {
               mid = ((lo + hi) >> 1);
