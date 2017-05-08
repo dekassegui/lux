@@ -3,58 +3,68 @@
 */
 
 /**
- * Gestor de TEXTAREA que agrega BUTTON para esvaziar o conteúdo.
+ * Gestor de TEXTAREA com preenchimento cumulativo de conteúdo, que pode ser
+ * esvaziado quando BUTTON incorporado para essa finalidade é acionado.
  *
- * @param expression String de pesquisa do elemento, ou o próprio, do tipo
- *          TEXTAREA, com valor default "textarea".
+ * @param expression String de pesquisa do elemento do tipo TEXTAREA, ou o
+ *                   próprio, com valor default "textarea" caso indefinido.
 */
 function Mural(expression) {
 
-  var mural = $(expression || "textarea");
+  var mural = $(expression || "textarea:first-child");
 
-  mural.parent().append('<button id="cleaner">Esvaziar</button>');
+  mural.on({
+      "input": function () {
+          mural.toggleClass("empty", cleaner[0].disabled = self.isEmpty());
+        },
+      "focusout": posiciona,
+    }).parent().append('<button id="cleaner">Esvaziar</button>');
 
-  var cleaner = $("#cleaner").click(
-    function () {
-      mural.val("").trigger("input");
-    });
-
-  this.isEmpty = function() { return mural[0].textLength == 0; };
-
-  var self = this;
-
-  mural.bind("input",
-    function () {
-      mural.toggleClass("empty", cleaner[0].disabled = self.isEmpty());
-    });
+  this.isEmpty = function () { return mural[0].textLength == 0; };
 
   var lineHeight = parseInt(mural.css("line-height"));
 
-  // agrega 'text' como apêndice do conteúdo da textarea cujo canvas
-  // escorre até que 'text' seja visível tão ao topo quanto possível
+  var self = this;
+
+  // agrega "text" como apêndice do conteúdo do TEXTAREA, cujo canvas
+  // rola até que o "text" seja visível tão ao topo quanto possível
   this.append = function (text) {
     if (text.map) {
       text.map(this.append);
     } else {
       var a = mural[0].clientHeight,   // altura do canvas
           b = mural[0].scrollHeight;   // altura do conteúdo a priori
-      if (mural[0].textLength > 0) {
-        mural[0].value += "\n" + text;
-      } else {
+      if (self.isEmpty()) {
         mural.val(text).trigger("input");
+      } else {
+        mural[0].value += "\n" + text;
       }
       if (b > a) {
         mural[0].scrollTop = b - lineHeight;
       }
+      posiciona();
     }
   };
 
-  // posiciona #cleaner à direita no topo :: vide CSS
-  $(window).resize(
+  var cleaner = $("#cleaner").css("position", "relative").click(
     function () {
-      cleaner.css("top", "-" + (mural.outerHeight() + 4) + "px")
-        .css("left", (mural.outerWidth() - cleaner.outerWidth() - 18) + "px");
-    }).resize( /* posicionamento inicial */ );
+      mural.val("").trigger("input");
+      posiciona();
+    });
+
+  var top = cleaner.css("top");
+  var left = cleaner.css("left");
+
+  // sobreposiciona #cleaner no canto superior direito do TEXTAREA
+  function posiciona() {
+    var value = "-" + (mural.outerHeight() + 4) + "px";
+    if (value != self.top) cleaner.css("top", self.top = value);
+    value = (mural[0].scrollHeight > mural[0].clientHeight) ? 18 : 2;
+    value = (mural.outerWidth() - cleaner.outerWidth() - value) + "px";
+    if (value != self.left) cleaner.css("left", self.left = value);
+  }
+
+  $(window).resize(posiciona).resize( /* posicionamento inicial */ );
 
   // inicia o mural com saudação em função da hora local
   mural[0].value = ["> Boa noite!", "> Bom dia!", "> Boa tarde!"]

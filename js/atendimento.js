@@ -270,7 +270,7 @@ $(document).ready(
             text += "Reiniciando";
             counter[0].value = indexRec = 1;
           }
-          show(text+" valor do índice do registro corrente.<>/span");
+          show(text+" valor do índice do registro corrente.</span>");
         }
         update();
       });
