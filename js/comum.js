@@ -11,14 +11,15 @@
 */
 function Mural(expression) {
 
-  var mural = $(expression || "textarea:first-child");
+  var mural = $(expression || "textarea");
 
-  mural.on({
+  mural.after('<button id="cleaner">Esvaziar</button>').on(
+    {
       "input": function () {
           mural.toggleClass("empty", cleaner[0].disabled = self.isEmpty());
         },
-      "focusout": posiciona,
-    }).parent().append('<button id="cleaner">Esvaziar</button>');
+      "keyup mouseup scroll": posiciona
+    });
 
   this.isEmpty = function () { return mural[0].textLength == 0; };
 
@@ -46,22 +47,20 @@ function Mural(expression) {
     }
   };
 
-  var cleaner = $("#cleaner").css("position", "relative").click(
+  var cleaner = $("#cleaner").click(
     function () {
       mural.val("").trigger("input");
       posiciona();
     });
 
-  var top = cleaner.css("top");
-  var left = cleaner.css("left");
-
   // sobreposiciona #cleaner no canto superior direito do TEXTAREA
   function posiciona() {
-    var value = "-" + (mural.outerHeight() + 4) + "px";
-    if (value != self.top) cleaner.css("top", self.top = value);
-    value = (mural[0].scrollHeight > mural[0].clientHeight) ? 18 : 2;
-    value = (mural.outerWidth() - cleaner.outerWidth() - value) + "px";
-    if (value != self.left) cleaner.css("left", self.left = value);
+    var mo = mural.offset();
+    mo.top += 2;
+    mo.left += mural.outerWidth() - cleaner.outerWidth()
+      - ((mural[0].scrollHeight > mural[0].clientHeight) ? 18 : 2);
+    var co = cleaner.offset();
+    if (co.top != mo.top || co.left != mo.left) cleaner.offset(mo);
   }
 
   $(window).resize(posiciona).resize( /* posicionamento inicial */ );
@@ -73,6 +72,9 @@ function Mural(expression) {
   return this;
 }
 
+/**
+ * Apresenta conteúdo num pseudo popup sweet-alert.
+*/
 function show(text) {
   swal({
       html: true,
@@ -84,6 +86,10 @@ function show(text) {
     });
 }
 
+/**
+ * Pesquisa "key" no "array" ordenado em ordem crescente, retornando o
+ * índice do item coincidente ou -1 se não encontrado.
+*/
 function binarySearch(array, key) {
   var lo = 0, hi = array.length - 1, mid, element;
   while (lo <= hi) {
@@ -100,6 +106,9 @@ function binarySearch(array, key) {
   return -1;
 }
 
+/**
+ * Desabilita os elementos no "array" conforme valor de "bool".
+*/
 function setDisabled(array, bool) {
-  array.forEach(function ($item) { $item[0].disabled = bool; });
+  for (var n=array.length-1; n>=0; --n) array[n][0].disabled = bool;
 }

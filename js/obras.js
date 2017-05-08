@@ -166,7 +166,7 @@ $(document).ready(
         update();
       });
 
-    // desabilita foco nos botões de comando e no INPUT #amount
+    // desabilita foco nos botões e no INPUT #amount
     actionButtons.concat([amount]).forEach(
       function (elm) {
         elm.focus(function () { this.blur(); });

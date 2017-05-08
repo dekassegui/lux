@@ -275,7 +275,7 @@ $(document).ready(
         update();
       });
 
-    // desabilita foco nos botões de comando/relatório e no INPUT #amount
+    // desabilita foco nos botões e no INPUT #amount
     actionButtons.concat([amount, infoBtn, leitorBtn]).forEach(
       function (elm) {
         elm.focus(function () { this.blur(); });
@@ -637,7 +637,7 @@ $(document).ready(
           function (dataList) {
             $.get(
               aUri + dataList[0].id + ".php?action=GETALL",
-              function (texto) { dataList.html(texto); });
+              function (options) { dataList.html(options); });
           });
       }
     )();
