@@ -14,12 +14,12 @@ table {
   margin: 0 auto;
 }
 td:first-child {
-  width: 23%;
+  width: 25%;
   text-align: right;
   vertical-align: top;
 }
 td + td {
-  width: 77%;
+  width: 75%;
   padding-left: 8px;
   padding-right: 8px;
 }

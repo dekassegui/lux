@@ -51,6 +51,11 @@
   $sql = 'SELECT count(distinct obra) FROM acervo';
   $m = $db->querySingle($sql);
   echo '<tr><td>#Títulos:</td><td>', $m, '</td></tr>', PHP_EOL;
+
+  $sql = 'SELECT count(1) FROM emprestimos WHERE data_devolucao ISNULL';
+  $m = $db->querySingle($sql);
+  echo '<tr><td>#Empréstimos:</td><td>', $m, '</td></tr>', PHP_EOL;
+
   echo '</table>', PHP_EOL;
 
   echo '<div>', PHP_EOL;
@@ -76,6 +81,7 @@ EOT;
     echo '  <tr><td>Gênero:</td><td>', $row['genero'], '</td></tr>', PHP_EOL;
     echo '  <tr><td>Exemplar:</td><td>', $row['exemplar'],'</td></tr>', PHP_EOL;
     echo '  <tr><td>Posição:</td><td>', $row['posicao'], '</td></tr>', PHP_EOL;
+    echo '  <tr><td>Comentário:</td><td>', $row['comentario'], '</td></tr>', PHP_EOL;
     if (strlen($row['data_emprestimo']) > 0) {
       echo '  <tr><td>Data Empréstimo:</td><td>', $row['data_emprestimo'], '</td></tr>', PHP_EOL;
       echo '  <tr><td>Data Limite:</td><td>', $row['data_limite'], '</td></tr>', PHP_EOL;
