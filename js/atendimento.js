@@ -142,6 +142,14 @@ $(document).ready(
 
     var MURAL = new Mural();
 
+    // nomes dos campos para visualização no MURAL de registros pesquisados
+    const FIELDNAMES = ["#Registro", "Emprestimo", "Devolução",
+      "Agente", "Leitor", "Título", "Autor&Espírito", "Exemplar",
+      "Posição", "Comentário"].map(
+      function (s) {
+        return " ".repeat( Math.max(0, 16-s.length) ) + s + ": ";
+      });
+
     var DATALIST_EXEMPLARES = $("#acervo_exemplares");
 
     var DATALIST_OBRAS = $("#acervo_obras");
@@ -165,7 +173,7 @@ $(document).ready(
       cancelBtn[0].disabled = true;     // somente será possível "salvar"
     }
 
-    function setInputsValues(array) {
+    function setValues(array) {
       // preenche os INPUTs com componentes do argumento do tipo Array
       // ou com strings vazias se o argumento for indeterminado
       fields.forEach(
@@ -176,7 +184,7 @@ $(document).ready(
       );
     }
 
-    function setInputsReadonly(boolValue) {
+    function setReadonly(boolValue) {
       // declara os valores do atributo readonly dos inputs de campos..
       (boolValue || searchBtn.hasClass("working") ?
         [0, 1, 2, 3, 4, 5, 6, 7, 8] : [0, 1, 2, 3, 4, 6]).forEach(
@@ -193,7 +201,7 @@ $(document).ready(
             // atualiza o input do índice do registro corrente
             counter[0].value = indexRec;
             // atualiza os inputs dos campos do registro corrente
-            setInputsValues(texto.split("|"));
+            setValues(texto.split("|"));
             // habilita/desabilita botões de navegação
             setDisabled([firstBtn, previousBtn], indexRec <= 1);
             setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
@@ -313,12 +321,12 @@ $(document).ready(
       function () {
         updateBtn.addClass("working");
         disableButtons();
-        setInputsReadonly(false);
+        setReadonly(false);
         DATALISTS.forEach(
           function (dataList, index) {
             $.get(
               aUri + dataList[0].id + ".php?action=GETALL",
-              function (texto) { dataList.empty().append(texto); }
+              function (options) { dataList.empty().append(options); }
             ).done(
               function () {
                 if (index == 1) {
@@ -343,15 +351,15 @@ $(document).ready(
         searchBtn.addClass("working");
         saveBtn[0].value = "\uF00C Executar";
         disableButtons();
-        setInputsValues();
-        setInputsReadonly(false);
+        setValues();
+        setReadonly(false);
         DATALISTS.forEach(
           function (dataList, index) {
             var inputField = dataList.prev();
             inputField.val("ATUALIZANDO LISTA!");
             $.get(
               aUri + dataList[0].id + ".php?action=PESQUISA",
-              function (texto) { dataList.empty().append(texto); }
+              function (options) { dataList.empty().append(options); }
             ).done(
               function () {
                 inputField.val("");
@@ -369,15 +377,15 @@ $(document).ready(
       function () {
         newBtn.addClass("working");
         disableButtons();
-        setInputsValues();
-        setInputsReadonly(false);
+        setValues();
+        setReadonly(false);
         DATALISTS.forEach(
           function (dataList, index) {
             var inputField = dataList.prev();
             inputField.val("ATUALIZANDO LISTA!");
             $.get(
               aUri + dataList[0].id + ".php?action=GETALL",
-              function (texto) { dataList.empty().append(texto); }
+              function (options) { dataList.empty().append(options); }
             ).done(
               function () {
                 inputField.val("");
@@ -419,7 +427,7 @@ $(document).ready(
                   el.removeClass("working").prop("disabled", false);
                 });
               setDisabled(actionButtons, true);
-              setInputsReadonly(true);
+              setReadonly(true);
               FAKE_BUTTONS.toggle(true);
               show("Inserção bem sucedida.<span>Informe a data limite para devolução.</span>");
             }
@@ -430,8 +438,8 @@ $(document).ready(
         } else if (searchBtn.hasClass("working")) {
 
           funktion = function (texto) {
-            if (/^(?:Advertência|Warning)/.test(texto)) {
-              show("\u2639 Não há dados que satisfaçam a pesquisa.");
+            if (texto.startsWith("Advertência")) {
+              show("Não há dados que satisfaçam a pesquisa.");
             } else {
               let r = texto.split(/\r\n|\n|\r/g);
               // checa se resultado da pesquisa é registro único
@@ -442,14 +450,13 @@ $(document).ready(
                 counter[0].disabled = false;
                 setDisabled([firstBtn, previousBtn], indexRec <= 1);
                 setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
-                // atualiza valores apresentados no formulário
+                // atualiza o formulário com array reorganizado
                 r[0] = r.splice(3, 1)[0];
-                setInputsValues(r);
-                setInputsReadonly(true);
+                setValues(r);
+                setReadonly(true);
                 // restaura status dos botões
                 searchBtn.removeClass("working");
-                commandButtons.forEach(
-                  function (Bt) { Bt[0].disabled = false; });
+                setDisabled(commandButtons, false);
                 setDisabled(actionButtons, true);
                 saveBtn[0].value = "\uF00C Salvar";
                 // "desfoca" algum input focado
@@ -457,18 +464,14 @@ $(document).ready(
                 if (elm.tagName == "INPUT" && elm.type == "text") elm.blur();
                 FAKE_BUTTONS.toggle(true);
               } else {
-                MURAL.append("> Sucesso: Localizou " + r.length + " registros:");
-                // monta o array de labels dos campos dos registros
-                const labels = ["#Registro", "Emprestimo", "Devolução", "Agente", "Leitor", "Título", "Autor&Espírito", "Exemplar", "Posição", "Comentário"].map(
-                  function (s) {
-                    return " ".repeat( Math.max(0, 16-s.length) ) + s + ": ";
-                  });
+                let text = "> Sucesso: Localizou "+r.length+" registros:\n";
                 // monta a lista dos registros pesquisados
-                let text = "";
-                for (var values, n=labels.length, i, j=0; j<r.length; ++j) {
+                for (var values, j=0; j<r.length; ++j) {
                   text += "\n";
                   values = r[j].split("|");
-                  for (i=0; i<n; ++i) text += labels[i] + values[i] + "\n";
+                  for (var i=0; i<FIELDNAMES.length; ++i) {
+                    text += FIELDNAMES[i] + values[i] + "\n";
+                  }
                 }
                 MURAL.append(text);
                 SCROLLER.rolarAte();
@@ -494,7 +497,7 @@ $(document).ready(
                 });
               setDisabled(actionButtons, true);
               counter[0].disabled = false;
-              setInputsReadonly(true);
+              setReadonly(true);
               FAKE_BUTTONS.toggle(true);
             }
           };
@@ -523,8 +526,8 @@ $(document).ready(
                 saveBtn[0].value = "\uF00C Salvar";
                 // somente permite "salvar"
                 cancelBtn[0].disabled = true;
-                setInputsValues();
-                setInputsReadonly(false);
+                setValues();
+                setReadonly(false);
               }
             }
           };
@@ -546,7 +549,7 @@ $(document).ready(
         setDisabled(actionButtons, true);   // desabilita "action buttons"
         counter[0].disabled = false;        // habilita edição no input..
         saveBtn[0].value = "\uF00C Salvar"; // restaura o rotulo do botão
-        setInputsReadonly(true);            // desabilita edição dos inputs
+        setReadonly(true);                  // desabilita edição dos inputs
         FAKE_BUTTONS.toggle(true);
       });
 
@@ -663,7 +666,7 @@ $(document).ready(
           uri + "?action=GETREC&recnumber=" + indexRec,
           function (texto) {
             // atualiza os valores do registro corrente
-            setInputsValues(texto.split("|"));
+            setValues(texto.split("|"));
           });
 
         // habilita edição e declara a quantidade máxima de

@@ -58,7 +58,7 @@ $(document).ready(
       cancelBtn[0].disabled = true;     // somente será possível "salvar"
     }
 
-    function setInputsValues(array) {
+    function setValues(array) {
       // preenche os inputs com componentes do argumento do tipo Array
       // ou com strings vazias se o argumento for indeterminado
       fields.forEach(
@@ -69,7 +69,7 @@ $(document).ready(
       );
     }
 
-    function setInputsReadonly(bool) {
+    function setReadonly(bool) {
       // declara os valores do atributo readonly dos inputs de campos..
       fields.forEach(function (input) { input[0].readOnly = bool; });
     }
@@ -84,7 +84,7 @@ $(document).ready(
             // atualiza o input do índice do registro corrente
             counter[0].value = indexRec;
             // atualiza os inputs dos campos do registro corrente
-            setInputsValues(texto.split("|"));
+            setValues(texto.split("|"));
             // habilita/desabilita botões de navegação
             setDisabled([firstBtn, previousBtn], indexRec <= 1);
             setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
@@ -204,7 +204,7 @@ $(document).ready(
       function () {
         updateBtn.addClass("working");
         disableButtons();
-        setInputsReadonly(false);
+        setReadonly(false);
         fields[FOCUS_NDX].focus();
       });
 
@@ -220,8 +220,8 @@ $(document).ready(
         searchBtn.addClass("working");
         saveBtn[0].value = "\uF00C Executar";
         disableButtons();
-        setInputsValues();
-        setInputsReadonly(false);
+        setValues();
+        setReadonly(false);
         fields[FOCUS_NDX].focus();
       });
 
@@ -229,8 +229,8 @@ $(document).ready(
       function () {
         newBtn.addClass("working");
         disableButtons();
-        setInputsValues();
-        setInputsReadonly(false);
+        setValues();
+        setReadonly(false);
         fields[0].focus();
       });
 
@@ -261,7 +261,7 @@ $(document).ready(
                   el.removeClass("working").prop("disabled", false);
                 });
               setDisabled(actionButtons, true);
-              setInputsReadonly(true);
+              setReadonly(true);
               show("<span>Inserção bem sucedida.</span>");
             }
           };
@@ -289,8 +289,8 @@ $(document).ready(
                 // remove o primeiro dos valores...
                 r.shift();
                 // atualiza visualização e desabilita edição dos valores...
-                setInputsValues(r);
-                setInputsReadonly(true);
+                setValues(r);
+                setReadonly(true);
                 // encerra o modo pesquisa e habilita os botões de comando
                 searchBtn.removeClass("working");
                 commandButtons.forEach(
@@ -374,8 +374,8 @@ $(document).ready(
                 saveBtn[0].value = "\uF00C Salvar";
                 // somente permite "salvar"
                 cancelBtn.disabled = true;
-                setInputsValues();
-                setInputsReadonly(false);
+                setValues();
+                setReadonly(false);
                 fields[0].focus();
               }
             }
@@ -398,16 +398,16 @@ $(document).ready(
         setDisabled(actionButtons, true);   // desabilita "action buttons"
         counter[0].disabled = false;        // habilita edição no input..
         saveBtn[0].value = "\uF00C Salvar"; // restaura o rotulo do botão
-        setInputsReadonly(true);            // desabilita os inputs dos..
+        setReadonly(true);                  // desabilita os inputs dos..
       });
 
     // preenche DATALISTs cujos IDs correspondem ao nome (sem extensão)
     // do script backend que atende a requisição dos seus dados
     {
-      let listas = $("#fields > datalist").toArray().map($);
+      let listas = $("#fields > datalist");
       if (listas.length > 0) {
         let URI = uri.substring(0, uri.lastIndexOf("/")+1);
-        listas.forEach(
+        listas.toArray().map($).forEach(
           function (dataList) {
             $.get(
               URI + dataList[0].id + ".php?action=GETALL",
@@ -437,7 +437,7 @@ $(document).ready(
           uri + "?action=GETREC&recnumber=" + indexRec,
           function (texto) {
             // atualiza os valores do registro corrente
-            setInputsValues(texto.split("|"));
+            setValues(texto.split("|"));
           });
 
         // habilita edição e declara a quantidade máxima de
