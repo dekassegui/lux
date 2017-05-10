@@ -13,7 +13,7 @@ $(document).ready(
       function () {
         var w = $(document.body).innerWidth();
         w -= (w < 1000) ? 20 : $("section").innerWidth()+30;
-        $("aside").css("width", w);
+        $("aside").width(w);
       }
     ).resize( /* ajuste inicial */ );
 
@@ -40,6 +40,32 @@ $(document).ready(
     var commandButtons = [updateBtn, delBtn, searchBtn, newBtn];
 
     var MURAL = new Mural();
+
+    // nomes dos campos para visualização no MURAL de registros pesquisados
+    var FIELDNAMES;
+    (
+      function () {
+        const nomes = {
+          "autores": ["#Registro", "Código", "Nome", "Espíritos"],
+          "generos": ["#Registro", "Código", "Nome"],
+          "obras": ["#Registro", "Código", "Título" , "Autores", "Gênero"],
+          "acervo": ["#Registro", "Obra", "Exemplar", "Posição", "Comentário"],
+          "bibliotecarios": ["#Registro", "Código", "Nome"],
+          "leitores": ["#Registro", "Código", "Nome", "Telefone", "e-Mail"]
+        };
+        // extrai a chave da uri da página corrente
+        var key = location.pathname.substring(1);
+        key = key.substring(key.indexOf("/")+1, key.indexOf("."));
+        // calcula o comprimento dos labels das colunas
+        var m = Math.max.apply(null,
+          nomes[key].map(function (nome) { return nome.length; })) + 2;
+        // monta labels alinhados a direita
+        FIELDNAMES = nomes[key].map(
+          function (nome) {
+            return " ".repeat( Math.max(0, m-nome.length) ) + nome + ": ";
+          });
+      }
+    )();
 
     function disableButtons() {
       // desabilita botões de navegação & comando
@@ -99,12 +125,12 @@ $(document).ready(
       function (input) {
         input.keydown(
           function (ev) {
-            // rejeita o evento na exclusão de registros
+            // ignora o evento na exclusão de registros
             if (delBtn.hasClass("working")) return;
             // testa se "action buttons" estão habilitados
             if (actionButtons.every(item => item[0].disabled == false)) {
               if (ev.keyCode == 13) {
-                // rejeita o evento se o input é associado a datalist
+                // ignora o evento se o input é associado a datalist
                 // e nao foi pressionado <Ctrl> simultaneamente
                 if (!ev.ctrlKey && ev.target.hasAttribute("list")) return;
                 saveBtn.click();  // (<Ctrl>+)<Enter> aciona comando pendente
@@ -286,15 +312,14 @@ $(document).ready(
                 // habilita/desabilita botões de acesso sequencial
                 setDisabled([firstBtn, previousBtn], indexRec <= 1);
                 setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
-                // remove o primeiro dos valores...
+                // remove o primeiro item
                 r.shift();
                 // atualiza visualização e desabilita edição dos valores...
                 setValues(r);
                 setReadonly(true);
                 // encerra o modo pesquisa e habilita os botões de comando
                 searchBtn.removeClass("working");
-                commandButtons.forEach(
-                  function (Bt) { Bt[0].disabled = false; });
+                setDisabled(commandButtons, false);
                 // desabilita os botões de ação
                 setDisabled(actionButtons, true);
                 saveBtn[0].value = "\uF00C Salvar";
@@ -302,35 +327,17 @@ $(document).ready(
                 let elm = document.activeElement;
                 if (elm.tagName == "INPUT" && elm.type == "text") elm.blur();
               } else {
-                let text = "Sucesso: Localizou " + r.length + " registros:";
-                MURAL.append("> " + text);
-                const nomes = {
-                  "autores": ["#Registro", "Código", "Nome", "Espíritos"],
-                  "generos": ["#Registro", "Código", "Nome"],
-                  "obras": ["#Registro", "Código", "Título" , "Autores", "Gênero"],
-                  "acervo": ["#Registro", "Obra", "Exemplar", "Posição", "Comentário"],
-                  "bibliotecarios": ["#Registro", "Código", "Nome"],
-                  "leitores": ["#Registro", "Código", "Nome", "Telefone", "e-Mail"]
-                };
-                // extrai a chave da uri da página corrente
-                let key = location.pathname.substring(1);
-                key = key.substring(key.indexOf("/")+1, key.indexOf("."));
-                // calcula o comprimento dos labels das colunas
-                let m = Math.max.apply(null,
-                  nomes[key].map(function (s) { return s.length; })) + 2;
-                // monta labels alinhados a direita
-                let labels = nomes[key].map(
-                  function (s) {
-                    return " ".repeat( Math.max(0, m-s.length) ) + s + ": ";
-                  });
+                let buf = "> Sucesso: Localizou " + r.length + " registros:\n";
                 // monta a lista de registros pesquisados
-                text = "";
-                for (var values, k=labels.length, j, i=0; i<r.length; ++i) {
-                  values = r[i].split("|");
-                  text += "\n";
-                  for (j=0; j<k; ++j) text += labels[j] + values[j] + "\n";
-                }
-                MURAL.append(text);
+                r.forEach(
+                  function (row) {
+                    buf += "\n";
+                    row.split("|").forEach(
+                      function (value, index) {
+                        buf += FIELDNAMES[index] + value + "\n";
+                      });
+                  });
+                MURAL.append(buf);
               }
             }
           };
@@ -403,18 +410,20 @@ $(document).ready(
 
     // preenche DATALISTs cujos IDs correspondem ao nome (sem extensão)
     // do script backend que atende a requisição dos seus dados
-    {
-      let listas = $("#fields > datalist");
-      if (listas.length > 0) {
-        let URI = uri.substring(0, uri.lastIndexOf("/")+1);
-        listas.toArray().map($).forEach(
-          function (dataList) {
-            $.get(
-              URI + dataList[0].id + ".php?action=GETALL",
-              function (options) { dataList.html(options); });
-          });
+    (
+      function () {
+        var listas = $("#fields > datalist");
+        if (listas.length > 0) {
+          var URI = uri.substring(0, uri.lastIndexOf("/")+1);
+          listas.toArray().map($).forEach(
+            function (dataList) {
+              $.get(
+                URI + dataList[0].id + ".php?action=GETALL",
+                function (options) { dataList.html(options); });
+            });
+        }
       }
-    }
+    )();
 
     // testa se valores de ambos inputs mostradores de status da tabela não
     // são string vazia, evidenciando que o documento foi atualizado durante

@@ -146,8 +146,8 @@ $(document).ready(
     const FIELDNAMES = ["#Registro", "Emprestimo", "Devolução",
       "Agente", "Leitor", "Título", "Autor&Espírito", "Exemplar",
       "Posição", "Comentário"].map(
-      function (s) {
-        return " ".repeat( Math.max(0, 16-s.length) ) + s + ": ";
+      function (name) {
+        return " ".repeat( Math.max(0, 16-name.length) ) + name + ": ";
       });
 
     var DATALIST_EXEMPLARES = $("#acervo_exemplares");
@@ -216,12 +216,12 @@ $(document).ready(
       function (input) {
         input.keydown(
           function (ev) {
-            // rejeita o evento na exclusão de registros
+            // ignora o evento na exclusão de registros
             if (delBtn.hasClass("working")) return;
             // testa se "action buttons" estão habilitados
             if (actionButtons.every(item => item[0].disabled == false)) {
               if (ev.keyCode == 13) {
-                // rejeita o evento se o input é associado a datalist
+                // ignora o evento se o input é associado a datalist
                 // e nao foi pressionado <Ctrl> simultaneamente
                 if (!ev.ctrlKey && ev.target.hasAttribute("list")) return;
                 saveBtn.click();  // (<Ctrl>+)<Enter> aciona comando pendente
@@ -278,7 +278,7 @@ $(document).ready(
             text += "Reiniciando";
             counter[0].value = indexRec = 1;
           }
-          show(text+" valor do índice do registro corrente.</span>");
+          show(text + " valor do índice do registro corrente.</span>");
         }
         update();
       });
@@ -367,7 +367,7 @@ $(document).ready(
                   FAKE_BUTTONS.toggle(false);
                   SCROLLER.rolarAte(0);
                   fields[2].val("NULL");
-                  fields[4].focus();    // focaliza no input#obra
+                  fields[4].focus(/* input#obra */);
                 }
               });
           });
@@ -392,7 +392,7 @@ $(document).ready(
                 if (index == 1) {
                   FAKE_BUTTONS.toggle(false);
                   SCROLLER.rolarAte(0);
-                  fields[0].focus();    // focaliza no input#bibliotecario
+                  fields[0].focus(/* input#bibliotecario */);
                 }
               });
           });
@@ -464,16 +464,16 @@ $(document).ready(
                 if (elm.tagName == "INPUT" && elm.type == "text") elm.blur();
                 FAKE_BUTTONS.toggle(true);
               } else {
-                let text = "> Sucesso: Localizou "+r.length+" registros:\n";
+                let buf = "> Sucesso: Localizou " + r.length + " registros:\n";
                 // monta a lista dos registros pesquisados
                 for (var values, j=0; j<r.length; ++j) {
-                  text += "\n";
+                  buf += "\n";
                   values = r[j].split("|");
-                  for (var i=0; i<FIELDNAMES.length; ++i) {
-                    text += FIELDNAMES[i] + values[i] + "\n";
+                  for (var i=0; i<values.length; ++i) {
+                    buf += FIELDNAMES[i] + values[i] + "\n";
                   }
                 }
-                MURAL.append(text);
+                MURAL.append(buf);
                 SCROLLER.rolarAte();
               }
             }
@@ -584,7 +584,7 @@ $(document).ready(
     // novo registro de empréstimo
     fields[4].bind("input",
       function () {
-        if ([newBtn, updateBtn].some(Bt => Bt.hasClass("working"))) {
+        if (newBtn.hasClass("working") || updateBtn.hasClass("working")) {
           // esvazia os valores dos INPUTs "exemplar", "autor" e "posicao"
           for (var i=5; i<8; ++i) fields[i].val("");
           // checa se o valor do INPUT "obra" não está vazio
