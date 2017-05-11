@@ -301,7 +301,7 @@ $(document).ready(
               show("Não há dados que satisfaçam a pesquisa.");
               // FOR DEBUG PURPOSE: MURAL.append("SQL: " + texto);
             } else {
-              let r = texto.split(/\r\n|\n|\r/g);
+              let r = texto.split("\n");
               // checa se o resultado da pesquisa é único registro
               if (r.length == 1) {
                 // monta o array dos valores dos campos

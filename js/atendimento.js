@@ -441,7 +441,7 @@ $(document).ready(
             if (texto.startsWith("Advertência")) {
               show("Não há dados que satisfaçam a pesquisa.");
             } else {
-              let r = texto.split(/\r\n|\n|\r/g);
+              let r = texto.split("\n");
               // checa se resultado da pesquisa é registro único
               if (r.length == 1) {
                 r = r[0].split("|");

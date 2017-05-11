@@ -8,7 +8,7 @@
 <link href="css/reset.css" rel="stylesheet" type="text/css" media="screen">
 <link href="css/comum.css" rel="stylesheet" type="text/css" media="screen">
 <link href="css/relatorio.css" rel="stylesheet" type="text/css" media="screen">
-<script src="js/jquery-3.1.1.js"></script>
+<script src="js/jquery.js"></script>
 <script src="js/jquery.scrollTo.min.js"></script>
 <script src="js/relatorio.js"></script>
 </head>
