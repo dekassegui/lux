@@ -307,13 +307,11 @@ $(document).ready(
                 // monta o array dos valores dos campos
                 r = r[0].split("|");
                 // atualiza o contador do registro corrente
-                indexRec = parseInt(counter[0].value = r[0]);
+                indexRec = parseInt(counter[0].value = r.shift());
                 counter[0].disabled = false;
                 // habilita/desabilita botões de acesso sequencial
                 setDisabled([firstBtn, previousBtn], indexRec <= 1);
                 setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
-                // remove o primeiro item
-                r.shift();
                 // atualiza visualização e desabilita edição dos valores...
                 setValues(r);
                 setReadonly(true);

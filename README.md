@@ -1,10 +1,10 @@
 # LUX
 
-Sistema para gestão do acervo de bibliotecas de casas espíritas, composto de um conjunto de páginas da web que atuam como interface (_aka UI_) entre o usuário final e scripts que consultam o banco de dados (_aka DB_), hospedados em servidor local, portanto não é necessário acesso a internet e usa-se somente software livre.
+Sistema para gestão do acervo de bibliotecas de casas espíritas, composto de páginas da web que atuam como interface (_aka UI_) entre o usuário final e scripts que consultam o banco de dados (_aka DB_), hospedados em servidor local, portanto não é necessário acesso a internet e usa-se somente software livre.
 
 ![interfaces do LUX](https://github.com/dekassegui/lux/blob/dekassegui-raw/lux-views.png "interfaces do LUX")
 
-**O "business" está completamente embarcado no DB**, possibilitando montagem de outras UIs em qualquer linguagem/tecnologia, manejo em aplicativos para gestão de banco de dados ou até mesmo via CLI, dado que o esquema do DB é para o **SQLite**.
+**O "business" está completamente embarcado no DB**, possibilitando montagem de outras UIs em qualquer linguagem/tecnologia, manejo em aplicativos para gestão de banco de dados ou até mesmo via CLI.
 ![diagrama ER do DB](https://github.com/dekassegui/lux/blob/dekassegui-raw/lux.png "diagrama ER do DB")
 
 ### pré-requisitos da interface
