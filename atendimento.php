@@ -105,7 +105,11 @@ EOT
   WHERE rowid == {$_GET['recnumber']}
 EOT
       );
-      echo join('|', $result->fetch(PDO::FETCH_NUM));
+      if ($result !== FALSE AND $row = $result->fetch(PDO::FETCH_NUM)) {
+        echo join('|', $row);
+      } else {
+        echo 'Erro: Requisição de registro #', $_GET['recnumber'], '.';
+      }
       break;
 
     case 'COUNT':

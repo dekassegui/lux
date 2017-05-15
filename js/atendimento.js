@@ -661,12 +661,22 @@ $(document).ready(
 
         indexRec = parseInt(counter[0].value); // extrai o valor do input
 
+        if (indexRec < 1) {
+          counter[0].value = indexRec = 1;
+        } else if (indexRec > numRecs) {
+          counter[0].value = indexRec = numRecs;
+        }
+
         // restaura os valores dos inputs consultando o DB por segurança
         $.get(
           uri + "?action=GETREC&recnumber=" + indexRec,
           function (texto) {
             // atualiza os valores do registro corrente
-            setValues(texto.split("|"));
+            if (texto.startsWith("Erro")) {
+              firstBtn.click();
+            } else {
+              setValues(texto.split("|"));
+            }
           });
 
         // habilita edição e declara a quantidade máxima de

@@ -13,7 +13,28 @@ function Mural(expression) {
 
   var mural = $(expression || "textarea");
 
-  mural.after('<button id="cleaner">Esvaziar</button>').on(
+  var cleaner = $('<button id="cleaner">Esvaziar</button>').click(
+    function () {
+      mural.val("").trigger("input");
+    });
+
+  // sobreposiciona #cleaner no canto superior direito do TEXTAREA
+  function posiciona() {
+    var mo = mural.offset();
+    mo.top += 2;
+    mo.left += mural.outerWidth() - cleaner.outerWidth()
+      - ((mural[0].scrollHeight > mural[0].clientHeight) ? 18 : 2);
+    var co = cleaner.offset();
+    if (co.top != mo.top || co.left != mo.left) cleaner.offset(mo);
+  }
+
+  cleaner.click(posiciona);
+
+  var self = this;
+
+  this.isEmpty = function () { return mural[0].textLength == 0; };
+
+  mural.after(cleaner).on(
     {
       "input": function () {
           mural.toggleClass("empty", cleaner[0].disabled = self.isEmpty());
@@ -21,11 +42,7 @@ function Mural(expression) {
       "keyup mouseup scroll": posiciona
     });
 
-  this.isEmpty = function () { return mural[0].textLength == 0; };
-
   var lineHeight = parseInt(mural.css("line-height"));
-
-  var self = this;
 
   // agrega "text" como apêndice do conteúdo do TEXTAREA, cujo canvas
   // rola até que o "text" seja visível tão ao topo quanto possível
@@ -46,22 +63,6 @@ function Mural(expression) {
       posiciona();
     }
   };
-
-  var cleaner = $("#cleaner").click(
-    function () {
-      mural.val("").trigger("input");
-      posiciona();
-    });
-
-  // sobreposiciona #cleaner no canto superior direito do TEXTAREA
-  function posiciona() {
-    var mo = mural.offset();
-    mo.top += 2;
-    mo.left += mural.outerWidth() - cleaner.outerWidth()
-      - ((mural[0].scrollHeight > mural[0].clientHeight) ? 18 : 2);
-    var co = cleaner.offset();
-    if (co.top != mo.top || co.left != mo.left) cleaner.offset(mo);
-  }
 
   $(window).resize(posiciona).resize( /* posicionamento inicial */ );
 
