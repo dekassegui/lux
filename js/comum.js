@@ -2,6 +2,16 @@
  * Este script é parte do projeto LUX.
 */
 
+const TOOLTIP_OPTIONS = {
+  content: function (ui) {        // indispensável para conteúdo HTML
+    return $(this).attr("title");
+  },
+  track: true,
+  position: { my: "left+20 top+20", at: "right bottom" },
+  show: { effect: "fade", duration: 500, delay: 1500 },
+  hide: { effect: "fade", duration: 500 },
+};
+
 /**
  * Gestor de TEXTAREA com preenchimento cumulativo de conteúdo, que pode ser
  * esvaziado quando BUTTON incorporado para essa finalidade é acionado.
@@ -74,16 +84,25 @@ function Mural(expression) {
 }
 
 /**
- * Apresenta conteúdo num pseudo popup sweet-alert.
+ * Apresenta conteúdo HTML numa janela modal dragável.
+ *
+ * @param title String container do título.
+ * @param text  String container do conteúdo.
 */
-function show(text) {
-  swal({
-      html: true,
-      title: null,
-      text: text.replace(/\r\n|\n|\r/g, "<br>"),
-      confirmButtonText: "Fechar",
-      confirmButtonColor: "#ff9900",
-      allowEscapeKey: true,
+function show(title, text) {
+  $("<div>" + text.replace(/\r\n|\n|\r/g, "<br>") + "</div>").dialog({
+      classes: { "ui-dialog": "ui-corner-all" },
+      buttons: [{
+          text: "Fechar",
+          click: function () { $(this).dialog("close"); }
+        }],
+      show: { effect: "fade", duration: 750 },
+      hide: { effect: "fade", duration: 750 },
+      title: title,
+      minHeight: 300,
+      width: 450,
+      modal: true,
+      resizable: false,
     });
 }
 
@@ -112,4 +131,66 @@ function binarySearch(array, key) {
 */
 function setDisabled(array, bool) {
   for (var n=array.length-1; n>=0; --n) array[n][0].disabled = bool;
+}
+
+/**
+ * Gestor de persistência de folhas de estilo temáticas.
+*/
+function StyleSwitcher() {
+
+  var self = this;
+
+  var links = $("link[rel$='stylesheet'][title]").toArray().map($);
+
+  function search(callback) {
+    var a = links.find(callback);
+    return (a === undefined) ? null : a.attr("title");
+  }
+
+  this.getActiveStyleSheet = function () {
+    return search(
+        function (a) { return !a.prop("disabled"); }
+      );
+  };
+
+  this.getPreferredStyleSheet = function() {
+    return search(
+        function (a) { return !a.attr("rel").startsWith("alternate"); }
+      );
+  };
+
+  this.setActiveStyleSheet = function (title) {
+    links.forEach(
+      function (a) { a.prop("disabled", a.attr("title") != title); }
+    );
+  };
+
+  function isValid(title) {
+    return title && links.some(
+      function (a) { return a.attr("title") == title; });
+  }
+
+  this.save = function (title) {
+    localStorage.setItem("style",
+      isValid(title) ? title : self.getActiveStyleSheet());
+  };
+
+  this.load = function () { return localStorage.getItem("style"); };
+
+  /**
+   * Cache "persistente" do título da folha de estilo ativa.
+  */
+  window.addEventListener("unload", function () { self.save(); }, true);
+
+  /**
+   * Ativa a folha de estilo preferencial se não há título válido em cache.
+  */
+  (
+    function (title) {
+      self.setActiveStyleSheet(
+        isValid(title) ? title : self.getPreferredStyleSheet());
+    }
+  )(self.load());
+
+  return this;
 }

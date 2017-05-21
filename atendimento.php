@@ -4,6 +4,24 @@
 
   require 'utils.php';
 
+  function translate($s) {
+    $invalid = (strpos($s, 'NULL') !== FALSE);
+    if ($invalid) {
+      if (strpos($s, 'data_emprestimo') !== FALSE) {
+        return 'Erro: A <b>Data de Empréstimo</b> não foi preenchida.';
+      } else if (strpos($s, 'bibliotecario') !== FALSE) {
+        return 'Erro: O nome do <b>Agente</b> não foi preenchido.';
+      } else if (strpos($s, 'leitor') !== FALSE) {
+        return 'Erro: O nome do <b>Leitor</b> não foi preenchido.';
+      } else if (strpos($s, 'obra') !== FALSE) {
+        return 'Erro: O título da <b>Obra</b> não foi preenchido.';
+      } else if (strpos($s, 'exemplar') !== FALSE) {
+        return 'Erro: O número do <b>Exemplar</b> não foi preenchido.';
+      }
+    }
+    return 'Erro: '.$s;
+  }
+
   try {
     $db = new SQLitePDO();
     $db->connect();
@@ -150,7 +168,7 @@ EOT;
       }
       // requisita a atualização ou inserção
       if ($db->exec($sql) === FALSE) {
-        echo 'Error: ', $db->lastErrorMsg();
+        echo translate($db->lastErrorMsg());
       } else {
         if (rebuildTable($db)) {
           // requisita o número de ordem do registro recém atualizado/inserido

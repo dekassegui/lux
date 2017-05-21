@@ -48,7 +48,7 @@ body > header > * { /* evita seleção de texto ao clicar no canvas */
 }
 
 .alive {
-  color: #609960;
+  color: #039;
   text-shadow: 1px 1px #ddd;
   cursor: pointer;
 }
@@ -65,8 +65,28 @@ body > header > * { /* evita seleção de texto ao clicar no canvas */
   content: "\f067";
 }
 .alive:hover {
-  color: #0c0;
+  color: #06c;
 }
 .alive:active {
-  color: #0f0;
+  color: #00f;
+}
+
+#GoTop {
+  float: right;
+  margin-top: 10px;
+  padding: 3px 10px 5px 10px;
+  font-size: .7em;
+  border: solid 1px #afafaf;
+  border-radius: 5px;
+  background-color: #eee;
+  -webkit-background-image: linear-gradient(to bottom, transparent, #bbb);
+  background-image: linear-gradient(to bottom, transparent, #bbb);
+  cursor: pointer;
+}
+#GoTop:hover {
+  background-color: #f0ffff;
+}
+#GoTop:active {
+  background-color: #dee;
+  background-image: none;
 }

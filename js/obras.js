@@ -8,6 +8,10 @@ $(document).ready(
     // URI do script backend que atende requisições ao DB
     const uri = location.href.replace("html", "php");
 
+    new StyleSwitcher();
+
+    var SPINNER = $('<span id="spinner"></span>').appendTo($("header")).hide();
+
     // ajuste da largura do elemento ASIDE container do TEXTAREA
     $(window).resize(
       function () {
@@ -163,12 +167,12 @@ $(document).ready(
               indexRec = valor;
               update();
             } else {
-              show("Erro: Número de registro é ilegal.");
+              show("\uF06A Atenção", "Erro: Número de registro é ilegal.");
               ev.preventDefault();
             }
           }
         } else {
-          show("Erro: A tabela está vazia.");
+          show("\uF06A Atenção", "Erro: A tabela está vazia.");
         }
       });
 
@@ -186,7 +190,7 @@ $(document).ready(
             text += "Reiniciando";
             indexRec = 1;
           }
-          show(text + " valor do índice do registro corrente.</span>");
+          show("\uF06A Atenção", text + " valor do índice do registro corrente.</span>");
           counter[0].value = indexRec;
         }
         update();
@@ -271,11 +275,14 @@ $(document).ready(
             });
         }
 
+        SPINNER.fadeIn();
+
         if (newBtn.hasClass("working")) {
 
           funktion = function (texto) {
+            SPINNER.fadeOut();
             if (texto.startsWith("Error")) {
-              show("Erro: Inserção mal sucedida.<br><span>"+texto+"</span>");
+              show("\uF06A Atenção", "Erro: Inserção mal sucedida.<br><span>"+texto+"</span>");
             } else {
               amount[0].value = ++numRecs;
               indexRec = parseInt(texto);
@@ -288,7 +295,7 @@ $(document).ready(
                 });
               setDisabled(actionButtons, true);
               setReadonly(true);
-              show("<span>Inserção bem sucedida.</span>");
+              show("\uF06A Atenção", "<span>Inserção bem sucedida.</span>");
             }
           };
           par.push("?action=INSERT");
@@ -297,8 +304,9 @@ $(document).ready(
         } else if (searchBtn.hasClass("working")) {
 
           funktion = function (texto) {
+            SPINNER.fadeOut();
             if (/^(?:Advertência|Warning)/.test(texto)) {
-              show("Não há dados que satisfaçam a pesquisa.");
+              show("\uF06A Atenção", "Não há dados que satisfaçam a pesquisa.");
               // FOR DEBUG PURPOSE: MURAL.append("SQL: " + texto);
             } else {
               let r = texto.split("\n");
@@ -345,12 +353,13 @@ $(document).ready(
         } else if (updateBtn.hasClass("working")) {
 
           funktion = function (texto) {
+            SPINNER.fadeOut();
             if (texto.startsWith("Error")) {
-              show("Erro: Atualização mal sucedida.<br><span>"+texto+"</span>");
+              show("\uF06A Atenção", "Erro: Atualização mal sucedida.<br><span>"+texto+"</span>");
             } else {
               var n = parseInt(texto);
               if (n != indexRec) indexRec = n;
-              show("<span>Atualização bem sucedida.</span>");
+              show("\uF06A Atenção", "<span>Atualização bem sucedida.</span>");
               cancelBtn.click();
             }
           };
@@ -360,14 +369,15 @@ $(document).ready(
         } else if (delBtn.hasClass("working")) {
 
           funktion = function (texto) {
+            SPINNER.fadeOut();
             if (texto.startsWith("Error")) {
-              show("Erro: Exclusão mal sucedida.<br><span>"+texto+"</span>");
+              show("\uF06A Atenção", "Erro: Exclusão mal sucedida.<br><span>"+texto+"</span>");
               cancelBtn.click();
             } else {
               amount[0].value = --numRecs;
               if (indexRec > numRecs) --indexRec;
               counter[0].maxLength = amount[0].value.length;
-              show("<span>Exclusão bem sucedida.</span>");
+              show("\uF06A Atenção", "<span>Exclusão bem sucedida.</span>");
               if (indexRec > 0) {
                 cancelBtn.click();
               } else {
@@ -440,9 +450,11 @@ $(document).ready(
         indexRec = parseInt(counter[0].value); // extrai o valor do input
 
         // restaura os valores dos inputs consultando o DB por segurança
+        SPINNER.fadeIn();
         $.get(
           uri + "?action=GETREC&recnumber=" + indexRec,
           function (texto) {
+            SPINNER.fadeOut();
             // atualiza os valores do registro corrente
             setValues(texto.split("|"));
           });
@@ -467,9 +479,11 @@ $(document).ready(
 
     } else {
 
+      SPINNER.fadeIn();
       $.get(
         uri + "?action=COUNT",
         function (texto) {
+          SPINNER.fadeOut();
           // declara a quantidade inicial de registros da tabela
           numRecs = parseInt(amount[0].value = texto);
           // declara a quantidade máxima de caracteres do input

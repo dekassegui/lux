@@ -1,0 +1,22 @@
+body {
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-image: url("../js/ui/images/cubismo.png");
+  background-position: right bottom;
+  background-size: 150% 150%;
+}
+label, footer p, section > div:first-child > p span, body:not([id]) section > p  {
+  color: #eee;
+}
+input#amount {
+  color: white;
+}
+.alive {
+  color: #cff;
+}
+.alive:hover {
+  color: #9ff;
+}
+.alive:active {
+  color: #0ff;
+}

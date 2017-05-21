@@ -1,0 +1,13 @@
+body {
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-image: url("../js/ui/images/caracol.jpg");
+  background-position: right top;
+  background-size: 125%;
+}
+label, footer p, section > div:first-child > p span, body:not([id]) section > p  {
+  color: #903;
+}
+input[type="text"], input[type="tel"], input[type="email"] {
+  background-color: lightcyan;
+}

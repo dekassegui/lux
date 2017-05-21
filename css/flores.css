@@ -1,0 +1,23 @@
+body {
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-image: url("../js/ui/images/flores.jpg");
+  background-position: 50% 90%;
+  background-size: 100%;
+}
+label, footer p, section > div:first-child > p span, body:not([id]) section > p  {
+  color: lightcyan;
+}
+input#amount {
+  color: #cff;
+  font-weight: 600;
+}
+.alive {
+  color: #cff;
+}
+.alive:hover {
+  color: #9ff;
+}
+.alive:active {
+  color: #0ff;
+}

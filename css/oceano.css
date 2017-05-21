@@ -1,0 +1,22 @@
+body {
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-image: url("../js/ui/images/oceano.jpg");
+  background-position: center top;
+  background-size: 100% 100%;
+}
+label, footer p, section > div:first-child > p span, body:not([id]) section > p {
+  color: lightcyan;
+}
+input#amount {
+  color: #cff;
+}
+.alive {
+  color: #cff;
+}
+.alive:hover {
+  color: #9ff;
+}
+.alive:active {
+  color: #0ff;
+}

@@ -18,18 +18,6 @@ body:not([id]) section > div { margin-top: .75em; padding: 1px; }
 body:not([id]) * + label { margin-top: .25em; }
 body:not([id]) div#fields input { display: block; margin-top: .125em; }
 
-h1 {
-  font: 300 normal 1.25em "Open Sans", sans-serif;
-  text-shadow: 1px 0px 1px #676767;
-  /* font: 700 normal 1.25em "Droid Serif", serif; */
-  line-height: 1.6em;
-  font-variant: small-caps;
-  letter-spacing: .0625em /* .03125em */;
-  text-align: center;
-  text-transform: capitalize;
-  /* text-shadow: 2px 2px 4px #777; */
-  color: darkblue;
-}
 header {
   display: block;
   width: 100%;
@@ -42,6 +30,27 @@ header {
   border-bottom: solid 1px #cec;
   opacity: .85;
   box-shadow: 0 0 2px 2px rgba(0, 0, 0, .2);
+}
+h1 {
+  font: 300 normal 1.25em "Open Sans", sans-serif;
+  text-shadow: 1px 0px 1px #676767;
+  /* font: 700 normal 1.25em "Droid Serif", serif; */
+  line-height: 1.6em;
+  font-variant: small-caps;
+  letter-spacing: .0625em /* .03125em */;
+  text-align: center;
+  text-transform: capitalize;
+  /* text-shadow: 2px 2px 4px #777; */
+  color: darkblue;
+}
+#spinner {
+  position: absolute;
+  top: 2px;
+  right: 10px;
+  z-index: 1001;
+  width: 40px;
+  height: 40px;
+  background: transparent url("../js/ui/images/spinner.gif") center top no-repeat;
 }
 h2 { display: none; visibility: hidden; }
 
@@ -159,6 +168,7 @@ textarea {
   border: solid 1px #ccc;
   border-radius: 5px;
   box-shadow: none;
+  opacity: .87;
   /* configura uso de "transition" */
   -webkit-transition: color .75s, background-color .75s, box-shadow .75s;
   -webkit-transition-timing-function: linear;
@@ -174,7 +184,7 @@ textarea:focus {
 textarea.empty { font-style: italic; color: #99c; }
 
 #cleaner {
-  padding: 0px 8px 2px 8px;
+  padding: 3px 10px 5px 10px;
   font: 400 .7em "Open Sans", sans-serif;
   letter-spacing: .03125em;
   color: #777;
@@ -182,7 +192,7 @@ textarea.empty { font-style: italic; color: #99c; }
   background-image: -webkit-linear-gradient(top, transparent, #bbb);
   background-image: linear-gradient(top, transparent, #bbb);
   border: 1px solid #afafaf;
-  border-radius: 8px;
+  border-radius: 5px;
   cursor: pointer;
 }
 #cleaner:disabled {

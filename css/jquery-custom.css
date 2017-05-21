@@ -1,0 +1,147 @@
+.ui-tooltip {
+  max-width: 400px;
+  color: white !important;
+  background-color: #696969 !important;
+  font-size: .78em !important;
+  line-height: 1.5em;
+  border: none !important;
+  border-radius: 5px;
+  box-shadow: 1px 1px 5px rgba(0,0,0,.5);
+}
+.ui-tooltip b {
+  font-weight: 600;
+  color: gold;
+  margin-left:.125em;
+  margin-right: .125em;
+}
+.ui-tooltip em {
+  color: #cfc;
+  letter-spacing: .0625em;
+}
+.ui-tooltip span {
+  color: #adf;
+}
+.ui-button, .ui-tooltip *, .ui-datepicker *, .ui-dialog * {
+  font-family: FontAwesome, "Open Sans", sans-serif !important;
+}
+.ui-datepicker {
+  font-size: .925em;
+  width: 443px;
+  background-color: aquamarine;
+  box-shadow: 5px 5px 5px 5px rgba(0, 0, 0, .25);
+}
+.ui-datepicker .ui-widget-header {
+  border: none;
+  background-color: transparent;
+  color: #333;
+  font-weight: 600;
+  letter-spacing: .03125em;
+  word-spacing: .1em;
+  text-shadow: 1px 1px 1px white;
+}
+.ui-datepicker .ui-widget-header a:hover {
+  background-color: white;
+  background-image: linear-gradient(to top, #ccc, transparent);
+  border-radius: 5px;
+}
+.ui-datepicker .ui-widget-header a:active {
+  background-color: #f0f0f0;
+}
+.ui-datepicker th {
+  color: #333;
+  font-weight: 600;
+  text-shadow: 1px 1px 1px white;
+}
+.ui-datepicker td a {
+  width: 3em !important;
+  color: #000;
+  -webkit-background-image: linear-gradient(to bottom, transparent, #ddd) !important;
+  background-image: linear-gradient(to bottom, transparent, #ddd) !important;
+  font-weight: 600 !important;
+  text-align: center;
+  border-radius: 5px;
+}
+/* domingo */
+.ui-datepicker th:first-child, .ui-datepicker td:first-child a {
+  color: #c66;
+}
+/* hoje */
+.ui-datepicker .ui-state-highlight {
+  color: white !important;
+  background-color: darkorchid !important;
+  -webkit-background-image: linear-gradient(to top, transparent, orchid) !important;
+  background-image: linear-gradient(to top, transparent, orchid) !important;
+}
+.ui-datepicker .ui-state-highlight:hover {
+  background-color: purple !important;
+}
+/* dia corrente */
+td.ui-datepicker-current-day {
+  background: none !important;
+}
+td.ui-datepicker-current-day a {
+  border: solid 1px white !important;
+  background-color: #69c !important;
+  -webkit-background-image: none !important;
+  background-image: none !important;
+}
+/* ícones dos botões de seleção do mês */
+#ui-datepicker-div > div > a span.ui-icon {
+  background-attachment: scroll;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+#ui-datepicker-div > div > a:first-child span.ui-icon {
+  background-image: url('../js/ui/images/toLeft.png');
+}
+#ui-datepicker-div > div > a:first-child + a span.ui-icon {
+  background-image: url('../js/ui/images/toRight.png');
+}
+.ui-dialog {
+  background-color: #cff !important;
+  box-shadow: 5px 5px 5px 5px rgba(0, 0, 0, .25);
+}
+.ui-dialog .ui-dialog-titlebar {
+  border: none;
+  background-color: transparent;
+  color: #333;
+  font-size: 1.25em !important;
+  font-weight: 400;
+  font-variant: small-caps;
+  letter-spacing: .03125em;
+  word-spacing: .1em;
+  text-shadow: 1px 1px 1px white;
+}
+.ui-dialog .ui-dialog-buttonpane {
+  padding: 0px;
+  border: none;
+  background: transparent !important;
+}
+.ui-dialog .ui-dialog-buttonpane button {
+  padding: .125em .625em;
+  font-size: .85em;
+  letter-spacing: .03125em;
+  border-radius: 10px;
+  background-color: #e6e6e6;
+  -webkit-background-image: linear-gradient(to top, #ccc, transparent);
+  background-image: linear-gradient(to top, #ccc, transparent);
+}
+.ui-dialog .ui-dialog-buttonpane button:hover {
+  background-color: white;
+}
+.ui-dialog .ui-dialog-buttonpane button:active {
+  color: black !important;
+  background-color: #eee;
+  -webkit-background-image: none;
+  background-image: none;
+  border-color: #ccc;
+}
+.ui-dialog b {
+  color: #003090;
+  font-weight: 600;
+}
+.ui-dialog strong {
+  color: #000080;
+  font-weight: 700;
+}

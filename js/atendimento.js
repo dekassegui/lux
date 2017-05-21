@@ -10,73 +10,81 @@ $(document).ready(
 
     const aUri = uri.substring(0, uri.lastIndexOf("/")+1);
 
+    new StyleSwitcher();
+
     ["#data_emprestimo", "#data_devolucao"].forEach(
-      function (expression) {
-        $(expression).datepicker({
-          autoClose: true,
-          language: "pt-BR",
-          dateFormat: "dd-mm-yyyy",
-          navTitles: {
-            days: "MM - <i>yyyy</i>",
-            months: "yyyy",
-            years: "yyyy1 - yyyy2"
-          },
-          timepicker: true,
-          todayButton: new Date(),
-          clearButton: true,
-          keyboardNav: false,
-          onShow: function (dp, animationCompleted) {
-            if (dp.el.readOnly && !animationCompleted) {
-              $(dp.el).data("preserved", dp.el.value);
-            }
-          },
-          onHide: function (dp, animationCompleted) {
-            var inp = $(dp.el);
-            if (inp[0].readOnly && inp[0].value != inp.data("preserved")) {
-              if (animationCompleted) {
-                var valor = inp.data("preserved");
-                if (valor !== undefined) inp[0].value = valor;
-              } else {
-                show("<strong>READ ONLY</strong><br>O campo está disponível <b>somente&nbsp;para&nbsp;leitura</b>.");
-              }
-            }
-          },
-        });
+      function (element) {
+        $(element).datepicker({
+            showAnim: "fade",
+            duration: 1500,
+            constrainInput: false,
+            beforeShow: function (input, object) {
+                if (input.readOnly) {
+                  $(input).data("preserved", input.value);
+                }
+              },
+            onClose: function (dateText, instance) {
+                if (this.readOnly) {
+                  var input = $(this);
+                  var valor = input.data("preserved");
+                  if (dateText != valor) {
+                    if (valor !== undefined) input.val(valor);
+                    var msg = "O campo está disponível <strong>somente para leitura</strong>.\n\nClique no botão <b>\uf040&nbsp;Atualizar</b> ";
+                    if (this.id == "data_devolucao") msg += "ou em <b>\uf040&nbsp;Devolução</b>";
+                    msg += " para digitar ou selecionar a data no calendário."
+                    show("\uF06A READ ONLY", msg);
+                  }
+                } else if (dateText.length == 10) {
+                  function pad(x) { return (x < 10 ? "0" : "") + x; }
+                  var d = new Date();
+                  var hoje = pad(d.getDate()) + "-" + pad(d.getMonth()+1) + "-" + d.getFullYear();
+                  if (dateText == hoje) this.value = hoje + " " + pad(d.getHours()) + ":" + pad(d.getMinutes());
+                }
+              },
+          });
       });
 
-    // gestor de rolagens da WINDOW que sempre posiciona o TEXTAREA no topo
+    /*
+     * Gestor de rolagem da WINDOW e da tangibilidade do formulário.
+    */
     var SCROLLER = (
       function () {
-        var w = $(window);
+
         var h = $("header");
-        var d = $("section > div:first-child");
+        var d = $("section > div:first-child"); // container do formulário
+        var b = false;                          // status da tangibilidade
 
-        var b = true; /* inicialmente: d.innerHeight() > 0 */
-
-        h.click(
-          function () {
-            // atualização do tooltip do HEADER
-            const a = ["ocultar", "restaurar"];
-            h.attr("title", "clique aqui para " + a[b=!b&1] + " o formulário")
-              .children().css({color:(b?"#060":"#009")});
-          }
-        ).click( /* atualização inicial */ ).click(
-          function () {
-            // posiciona window no topo
-            w.scrollTo(0, 400 + (window.scrollY / 100 + 1) * 100);
-            // alterna a visualização do formulário
-            d.slideToggle("slow");
-          });
-
-        var t = $("textarea");
-
-        this.rolarAte = function (y) {
-          var d = window.scrollY;
-          if (y === undefined) {
-            d = y = t.offset().top - h.outerHeight() - 15;
-          }
-          w.scrollTo(y, 400 + (d / 100 + 1) * 100, { easing:"swing" });
+        function updateTip() {
+          const par = [ { "action":"restaurar", "cor":"#060" },
+                        { "action":"ocultar", "cor":"#009" } ];
+          h.tooltip("instance").close();
+          h.attr("title",
+            "clique aqui para <b>" + par[+(b=!b)].action + "</b> o formulário")
+            .children().animate({color:"#cfc"}).animate({color:par[+b].cor});
         }
+
+        var w = $(window.opera ? "html" : "html, body");
+
+        var t = $('<button id="GoTop">Go Top!</button>').click(
+          function () {
+            w.animate({ scrollTop: 0 }, 2000, "easeOutExpo");
+          }).insertAfter( $("textarea") );
+
+        this.scroll = function (x) {
+          t.click();
+          if (!x) {
+            d.slideToggle({ duration: 1000, easing: "swing" });
+            updateTip.apply(this);
+          }
+        };
+
+        var self = this;
+
+        h.click(function () { self.scroll(); }).tooltip(TOOLTIP_OPTIONS);
+
+        SPINNER = $('<span id="spinner"></span>').appendTo(h); //.hide();
+
+        updateTip();
 
         return this;
       }
@@ -95,15 +103,20 @@ $(document).ready(
     var firstBtn  = $("#firstBtn"),  previousBtn = $("#previousBtn"),
         nextBtn   = $("#nextBtn"),   lastBtn     = $("#lastBtn");
 
+    $([firstBtn, previousBtn, nextBtn, lastBtn]).tooltip(TOOLTIP_OPTIONS);
+
     var updateBtn = $("#updateBtn"),   delBtn    = $("#delBtn"),
         searchBtn = $("#searchBtn"),   newBtn    = $("#newBtn"),
         saveBtn   = $("#saveBtn"),     cancelBtn = $("#cancelBtn"),
         infoBtn   = $("#cmd01Btn"),    leitorBtn = $("#cmd02Btn");
 
-    var commandButtons = [updateBtn, delBtn, searchBtn, newBtn, infoBtn,
-                          leitorBtn];
+    var commandButtons = [updateBtn, delBtn, searchBtn, newBtn, infoBtn, leitorBtn];
+
+    $(commandButtons).tooltip(TOOLTIP_OPTIONS);
 
     var actionButtons = [saveBtn, cancelBtn];
+
+    $(actionButtons).tooltip(TOOLTIP_OPTIONS);
 
     // montador/gestor de elementos do tipo LABEL adaptados como BUTTON
     // para acionar a atualização e criação de registros de empréstimos
@@ -123,18 +136,23 @@ $(document).ready(
             if (busy()) return;
             ev.preventDefault();
             newBtn.click();
-          });
+          }).attr("title", "clique aqui para registrar <span>Empréstimo</span><br><em>equivale a clicar no botão</em> <b>\uf067&nbsp;Novo</b>");
 
         var ldd = $('label[for="data_devolucao"]').addClass(className).click(
           function () {
             if (busy()) return;
             updateBtn.click();
-          });
+          }).attr("title", "clique aqui para atualizar o registro de empréstimo apresentado, iniciando pela data de <span>Devolução</span><br><em>equivale a clicar no botão</em> <b>\uf040&nbsp;Atualizar</b> <em>e depois no campo de edição da data de</em> <span>Devolução</span>");
+
+        [lde, ldd].forEach(function (el) { el.tooltip(TOOLTIP_OPTIONS); });
 
         this.toggle = function (bool) {
-          lde.toggleClass(className, bool);
-          ldd.toggleClass(className, bool);
-        }
+          var action =  bool ? "enable" : "disable";
+          [lde, ldd].forEach(
+            function (el) {
+              el.toggleClass(className, bool).tooltip(action);
+            });
+        };
 
         return this;
       }
@@ -155,6 +173,8 @@ $(document).ready(
     var DATALIST_OBRAS = $("#acervo_obras");
 
     var DATALISTS = [DATALIST_OBRAS, $("#leitores")];
+
+    var SPINNER;
 
     function disableButtons() {
       // desabilita botões de navegação & comando
@@ -254,31 +274,23 @@ $(document).ready(
               indexRec = valor;
               update();
             } else {
-              show("Erro: Número de registro é ilegal.");
               ev.preventDefault();
             }
           }
         } else {
-          show("Erro: A tabela está vazia.");
+          show("\uF06A Atenção", "A tabela está vazia.");
+          whenTableIsEmpty();
         }
       });
 
     // incrementa a responsividade na perda de foco do INPUT #counter
     counter.blur(
       function () {
-        var valor = parseInt(counter[0].value);  // aborta edição pendente do
-        if (0 < valor && valor <= numRecs) {  // input do índice do registro
-          indexRec = valor;                   // corrente, atualizando-o
+        var valor = parseInt(counter[0].value); // aborta edição pendente do
+        if (0 < valor && valor <= numRecs) {    // input do índice do registro
+          indexRec = valor;                     // corrente, atualizando-o
         } else {
-          var text = "Erro: Valor do índice do registro ilegal.<br><span>";
-          if (0 < indexRec && indexRec <= numRecs) {
-            text += "Restaurando";
-            counter[0].value = indexRec;
-          } else {
-            text += "Reiniciando";
-            counter[0].value = indexRec = 1;
-          }
-          show(text + " valor do índice do registro corrente.</span>");
+          show("\uF06A Atenção", "A edição do <strong>número de registro</strong> foi abortada pelo usuário, enquanto era esperado valor maior igual a <strong>1</strong> e menor igual a <strong>" + numRecs + "</strong>.");
         }
         update();
       });
@@ -322,6 +334,7 @@ $(document).ready(
         updateBtn.addClass("working");
         disableButtons();
         setReadonly(false);
+        SPINNER.fadeIn();
         DATALISTS.forEach(
           function (dataList, index) {
             $.get(
@@ -330,8 +343,9 @@ $(document).ready(
             ).done(
               function () {
                 if (index == 1) {
+                  SPINNER.fadeOut();
                   FAKE_BUTTONS.toggle(false);
-                  SCROLLER.rolarAte(0);
+                  SCROLLER.scroll(1);
                 }
               });
           });
@@ -343,7 +357,7 @@ $(document).ready(
         saveBtn[0].value = "\uF00C Confirmar";
         disableButtons();
         FAKE_BUTTONS.toggle(false);
-        SCROLLER.rolarAte(0);
+        SCROLLER.scroll(1);
       });
 
     searchBtn.click(
@@ -353,19 +367,18 @@ $(document).ready(
         disableButtons();
         setValues();
         setReadonly(false);
+        SPINNER.fadeIn();
         DATALISTS.forEach(
           function (dataList, index) {
-            var inputField = dataList.prev();
-            inputField.val("ATUALIZANDO LISTA!");
             $.get(
               aUri + dataList[0].id + ".php?action=PESQUISA",
               function (options) { dataList.empty().append(options); }
             ).done(
               function () {
-                inputField.val("");
                 if (index == 1) {
+                  SPINNER.fadeOut();
                   FAKE_BUTTONS.toggle(false);
-                  SCROLLER.rolarAte(0);
+                  SCROLLER.scroll(1);
                   fields[2].val("NULL");
                   fields[4].focus(/* input#obra */);
                 }
@@ -379,19 +392,18 @@ $(document).ready(
         disableButtons();
         setValues();
         setReadonly(false);
+        SPINNER.fadeIn();
         DATALISTS.forEach(
           function (dataList, index) {
-            var inputField = dataList.prev();
-            inputField.val("ATUALIZANDO LISTA!");
             $.get(
               aUri + dataList[0].id + ".php?action=GETALL",
               function (options) { dataList.empty().append(options); }
             ).done(
               function () {
-                inputField.val("");
                 if (index == 1) {
+                  SPINNER.fadeOut();
                   FAKE_BUTTONS.toggle(false);
-                  SCROLLER.rolarAte(0);
+                  SCROLLER.scroll(1);
                   fields[0].focus(/* input#bibliotecario */);
                 }
               });
@@ -409,11 +421,14 @@ $(document).ready(
             });
         }
 
+        SPINNER.fadeIn();
+
         if (newBtn.hasClass("working")) {
 
           funktion = function (texto) {
-            if (texto.startsWith("Error")) {
-              show("Inserção mal sucedida.<br>" + texto);
+            SPINNER.fadeOut();
+            if (texto.startsWith("Erro")) {
+              show("\uF06A Atenção", "Não foi possível registrar novo empréstimo.\n\n" + texto);
             } else {
               amount[0].value = ++numRecs;
               indexRec = parseInt(texto);
@@ -429,7 +444,7 @@ $(document).ready(
               setDisabled(actionButtons, true);
               setReadonly(true);
               FAKE_BUTTONS.toggle(true);
-              show("Inserção bem sucedida.<span>Informe a data limite para devolução.</span>");
+              show("\uF06A Notificação", "O empréstimo foi registrado com sucesso.\n\n<strong>Informe a data limite para devolução</strong>.");
             }
           };
           par.push("?action=INSERT");
@@ -438,8 +453,9 @@ $(document).ready(
         } else if (searchBtn.hasClass("working")) {
 
           funktion = function (texto) {
+            SPINNER.fadeOut();
             if (texto.startsWith("Advertência")) {
-              show("Não há dados que satisfaçam a pesquisa.");
+              show("\uF05A Informação", "Não há dados que satisfaçam a pesquisa.\n\nRevise os valores dos campos e tente novamente.");
             } else {
               let r = texto.split("\n");
               // checa se resultado da pesquisa é registro único
@@ -474,7 +490,7 @@ $(document).ready(
                   }
                 }
                 MURAL.append(buf);
-                SCROLLER.rolarAte();
+                SCROLLER.scroll();
               }
             }
           };
@@ -484,12 +500,13 @@ $(document).ready(
         } else if (updateBtn.hasClass("working")) {
 
           funktion = function (texto) {
+            SPINNER.fadeOut();
             if (texto.startsWith("Error")) {
-              show("Atualização mal sucedida.<br>" + texto);
+              show("\uF06A Atenção", "Não foi possível atualizar o registro de empréstimo.\n\n" + texto);
             } else {
               var n = parseInt(texto);
               if (n != indexRec) indexRec = n;
-              show("Atualização bem sucedida.");
+              show("\uF06A Notificação", "O registro de empréstimo foi atualizado com sucesso.");
               update();
               commandButtons.forEach(
                 function (el) {
@@ -507,14 +524,15 @@ $(document).ready(
         } else if (delBtn.hasClass("working")) {
 
           funktion = function (texto) {
+            SPINNER.fadeOut();
             if (texto.startsWith("Error")) {
-              show("Exclusão mal sucedida.<br>" + texto);
+              show("\uF06A Atenção", "Não foi possível excluir o registro de empréstimo.\n\n" + texto);
               cancelBtn.click();
             } else {
               amount[0].value = --numRecs;
               if (indexRec > numRecs) --indexRec;
               counter[0].maxLength = amount[0].value.length;
-              show("Exclusão bem sucedida.");
+              show("\uF06A Notificação", "O registro de empréstimo foi excluído com sucesso.");
               if (indexRec > 0) {
                 cancelBtn.click();
               } else {
@@ -557,24 +575,28 @@ $(document).ready(
       function () {
         // requisita listagem dos empréstimos esperado no dia corrente
         // e dos exemplares disponíveis no acervo, agrupados por título
+        SPINNER.fadeIn();
         $.get(
           aUri + "reporter.php?action=INFO",
           function (texto) {
+            SPINNER.fadeOut();
             if (!MURAL.isEmpty()) MURAL.append("");
             MURAL.append(texto);
-            SCROLLER.rolarAte();
+            SCROLLER.scroll();
           });
       });
 
     leitorBtn.click(
       function () {
         // requisita listagem dos leitores/obras com empréstimos em atraso
+        SPINNER.fadeIn();
         $.get(
           aUri + "reporter.php?action=LEITOR",
           function (texto) {
+            SPINNER.fadeOut();
             if (!MURAL.isEmpty()) MURAL.append("");
             MURAL.append(texto);
-            SCROLLER.rolarAte();
+            SCROLLER.scroll();
           });
       });
 
@@ -623,7 +645,7 @@ $(document).ready(
                     // do primeiro item do DATALIST
                     fields[6].val(DATALIST_EXEMPLARES[0].options.item(0).value);
                   } else {
-                    show("Nenhum exemplar da obra<br>está disponível no momento.");
+                    show("\uF06A Atenção", "Não há exemplar desta obra, disponível no momento.");
                     fields[6].val("\u2639 Não achei!");
                   }
                 });
@@ -640,7 +662,9 @@ $(document).ready(
           function (dataList) {
             $.get(
               aUri + dataList[0].id + ".php?action=GETALL",
-              function (options) { dataList.html(options); });
+              function (options, index) {
+                dataList.html(options);
+              });
           });
       }
     )();
@@ -659,18 +683,20 @@ $(document).ready(
 
       } else {
 
-        indexRec = parseInt(counter[0].value); // extrai o valor do input
-
+        indexRec = parseInt(counter[0].value);
         if (indexRec < 1) {
           counter[0].value = indexRec = 1;
         } else if (indexRec > numRecs) {
           counter[0].value = indexRec = numRecs;
         }
 
+        //SPINNER.fadeIn();
+
         // restaura os valores dos inputs consultando o DB por segurança
         $.get(
           uri + "?action=GETREC&recnumber=" + indexRec,
           function (texto) {
+            SPINNER.fadeOut();
             // atualiza os valores do registro corrente
             if (texto.startsWith("Erro")) {
               firstBtn.click();
@@ -699,9 +725,12 @@ $(document).ready(
 
     } else {
 
+      //SPINNER.fadeIn();
+
       $.get(
         uri + "?action=COUNT",
         function (texto) {
+          SPINNER.fadeOut();
           // declara a quantidade inicial de registros da tabela
           numRecs = parseInt(amount[0].value = texto);
           // declara a quantidade máxima de caracteres do input
