@@ -16,9 +16,7 @@ Sistema para gestão do acervo de bibliotecas de casas espíritas, composto de p
 
 ### dependências da interface
 
-* [Air-Datepicker](https://github.com/t1m0n/air-datepicker "Air-Datepicker")
 * [Font-Awesome](https://github.com/FortAwesome/Font-Awesome "Font-Awesome")
 * [jQuery](https://github.com/jquery/jquery "jQuery")
-* [jQuery.scrollTo](https://github.com/flesler/jquery.scrollTo "jQuery.scrollTo")
+* [jQuery UI](https://github.com/jquery/jquery-ui "jQuery UI")
 * [Metaphone for Brazilian Portuguese](https://sourceforge.net/projects/metaphoneptbr/ "Metaphone for Brazilian Portuguese")
-* [Sweet Alert](https://github.com/t4t5/sweetalert "Sweet Alert")

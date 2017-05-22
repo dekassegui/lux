@@ -12,6 +12,10 @@ $(document).ready(function () {
   */
   const uri = location.href.replace("html", "php");
 
+  var SPINNER = $('<span id="spinner"></span>').appendTo($("header"));
+
+  new StyleSwitcher();
+
   /**
    * Gestor do botão que efetiva a atualização quando clicado.
   */
@@ -40,30 +44,6 @@ $(document).ready(function () {
   })();
 
   /**
-   * Pesquisa valor via busca binária num array ordenado.
-   *
-   * @param array Array objeto da pesquisa, ordenado em ordem crescente.
-   * @param key Valor procurado.
-   * @return Integer Índice do valor no array na pesquisa bem sucedida
-   *                 ou -1 em caso contrario.
-  */
-  function binarySearch(array, key) {
-    var lo = 0, hi = array.length - 1, mid, element;
-    while (lo <= hi) {
-      mid = ((lo + hi) >> 1);
-      element = array[mid];
-      if (element < key) {
-        lo = mid + 1;
-      } else if (element > key) {
-        hi = mid - 1;
-      } else {
-        return mid;
-      }
-    }
-    return -1;
-  }
-
-  /**
    * Gestor dos inputs dos parâmetros numéricos para cálculo de "datas limite"
    * e validação dos empréstimos.
   */
@@ -80,7 +60,7 @@ $(document).ready(function () {
       var c = ev.which;
       if ((c < 48 || c > 57) && (c < 96 || c > 105)
         && !(c == 90 && ev.ctrlKey) // Ctrl-Z :: undo command
-        && ($.binarySearch([8, 9, 13, 27, 35, 36, 37, 39, 46], c) == -1))
+        && (binarySearch([8, 9, 13, 27, 35, 36, 37, 39, 46], c) == -1))
       {
         ev.preventDefault();
       }
@@ -191,16 +171,18 @@ $(document).ready(function () {
    * Requisita e carrega registro container da configuração de empréstimos.
   */
   function loadConfig() {
+    SPINNER.fadeIn();
     $.get(
       uri + "?action=GETREC",
-      function (data) {
+      function (texto) {
         // monta o array dos valores :: [prazo, pendencias, weekdays]
         // particionando a string container dos dados requisitados
-        var values = data.split("|");
+        var values = texto.split("|");
         // preenche inputs dos parâmetros numéricos
         BANGO.setValues(values);
         // preenche inputs dos "dias da semana"
         MASK.setValue(parseInt(values[2]));
+        SPINNER.fadeOut();
       });
   }
 
@@ -210,21 +192,20 @@ $(document).ready(function () {
   function saveConfig() {
     $.get(
       uri + "?action=UPDATE&CFG=" + BANGO.getValues() + "|" + MASK.getValue(),
-      function (data) {
-        var text = (data.length == 0) ? "Atualização desnecessária." :
-              "<p>" + data.replace(/(['"])([^'"]+)\1/g, "<strong>$2</strong>")
+      function (texto) {
+        var msg = (texto.length == 0) ? "<p>Atualização desnecessária.</p>" :
+              "<p>" + texto.replace(/(['"])([^'"]+)\1/g, "<strong>$2</strong>")
          .replace(/:\s*/g, ":<br>").replace(/\r\n|\n|\r/g, "</p><p>") + "</p>";
-        swal({
-            allowEscapeKey: true,         html: true,
-            confirmButtonColor: "#f62",   title: null,
-            confirmButtonText: "Fechar",  text: text,
-          },
-          loadConfig);
-      });
+        show("\uF06A Informação", msg);
+      }).done(loadConfig);
   }
 
   BUTTON.setOnClick(saveConfig);
 
+  $(document).tooltip(TOOLTIP_OPTIONS);
+
   loadConfig();
+
+  SPINNER.fadeOut();
 
 });

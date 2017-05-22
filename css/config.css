@@ -2,7 +2,7 @@ body {
   padding: 10px;
   font: 400 normal 18pt "Open Sans", sans-serif;
   color: #676767;
-  background-color: honeydew;
+  /* background-color: honeydew; */
 }
 header {
   display: block;
@@ -27,7 +27,19 @@ h1 {
   text-transform: capitalize;
   color: darkblue;
 }
-h2 { display: none; visibility: hidden; }
+#spinner {
+  position: absolute;
+  top: 2px;
+  right: 10px;
+  z-index: 1001;
+  width: 40px;
+  height: 40px;
+  background: transparent url("../img/spinner.gif") center top no-repeat;
+}
+h2 {
+  display: none;
+  visibility: hidden;
+}
 fieldset {
   background-color: #eeffff;
   border: solid 1px #ccc;
@@ -42,18 +54,20 @@ fieldset > * { /* evita seleção de texto ao clicar no canvas */
   user-select: none;
 }
 label {
+  color: #006090 !important;
   letter-spacing: .015625em;
   -webkit-transition: color 1s;
   -webkit-transition-timing-function: linear;
   transition: color 1s;
   transition-timing-function: linear;
 }
-label:hover { color: black; }
-label.modified {
-  color: black;
-  text-shadow: 1px 0px 1px #ccc;
+label:hover {
+  color: blue !important;
 }
-label.modified:hover { color: #930; }
+label.modified {
+  color: darkred !important;
+}
+label.modified:hover { color: red !important; }
 section {
   display: block;
   width: 500px;
@@ -112,15 +126,36 @@ input#updateBtn {
   line-height: 1.8em;
   letter-spacing: .04em;
   color: black;
+  background-color: #f6f6f6;
+  background-image: linear-gradient(180deg, transparent, #c6c6c6);
+  border: solid 1px #bbb;
+  border-radius: 7px;
   transform: rotate(-7deg);
   -webkit-transition: color .5s;
   -webkit-transition-timing-function: ease-in;
   transition: color .5s;
   transition-timing-function: ease-in;
 }
-input#updateBtn:hover { color: red; }
-input#updateBtn:focus { color: #90c; }
-input#updateBtn:disabled { color: #bbb; }
+input#updateBtn:disabled {
+  color: #bbb;
+  border-color: #ddd;
+}
+input#updateBtn:enabled {
+  background-color: #eff;
+}
+input#updateBtn:enabled:hover {
+  color: #c30;
+  border-color: #c60;
+}
+input#updateBtn:active {
+  color: red !important;
+  border-color: #f40 !important;
+  background-color: #eee;
+  background-image: none;
+}
+input#updateBtn:focus {
+  color: darkorange;
+}
 
 footer {
   display: block;
