@@ -1,13 +1,10 @@
 body {
   background-attachment: fixed;
   background-repeat: no-repeat;
-  background-image: url("../img/caracol.jpg");
+  background-image: url("../img/purple-curves.jpg");
   background-position: left bottom;
-  background-size: 112%;
+  background-size: 100% auto;
 }
 label, footer p, section > div:first-child > p span, body:not([id]) section > p  {
-  color: #903;
-}
-input[type="text"], input[type="tel"], input[type="email"] {
-  background-color: lightcyan;
+  color: #069;
 }

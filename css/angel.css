@@ -1,25 +1,22 @@
 body {
   background-attachment: fixed;
   background-repeat: no-repeat;
-  background-image: url("../img/glowing-flowers.jpg");
+  background-image: url("../img/angel.jpg");
   background-position: left top;
-  background-size: 110%;
-}
-input[type="text"], input[type="tel"], input[type="email"] {
-  background-color: #efe;
+  background-size: 107%;
 }
 label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled {
-  color: #933;
+  color: #3be;
 }
 input#amount {
-  color: #622;
+  color: #3ae;
 }
 .alive {
-  color: #c63;
+  color: #39e;
 }
 .alive:hover {
-  color: #c30;
+  color: #3de;
 }
 .alive:active {
-  color: #f00;
+  color: #3ee;
 }

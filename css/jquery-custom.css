@@ -93,10 +93,10 @@ td.ui-datepicker-current-day a {
   background-size: contain;
 }
 #ui-datepicker-div > div > a:first-child span.ui-icon {
-  background-image: url('../js/ui/images/toLeft.png');
+  background-image: url('../img/toLeft.png');
 }
 #ui-datepicker-div > div > a:first-child + a span.ui-icon {
-  background-image: url('../js/ui/images/toRight.png');
+  background-image: url('../img/toRight.png');
 }
 .ui-dialog {
   background-color: #cff !important;
@@ -122,7 +122,7 @@ td.ui-datepicker-current-day a {
   padding: .125em .625em;
   font-size: .85em;
   letter-spacing: .03125em;
-  border-radius: 10px;
+  border-radius: 5px;
   background-color: #e6e6e6;
   -webkit-background-image: linear-gradient(to top, #ccc, transparent);
   background-image: linear-gradient(to top, #ccc, transparent);
@@ -138,10 +138,14 @@ td.ui-datepicker-current-day a {
   border-color: #ccc;
 }
 .ui-dialog b {
-  color: #003090;
+  color: #009;
   font-weight: 600;
 }
 .ui-dialog strong {
-  color: #000080;
-  font-weight: 700;
+  color: #069;
+  font-weight: 600;
+}
+.ui-dialog p {
+  text-align: center;
+  font-weight: 600;
 }

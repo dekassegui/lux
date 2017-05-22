@@ -50,7 +50,7 @@ h1 {
   z-index: 1001;
   width: 40px;
   height: 40px;
-  background: transparent url("../js/ui/images/spinner.gif") center top no-repeat;
+  background: transparent url("../img/spinner.gif") center top no-repeat;
 }
 h2 { display: none; visibility: hidden; }
 

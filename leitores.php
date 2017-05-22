@@ -4,6 +4,28 @@
 
   require 'utils.php';
 
+  function translate($s, $action) {
+    $invalid = (strpos($s, 'NULL') !== FALSE);
+    if ($invalid) {
+      if (strpos($s, 'code') !== FALSE) {
+        return 'Erro: O <b>Código</b> do leitor não foi preenchido.';
+      } else if (strpos($s, 'nome') !== FALSE) {
+        return 'Erro: O <b>Nome</b> do leitor não foi preenchido.';
+      } else if (strpos($s, 'telefone') !== FALSE) {
+        return 'Erro: O <b>Telefone</b> do leitor não foi preenchido.';
+      } else if (strpos($s, 'email') !== FALSE) {
+        return 'Erro: O <b>e-Mail</b> do leitor não foi preenchido.';
+      }
+    } else if (strpos($s, 'constraint') !== FALSE) {
+      if ($action == 'DELETE') {
+        return 'Erro: O leitor tem algum empréstimo pendente.';
+      } else {
+        return 'Erro: O <b>Telefone</b>  ou <b>e-Mail</b> do leitor não foi preenchido.';
+      }
+    }
+    return 'Erro: '.$s;
+  }
+
   try {
     $db = new SQLitePDO();
     $db->connect();
@@ -73,7 +95,7 @@ EOT;
       }
       // requisita a atualização ou inserção
       if ($db->exec($sql) === FALSE) {
-        echo 'Error: ', $db->lastErrorMsg();
+        echo translate($db->lastErrorMsg());
       } else {
         if (rebuildTable($db)) {
           echo $db->querySingle(
@@ -90,7 +112,7 @@ EOT;
         DELETE FROM leitores WHERE rowid = {$_GET['recnumber']};
 EOT;
       if ($db->exec($sql) === FALSE) {
-        echo 'Error: ', $db->lastErrorMsg();
+        echo translate($db->lastErrorMsg(), 'DELETE');
       } else {
         rebuildTable($db);
         echo 'TRUE';

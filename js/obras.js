@@ -10,7 +10,7 @@ $(document).ready(
 
     new StyleSwitcher();
 
-    var SPINNER = $('<span id="spinner"></span>').appendTo($("header")).hide();
+    var SPINNER = $('<span id="spinner"></span>').appendTo($("header"));
 
     // ajuste da largura do elemento ASIDE container do TEXTAREA
     $(window).resize(
@@ -167,12 +167,12 @@ $(document).ready(
               indexRec = valor;
               update();
             } else {
-              show("\uF06A Atenção", "Erro: Número de registro é ilegal.");
               ev.preventDefault();
             }
           }
         } else {
-          show("\uF06A Atenção", "Erro: A tabela está vazia.");
+          show("\uF06A Atenção", "A tabela está vazia.");
+          whenTableIsEmpty();
         }
       });
 
@@ -183,15 +183,7 @@ $(document).ready(
         if (0 < valor && valor <= numRecs) {    // input do índice do registro
           indexRec = valor;                     // corrente, atualizando-o
         } else {
-          var text = "Erro: Número de registro é ilegal.<br><span>";
-          if (0 < indexRec && indexRec <= numRecs) {
-            text += "Restaurando";
-          } else {
-            text += "Reiniciando";
-            indexRec = 1;
-          }
-          show("\uF06A Atenção", text + " valor do índice do registro corrente.</span>");
-          counter[0].value = indexRec;
+          show("\uF06A Atenção", "A edição do <strong>número de registro</strong> foi abortada pelo usuário, enquanto era esperado valor maior igual a <strong>1</strong> e menor igual a <strong>" + numRecs + "</strong>.");
         }
         update();
       });
@@ -281,8 +273,8 @@ $(document).ready(
 
           funktion = function (texto) {
             SPINNER.fadeOut();
-            if (texto.startsWith("Error")) {
-              show("\uF06A Atenção", "Erro: Inserção mal sucedida.<br><span>"+texto+"</span>");
+            if (texto.startsWith("Erro")) {
+              show("\uF06A Atenção", "<p>Não foi possível adicionar novo registro.</p>\n" + texto);
             } else {
               amount[0].value = ++numRecs;
               indexRec = parseInt(texto);
@@ -295,7 +287,7 @@ $(document).ready(
                 });
               setDisabled(actionButtons, true);
               setReadonly(true);
-              show("\uF06A Atenção", "<span>Inserção bem sucedida.</span>");
+              show("\uF06A Notificação", "<p>O novo registro foi adicionado com sucesso.</p>");
             }
           };
           par.push("?action=INSERT");
@@ -305,8 +297,8 @@ $(document).ready(
 
           funktion = function (texto) {
             SPINNER.fadeOut();
-            if (/^(?:Advertência|Warning)/.test(texto)) {
-              show("\uF06A Atenção", "Não há dados que satisfaçam a pesquisa.");
+            if (texto.startsWith("Advertência")) {
+              show("\uF05A Informação", "<p>Não há dados que satisfaçam a pesquisa.</p>\nRevise os valores dos campos e tente novamente.");
               // FOR DEBUG PURPOSE: MURAL.append("SQL: " + texto);
             } else {
               let r = texto.split("\n");
@@ -354,12 +346,12 @@ $(document).ready(
 
           funktion = function (texto) {
             SPINNER.fadeOut();
-            if (texto.startsWith("Error")) {
-              show("\uF06A Atenção", "Erro: Atualização mal sucedida.<br><span>"+texto+"</span>");
+            if (texto.startsWith("Erro")) {
+              show("\uF06A Atenção", "<p>Não foi possível atualizar o registro.</p>\n" + texto);
             } else {
               var n = parseInt(texto);
               if (n != indexRec) indexRec = n;
-              show("\uF06A Atenção", "<span>Atualização bem sucedida.</span>");
+              show("\uF06A Notificação", "<p>O registro foi atualizado com sucesso.</p>");
               cancelBtn.click();
             }
           };
@@ -370,14 +362,14 @@ $(document).ready(
 
           funktion = function (texto) {
             SPINNER.fadeOut();
-            if (texto.startsWith("Error")) {
-              show("\uF06A Atenção", "Erro: Exclusão mal sucedida.<br><span>"+texto+"</span>");
+            if (texto.startsWith("Erro")) {
+              show("\uF06A Atenção", "<p>Não foi possível excluir o registro.</p>\n<p>" + texto + "</p>");
               cancelBtn.click();
             } else {
               amount[0].value = --numRecs;
               if (indexRec > numRecs) --indexRec;
               counter[0].maxLength = amount[0].value.length;
-              show("\uF06A Atenção", "<span>Exclusão bem sucedida.</span>");
+              show("\uF06A Notificação", "<p>O registro foi excluído com sucesso.</p>");
               if (indexRec > 0) {
                 cancelBtn.click();
               } else {
@@ -450,7 +442,6 @@ $(document).ready(
         indexRec = parseInt(counter[0].value); // extrai o valor do input
 
         // restaura os valores dos inputs consultando o DB por segurança
-        SPINNER.fadeIn();
         $.get(
           uri + "?action=GETREC&recnumber=" + indexRec,
           function (texto) {
@@ -479,7 +470,6 @@ $(document).ready(
 
     } else {
 
-      SPINNER.fadeIn();
       $.get(
         uri + "?action=COUNT",
         function (texto) {

@@ -1,11 +1,11 @@
 body {
   background-attachment: fixed;
   background-repeat: no-repeat;
-  background-image: url("../js/ui/images/oceano.jpg");
+  background-image: url("../img/oceano.jpg");
   background-position: center top;
   background-size: 100% 100%;
 }
-label, footer p, section > div:first-child > p span, body:not([id]) section > p {
+label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled {
   color: lightcyan;
 }
 input#amount {

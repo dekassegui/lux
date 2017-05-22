@@ -29,9 +29,9 @@ $(document).ready(
                   var valor = input.data("preserved");
                   if (dateText != valor) {
                     if (valor !== undefined) input.val(valor);
-                    var msg = "O campo está disponível <strong>somente para leitura</strong>.\n\nClique no botão <b>\uf040&nbsp;Atualizar</b> ";
+                    var msg = "<p>O campo está disponível <strong>somente para leitura</strong>.</p>\n<p>Clique no botão <b>\uf040&nbsp;Atualizar</b> ";
                     if (this.id == "data_devolucao") msg += "ou em <b>\uf040&nbsp;Devolução</b>";
-                    msg += " para digitar ou selecionar a data no calendário."
+                    msg += " para digitar ou selecionar a data no calendário.</p>"
                     show("\uF06A READ ONLY", msg);
                   }
                 } else if (dateText.length == 10) {
@@ -82,7 +82,7 @@ $(document).ready(
 
         h.click(function () { self.scroll(); }).tooltip(TOOLTIP_OPTIONS);
 
-        SPINNER = $('<span id="spinner"></span>').appendTo(h); //.hide();
+        SPINNER = $('<span id="spinner"></span>').appendTo(h);
 
         updateTip();
 
@@ -290,7 +290,7 @@ $(document).ready(
         if (0 < valor && valor <= numRecs) {    // input do índice do registro
           indexRec = valor;                     // corrente, atualizando-o
         } else {
-          show("\uF06A Atenção", "A edição do <strong>número de registro</strong> foi abortada pelo usuário, enquanto era esperado valor maior igual a <strong>1</strong> e menor igual a <strong>" + numRecs + "</strong>.");
+          show("\uF06A Atenção", "<p>A edição do <strong>número de registro</strong> foi abortada pelo usuário, enquanto era esperado valor maior igual a <b>1</b> e menor igual a <b>" + numRecs + "</b>.</p>");
         }
         update();
       });
@@ -428,7 +428,7 @@ $(document).ready(
           funktion = function (texto) {
             SPINNER.fadeOut();
             if (texto.startsWith("Erro")) {
-              show("\uF06A Atenção", "Não foi possível registrar novo empréstimo.\n\n" + texto);
+              show("\uF06A Atenção", "<p>Não foi possível registrar novo empréstimo.\n\n" + texto + "</p>");
             } else {
               amount[0].value = ++numRecs;
               indexRec = parseInt(texto);
@@ -444,7 +444,7 @@ $(document).ready(
               setDisabled(actionButtons, true);
               setReadonly(true);
               FAKE_BUTTONS.toggle(true);
-              show("\uF06A Notificação", "O empréstimo foi registrado com sucesso.\n\n<strong>Informe a data limite para devolução</strong>.");
+              show("\uF06A Notificação", "<p><b>O empréstimo foi registrado com sucesso.</b>\n\nInforme a data limite para devolução.</p>");
             }
           };
           par.push("?action=INSERT");
@@ -455,7 +455,7 @@ $(document).ready(
           funktion = function (texto) {
             SPINNER.fadeOut();
             if (texto.startsWith("Advertência")) {
-              show("\uF05A Informação", "Não há dados que satisfaçam a pesquisa.\n\nRevise os valores dos campos e tente novamente.");
+              show("\uF05A Informação", "<p><b>Não há dados que satisfaçam a pesquisa.</b>\n\nRevise os valores dos campos e tente novamente.</p>");
             } else {
               let r = texto.split("\n");
               // checa se resultado da pesquisa é registro único
@@ -502,7 +502,7 @@ $(document).ready(
           funktion = function (texto) {
             SPINNER.fadeOut();
             if (texto.startsWith("Error")) {
-              show("\uF06A Atenção", "Não foi possível atualizar o registro de empréstimo.\n\n" + texto);
+              show("\uF06A Atenção", "<p><b>Não foi possível atualizar o registro de empréstimo.</b>\n\n" + texto + "</p>");
             } else {
               var n = parseInt(texto);
               if (n != indexRec) indexRec = n;
@@ -526,13 +526,13 @@ $(document).ready(
           funktion = function (texto) {
             SPINNER.fadeOut();
             if (texto.startsWith("Error")) {
-              show("\uF06A Atenção", "Não foi possível excluir o registro de empréstimo.\n\n" + texto);
+              show("\uF06A Atenção", "<p>Não foi possível excluir o registro de empréstimo.\n\n" + texto + "</p>");
               cancelBtn.click();
             } else {
               amount[0].value = --numRecs;
               if (indexRec > numRecs) --indexRec;
               counter[0].maxLength = amount[0].value.length;
-              show("\uF06A Notificação", "O registro de empréstimo foi excluído com sucesso.");
+              show("\uF06A Notificação", "<p>O registro de empréstimo foi excluído com sucesso.</p>");
               if (indexRec > 0) {
                 cancelBtn.click();
               } else {
@@ -690,8 +690,6 @@ $(document).ready(
           counter[0].value = indexRec = numRecs;
         }
 
-        //SPINNER.fadeIn();
-
         // restaura os valores dos inputs consultando o DB por segurança
         $.get(
           uri + "?action=GETREC&recnumber=" + indexRec,
@@ -724,8 +722,6 @@ $(document).ready(
       }
 
     } else {
-
-      //SPINNER.fadeIn();
 
       $.get(
         uri + "?action=COUNT",
