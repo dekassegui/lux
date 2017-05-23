@@ -10,7 +10,7 @@ $(document).ready(
 
     new StyleSwitcher();
 
-    var SPINNER = $('<span id="spinner"></span>').appendTo($("header"));
+    var SPINNER = new Spinner("header");
 
     // ajuste da largura do elemento ASIDE container do TEXTAREA
     $(window).resize(
@@ -267,12 +267,12 @@ $(document).ready(
             });
         }
 
-        SPINNER.fadeIn();
+        SPINNER.run();
 
         if (newBtn.hasClass("working")) {
 
           funktion = function (texto) {
-            SPINNER.fadeOut();
+            SPINNER.stop();
             if (texto.startsWith("Erro")) {
               show("\uF06A Atenção", "<p>Não foi possível adicionar novo registro.</p>\n" + texto);
             } else {
@@ -296,7 +296,7 @@ $(document).ready(
         } else if (searchBtn.hasClass("working")) {
 
           funktion = function (texto) {
-            SPINNER.fadeOut();
+            SPINNER.stop();
             if (texto.startsWith("Advertência")) {
               show("\uF05A Informação", "<p>Não há dados que satisfaçam a pesquisa.</p>\nRevise os valores dos campos e tente novamente.");
               // FOR DEBUG PURPOSE: MURAL.append("SQL: " + texto);
@@ -345,7 +345,7 @@ $(document).ready(
         } else if (updateBtn.hasClass("working")) {
 
           funktion = function (texto) {
-            SPINNER.fadeOut();
+            SPINNER.stop();
             if (texto.startsWith("Erro")) {
               show("\uF06A Atenção", "<p>Não foi possível atualizar o registro.</p>\n" + texto);
             } else {
@@ -361,7 +361,7 @@ $(document).ready(
         } else if (delBtn.hasClass("working")) {
 
           funktion = function (texto) {
-            SPINNER.fadeOut();
+            SPINNER.stop();
             if (texto.startsWith("Erro")) {
               show("\uF06A Atenção", "<p>Não foi possível excluir o registro.</p>\n<p>" + texto + "</p>");
               cancelBtn.click();
@@ -445,7 +445,7 @@ $(document).ready(
         $.get(
           uri + "?action=GETREC&recnumber=" + indexRec,
           function (texto) {
-            SPINNER.fadeOut();
+            SPINNER.stop();
             // atualiza os valores do registro corrente
             setValues(texto.split("|"));
           });
@@ -473,7 +473,7 @@ $(document).ready(
       $.get(
         uri + "?action=COUNT",
         function (texto) {
-          SPINNER.fadeOut();
+          SPINNER.stop();
           // declara a quantidade inicial de registros da tabela
           numRecs = parseInt(amount[0].value = texto);
           // declara a quantidade máxima de caracteres do input

@@ -27,14 +27,15 @@ h1 {
   text-transform: capitalize;
   color: darkblue;
 }
-#spinner {
+header img { /* spinner image */
   position: absolute;
-  top: 2px;
-  right: 10px;
+  top: 8px;
+  right: 5px;
   z-index: 1001;
-  width: 40px;
-  height: 40px;
-  background: transparent url("../img/spinner.gif") center top no-repeat;
+  width: 30px;
+  height: 30px;
+  opacity: .5;
+  animation-duration: .8s;
 }
 h2 {
   display: none;

@@ -12,7 +12,7 @@ $(document).ready(function () {
   */
   const uri = location.href.replace("html", "php");
 
-  var SPINNER = $('<span id="spinner"></span>').appendTo($("header"));
+  var SPINNER = new Spinner("header");
 
   new StyleSwitcher();
 
@@ -171,7 +171,7 @@ $(document).ready(function () {
    * Requisita e carrega registro container da configuração de empréstimos.
   */
   function loadConfig() {
-    SPINNER.fadeIn();
+    SPINNER.run();
     $.get(
       uri + "?action=GETREC",
       function (texto) {
@@ -182,7 +182,7 @@ $(document).ready(function () {
         BANGO.setValues(values);
         // preenche inputs dos "dias da semana"
         MASK.setValue(parseInt(values[2]));
-        SPINNER.fadeOut();
+        SPINNER.stop();
       });
   }
 
@@ -206,6 +206,6 @@ $(document).ready(function () {
 
   loadConfig();
 
-  SPINNER.fadeOut();
+  SPINNER.stop();
 
 });

@@ -10,6 +10,8 @@ $(document).ready(
 
     const aUri = uri.substring(0, uri.lastIndexOf("/")+1);
 
+    var SPINNER = new Spinner("header");
+
     new StyleSwitcher();
 
     ["#data_emprestimo", "#data_devolucao"].forEach(
@@ -81,8 +83,6 @@ $(document).ready(
         var self = this;
 
         h.click(function () { self.scroll(); }).tooltip(TOOLTIP_OPTIONS);
-
-        SPINNER = $('<span id="spinner"></span>').appendTo(h);
 
         updateTip();
 
@@ -173,8 +173,6 @@ $(document).ready(
     var DATALIST_OBRAS = $("#acervo_obras");
 
     var DATALISTS = [DATALIST_OBRAS, $("#leitores")];
-
-    var SPINNER;
 
     function disableButtons() {
       // desabilita botões de navegação & comando
@@ -334,7 +332,7 @@ $(document).ready(
         updateBtn.addClass("working");
         disableButtons();
         setReadonly(false);
-        SPINNER.fadeIn();
+        SPINNER.run();
         DATALISTS.forEach(
           function (dataList, index) {
             $.get(
@@ -343,7 +341,7 @@ $(document).ready(
             ).done(
               function () {
                 if (index == 1) {
-                  SPINNER.fadeOut();
+                  SPINNER.stop();
                   FAKE_BUTTONS.toggle(false);
                   SCROLLER.scroll(1);
                 }
@@ -367,7 +365,7 @@ $(document).ready(
         disableButtons();
         setValues();
         setReadonly(false);
-        SPINNER.fadeIn();
+        SPINNER.run();
         DATALISTS.forEach(
           function (dataList, index) {
             $.get(
@@ -376,7 +374,7 @@ $(document).ready(
             ).done(
               function () {
                 if (index == 1) {
-                  SPINNER.fadeOut();
+                  SPINNER.stop();
                   FAKE_BUTTONS.toggle(false);
                   SCROLLER.scroll(1);
                   fields[2].val("NULL");
@@ -392,7 +390,7 @@ $(document).ready(
         disableButtons();
         setValues();
         setReadonly(false);
-        SPINNER.fadeIn();
+        SPINNER.run();
         DATALISTS.forEach(
           function (dataList, index) {
             $.get(
@@ -401,7 +399,7 @@ $(document).ready(
             ).done(
               function () {
                 if (index == 1) {
-                  SPINNER.fadeOut();
+                  SPINNER.stop();
                   FAKE_BUTTONS.toggle(false);
                   SCROLLER.scroll(1);
                   fields[0].focus(/* input#bibliotecario */);
@@ -421,12 +419,12 @@ $(document).ready(
             });
         }
 
-        SPINNER.fadeIn();
+        SPINNER.run();
 
         if (newBtn.hasClass("working")) {
 
           funktion = function (texto) {
-            SPINNER.fadeOut();
+            SPINNER.stop();
             if (texto.startsWith("Erro")) {
               show("\uF06A Atenção", "<p>Não foi possível registrar novo empréstimo.\n\n" + texto + "</p>");
             } else {
@@ -453,7 +451,7 @@ $(document).ready(
         } else if (searchBtn.hasClass("working")) {
 
           funktion = function (texto) {
-            SPINNER.fadeOut();
+            SPINNER.stop();
             if (texto.startsWith("Advertência")) {
               show("\uF05A Informação", "<p><b>Não há dados que satisfaçam a pesquisa.</b>\n\nRevise os valores dos campos e tente novamente.</p>");
             } else {
@@ -500,7 +498,7 @@ $(document).ready(
         } else if (updateBtn.hasClass("working")) {
 
           funktion = function (texto) {
-            SPINNER.fadeOut();
+            SPINNER.stop();
             if (texto.startsWith("Error")) {
               show("\uF06A Atenção", "<p><b>Não foi possível atualizar o registro de empréstimo.</b>\n\n" + texto + "</p>");
             } else {
@@ -524,7 +522,7 @@ $(document).ready(
         } else if (delBtn.hasClass("working")) {
 
           funktion = function (texto) {
-            SPINNER.fadeOut();
+            SPINNER.stop();
             if (texto.startsWith("Error")) {
               show("\uF06A Atenção", "<p>Não foi possível excluir o registro de empréstimo.\n\n" + texto + "</p>");
               cancelBtn.click();
@@ -575,11 +573,11 @@ $(document).ready(
       function () {
         // requisita listagem dos empréstimos esperado no dia corrente
         // e dos exemplares disponíveis no acervo, agrupados por título
-        SPINNER.fadeIn();
+        SPINNER.run();
         $.get(
           aUri + "reporter.php?action=INFO",
           function (texto) {
-            SPINNER.fadeOut();
+            SPINNER.stop();
             if (!MURAL.isEmpty()) MURAL.append("");
             MURAL.append(texto);
             SCROLLER.scroll();
@@ -589,11 +587,11 @@ $(document).ready(
     leitorBtn.click(
       function () {
         // requisita listagem dos leitores/obras com empréstimos em atraso
-        SPINNER.fadeIn();
+        SPINNER.run();
         $.get(
           aUri + "reporter.php?action=LEITOR",
           function (texto) {
-            SPINNER.fadeOut();
+            SPINNER.stop();
             if (!MURAL.isEmpty()) MURAL.append("");
             MURAL.append(texto);
             SCROLLER.scroll();
@@ -694,7 +692,7 @@ $(document).ready(
         $.get(
           uri + "?action=GETREC&recnumber=" + indexRec,
           function (texto) {
-            SPINNER.fadeOut();
+            SPINNER.stop();
             // atualiza os valores do registro corrente
             if (texto.startsWith("Erro")) {
               firstBtn.click();
@@ -726,7 +724,7 @@ $(document).ready(
       $.get(
         uri + "?action=COUNT",
         function (texto) {
-          SPINNER.fadeOut();
+          SPINNER.stop();
           // declara a quantidade inicial de registros da tabela
           numRecs = parseInt(amount[0].value = texto);
           // declara a quantidade máxima de caracteres do input

@@ -194,3 +194,16 @@ function StyleSwitcher() {
 
   return this;
 }
+
+function Spinner(parent) {
+
+  var scope = parent;
+
+  var spinner = $('<img src="img/gear.png" class="ld ld-cycle"/>').appendTo(parent);
+
+  function toggle() { spinner.toggleClass("paused"); }
+
+  this.stop = this.run = function () { toggle.apply(scope); };
+
+  return this;
+}
