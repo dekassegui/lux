@@ -41,6 +41,7 @@
 }
 .ui-datepicker .ui-widget-header a:hover {
   background-color: white;
+  background-image: -webkit-linear-gradient(top, #ccc, transparent);
   background-image: linear-gradient(to top, #ccc, transparent);
   border-radius: 5px;
 }
@@ -55,7 +56,7 @@
 .ui-datepicker td a {
   width: 3em !important;
   color: #000;
-  -webkit-background-image: linear-gradient(to bottom, transparent, #ddd) !important;
+  background-image: -webkit-linear-gradient(bottom, transparent, #ddd) !important;
   background-image: linear-gradient(to bottom, transparent, #ddd) !important;
   font-weight: 600 !important;
   text-align: center;
@@ -69,7 +70,7 @@
 .ui-datepicker .ui-state-highlight {
   color: white !important;
   background-color: darkorchid !important;
-  -webkit-background-image: linear-gradient(to top, transparent, orchid) !important;
+  background-image: -webkit-linear-gradient(top, transparent, orchid) !important;
   background-image: linear-gradient(to top, transparent, orchid) !important;
 }
 .ui-datepicker .ui-state-highlight:hover {
@@ -124,7 +125,7 @@ td.ui-datepicker-current-day a {
   letter-spacing: .03125em;
   border-radius: 5px;
   background-color: #e6e6e6;
-  -webkit-background-image: linear-gradient(to top, #ccc, transparent);
+  background-image: -webkit-linear-gradient(top, #ccc, transparent);
   background-image: linear-gradient(to top, #ccc, transparent);
 }
 .ui-dialog .ui-dialog-buttonpane button:hover {
@@ -133,7 +134,6 @@ td.ui-datepicker-current-day a {
 .ui-dialog .ui-dialog-buttonpane button:active {
   color: black !important;
   background-color: #eee;
-  -webkit-background-image: none;
   background-image: none;
   border-color: #ccc;
 }

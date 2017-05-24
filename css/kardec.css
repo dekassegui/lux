@@ -1,13 +1,20 @@
 body {
-  background-color: white;
+  background-color: aliceblue;
   background-attachment: fixed, fixed, fixed;
-  background-image: linear-gradient(90deg, transparent -200%, #eff 200%),
+  background-image:
+    -webkit-linear-gradient(left, transparent -200%, white 200%),
     url("../img/kardec.png"),
     url("../img/table-tournante.png");
-  background-position: center center,
+  background-image:
+    linear-gradient(90deg, rgb(255 255 255 / .5), rgb(255 255 255 / .5)),
+    url("../img/kardec.png"),
+    url("../img/table-tournante.png");
+  background-position:
+    center,
     -6.5em 3em,
     90% 92%;
-  background-size: auto auto,
+  background-size:
+    auto,
     63% auto,
     auto auto;
   background-repeat: no-repeat, no-repeat, no-repeat;
@@ -28,5 +35,5 @@ input#amount {
   color: #3cf;
 }
 label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount, .alive {
-  text-shadow: 1px 1px 1px #999;
+  text-shadow: 1px 1px 1px #AAA;
 }
