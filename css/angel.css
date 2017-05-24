@@ -6,17 +6,21 @@ body {
   background-size: 107%;
 }
 label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled {
-  color: #3be;
+  color: lightcyan;
 }
 input#amount {
-  color: #3ae;
+  color: lightcyan;
 }
 .alive {
-  color: #39e;
+  color: lightcyan;
 }
 .alive:hover {
-  color: #3de;
+  color: cyan;
 }
 .alive:active {
-  color: #3ee;
+  color: white;
+}
+label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount, .alive
+{
+  text-shadow: 1px 1px 1px #111;
 }

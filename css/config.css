@@ -61,6 +61,7 @@ label {
   -webkit-transition-timing-function: linear;
   transition: color 1s;
   transition-timing-function: linear;
+  text-shadow: none !important;
 }
 label:hover {
   color: blue !important;

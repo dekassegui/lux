@@ -1,0 +1,32 @@
+body {
+  background-color: white;
+  background-attachment: fixed, fixed, fixed;
+  background-image: linear-gradient(90deg, transparent -200%, #eff 200%),
+    url("../img/kardec.png"),
+    url("../img/table-tournante.png");
+  background-position: center center,
+    -6.5em 3em,
+    90% 92%;
+  background-size: auto auto,
+    63% auto,
+    auto auto;
+  background-repeat: no-repeat, no-repeat, no-repeat;
+}
+label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled {
+  color: #069;
+}
+input#amount {
+  color: #069;
+}
+.alive {
+  color: #069;
+}
+.alive:hover {
+  color: mediumblue;
+}
+.alive:active {
+  color: #3cf;
+}
+label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount, .alive {
+  text-shadow: 1px 1px 1px #999;
+}
