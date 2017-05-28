@@ -20,20 +20,20 @@ body {
   background-repeat: no-repeat, no-repeat, no-repeat;
 }
 label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled {
-  color: #069;
+  color: lightcyan;
 }
 input#amount {
-  color: #069;
+  color: lightcyan;
 }
 .alive {
-  color: #069;
+  color: lightcyan;
 }
 .alive:hover {
-  color: mediumblue;
+  color: cyan;
 }
 .alive:active {
-  color: #3cf;
+  color: white;
 }
 label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount, .alive {
-  text-shadow: 1px 1px 1px #AAA;
+  text-shadow: 1px 1px 1px #111;
 }

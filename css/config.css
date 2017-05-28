@@ -129,8 +129,8 @@ input#updateBtn {
   letter-spacing: .04em;
   color: black;
   background-color: #f6f6f6;
-  background-image: -webkit-linear-gradient(180deg, transparent, #c6c6c6);
-  background-image: linear-gradient(180deg, transparent, #c6c6c6);
+  background-image: -webkit-linear-gradient(top, transparent, #c6c6c6);
+  background-image: linear-gradient(to bottom, transparent, #c6c6c6);
   border: solid 1px #bbb;
   border-radius: 7px;
   transform: rotate(-7deg);

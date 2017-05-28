@@ -1,8 +1,8 @@
 body {
   background-attachment: fixed, fixed;
   background-repeat: no-repeat, no-repeat;
-  background-image: -webkit-linear-gradient(180deg, white -10%, transparent), url("../img/plasma.png");
-  background-image: linear-gradient(180deg, white -10%, transparent), url("../img/plasma.png");
+  background-image: -webkit-linear-gradient(top, white -10%, transparent), url("../img/plasma.png");
+  background-image: linear-gradient(to bottom, white -10%, transparent), url("../img/plasma.png");
   background-position: center center, center 50%;
   background-size: 100%, 100% 100%;
 }

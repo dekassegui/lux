@@ -79,7 +79,7 @@ body > header > * { /* evita seleção de texto ao clicar no canvas */
   border: solid 1px #afafaf;
   border-radius: 5px;
   background-color: #eee;
-  background-image: -webkit-linear-gradient(bottom, transparent, #bbb);
+  background-image: -webkit-linear-gradient(top, transparent, #bbb);
   background-image: linear-gradient(to bottom, transparent, #bbb);
   cursor: pointer;
 }

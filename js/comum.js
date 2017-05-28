@@ -100,7 +100,7 @@ function show(title, text) {
       hide: { effect: "fade", duration: 750 },
       title: title,
       minHeight: 300,
-      width: 450,
+      width: 533,
       modal: true,
       resizable: false,
     });
@@ -127,10 +127,24 @@ function binarySearch(array, key) {
 }
 
 /**
- * Desabilita os elementos no "array" conforme valor de "bool".
+ * Workaround para disparar evento na modificação da propriedade "disabled"
+ * exclusivamente via jQuery.
 */
-function setDisabled(array, bool) {
-  for (var n=array.length-1; n>=0; --n) array[n][0].disabled = bool;
+jQuery.propHooks.disabled = {
+  set: function (el, value) {
+    if (el.disabled !== value) {
+      el.disabled = value;
+      value && $(el).trigger("disabledSet");
+      !value && $(el).trigger("enabledSet");
+    }
+  }
+};
+
+/**
+ * Desabilita os elementos no "array" conforme "value".
+*/
+function setDisabled(array, value) {
+  for (var n=array.length-1; n>=0; --n) array[n].prop("disabled", value);
 }
 
 /**
@@ -204,6 +218,21 @@ function Spinner(parent) {
   function toggle() { spinner.toggleClass("paused"); }
 
   this.stop = this.run = function () { toggle.apply(scope); };
+
+  return this;
+}
+
+function Tips(array, message) {
+
+  this.add = function () {
+    for (var j=array.length-1; j>=0; --j)
+      array[j].addClass("help").attr("title", message).tooltip(TOOLTIP_OPTIONS);
+  };
+
+  this.remove = function () {
+    for (var j=array.length-1; j>=0; --j)
+      array[j].removeClass("help").removeAttr("title").tooltip("destroy");
+  };
 
   return this;
 }

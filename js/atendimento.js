@@ -21,8 +21,11 @@ $(document).ready(
             duration: 1500,
             constrainInput: false,
             beforeShow: function (input, object) {
+                var $input = $(input);
+                var t = $input.tooltip("instance");
+                if (t) t.close();
                 if (input.readOnly) {
-                  $(input).data("preserved", input.value);
+                  $input.data("preserved", input.value);
                 }
               },
             onClose: function (dateText, instance) {
@@ -40,6 +43,7 @@ $(document).ready(
                   function pad(x) { return (x < 10 ? "0" : "") + x; }
                   var d = new Date();
                   var hoje = pad(d.getDate()) + "-" + pad(d.getMonth()+1) + "-" + d.getFullYear();
+                  console.log(dateText + " " + hoje);
                   if (dateText == hoje) this.value = hoje + " " + pad(d.getHours()) + ":" + pad(d.getMinutes());
                 }
               },
@@ -59,7 +63,7 @@ $(document).ready(
         function updateTip() {
           const par = [ { "action":"restaurar", "cor":"#060" },
                         { "action":"ocultar", "cor":"#009" } ];
-          h.tooltip("instance").close();
+          h.tooltip("close");
           h.attr("title",
             "clique aqui para <b>" + par[+(b=!b)].action + "</b> o formulário")
             .children().animate({color:"#cfc"}).animate({color:par[+b].cor});
@@ -100,10 +104,12 @@ $(document).ready(
       $("#data_devolucao"), $("#leitor"), $("#obra"), $("#autor"),
       $("#exemplar"), $("#posicao"), $("#comentario")];
 
+    var INFO_FIELDS_TIPS = new Tips([fields[5], fields[7], fields[8]], "este campo é <b>AUTO PREENCHIDO</b> e está disponível <b>SOMENTE PARA LEITURA</b>");
+
+    var DATA_DEVOLUCAO_TIP = new Tips([fields[2]], "somente neste campo, <b>NULL</b> é parâmetro para pesquisar registro(s) cuja data de <span>Devolução</span> não foi preenchida ou seja; <em>o exemplar não foi devolvido</em> e quando o campo estiver vazio, será ignorado");
+
     var firstBtn  = $("#firstBtn"),  previousBtn = $("#previousBtn"),
         nextBtn   = $("#nextBtn"),   lastBtn     = $("#lastBtn");
-
-    $([firstBtn, previousBtn, nextBtn, lastBtn]).tooltip(TOOLTIP_OPTIONS);
 
     var updateBtn = $("#updateBtn"),   delBtn    = $("#delBtn"),
         searchBtn = $("#searchBtn"),   newBtn    = $("#newBtn"),
@@ -112,18 +118,12 @@ $(document).ready(
 
     var commandButtons = [updateBtn, delBtn, searchBtn, newBtn, infoBtn, leitorBtn];
 
-    $(commandButtons).tooltip(TOOLTIP_OPTIONS);
-
     var actionButtons = [saveBtn, cancelBtn];
-
-    $(actionButtons).tooltip(TOOLTIP_OPTIONS);
 
     // montador/gestor de elementos do tipo LABEL adaptados como BUTTON
     // para acionar a atualização e criação de registros de empréstimos
     var FAKE_BUTTONS = (
       function () {
-
-        const className = "alive";
 
         function busy() {
           var i=3;
@@ -131,26 +131,24 @@ $(document).ready(
           return i>=0;
         }
 
-        var lde = $('label[for="data_emprestimo"]').addClass(className).click(
+        var lde = $('label[for="data_emprestimo"]').addClass("alive").click(
           function (ev) {
             if (busy()) return;
             ev.preventDefault();
             newBtn.click();
-          }).attr("title", "clique aqui para registrar <span>Empréstimo</span><br><em>equivale a clicar no botão</em> <b>\uf067&nbsp;Novo</b>");
+          }).attr("title", "clique aqui para registrar <span>Empréstimo</span><br><em>equivale a clicar no botão</em> <b>\uf067&nbsp;Novo</b>").tooltip(TOOLTIP_OPTIONS);
 
-        var ldd = $('label[for="data_devolucao"]').addClass(className).click(
+        var ldd = $('label[for="data_devolucao"]').addClass("alive").click(
           function () {
             if (busy()) return;
             updateBtn.click();
-          }).attr("title", "clique aqui para atualizar o registro de empréstimo apresentado, iniciando pela data de <span>Devolução</span><br><em>equivale a clicar no botão</em> <b>\uf040&nbsp;Atualizar</b> <em>e depois no campo de edição da data de</em> <span>Devolução</span>");
-
-        [lde, ldd].forEach(function (el) { el.tooltip(TOOLTIP_OPTIONS); });
+          }).attr("title", "clique aqui para atualizar o registro de empréstimo apresentado, iniciando pela data de <span>Devolução</span><br><em>equivale a clicar no botão</em> <b>\uf040&nbsp;Atualizar</b> <em>e depois no campo de edição da data de</em> <span>Devolução</span>").tooltip(TOOLTIP_OPTIONS);
 
         this.toggle = function (bool) {
           var action =  bool ? "enable" : "disable";
           [lde, ldd].forEach(
             function (el) {
-              el.toggleClass(className, bool).tooltip(action);
+              el.toggleClass("alive", bool).tooltip(action);
             });
         };
 
@@ -174,6 +172,20 @@ $(document).ready(
 
     var DATALISTS = [DATALIST_OBRAS, $("#leitores")];
 
+    // atrela a cada botão que tem atributo "title", duas funções responsivas a
+    // modificações, via jQuery, na propriedade "disabled", as quais habilitam
+    // a exibição de dicas via jQuery Tooltip, também atrelado a cada botão
+    $('#cmd input[type="button"][title]').each(
+      function (index, input) {
+        var btn = $(input);
+        btn.on("disabledSet",
+          function () { btn.tooltip("disable"); }
+        ).on("enabledSet",
+          function () { btn.tooltip("enable"); }
+        ).tooltip(TOOLTIP_OPTIONS);
+      }
+    );
+
     function disableButtons() {
       // desabilita botões de navegação & comando
       setDisabled([firstBtn, previousBtn, nextBtn, lastBtn], true);
@@ -188,7 +200,7 @@ $(document).ready(
       // prepara a única ação possível quando a tabela está vazia
       counter[0].value = indexRec = 0;
       newBtn.click();                   // inserir registro :: o primeiro
-      cancelBtn[0].disabled = true;     // somente será possível "salvar"
+      cancelBtn.prop("disabled", true); // somente será possível "salvar"
     }
 
     function setValues(array) {
@@ -307,6 +319,7 @@ $(document).ready(
 
     previousBtn.click(
       function () {
+        $(this).tooltip("close");
         if (indexRec-1 > 0) { // evita o "bug do botão pressionado", cuja
           --indexRec;         // habilitação sai de sincronia com o índice
           update();           // do registro corrente devido a latência do
@@ -315,6 +328,7 @@ $(document).ready(
 
     nextBtn.click(
       function () {
+        $(this).tooltip("close");
         if (indexRec+1 <= numRecs) {
           ++indexRec;
           update();
@@ -329,10 +343,11 @@ $(document).ready(
 
     updateBtn.click(
       function () {
-        updateBtn.addClass("working");
-        disableButtons();
-        setReadonly(false);
         SPINNER.run();
+        updateBtn.addClass("working").tooltip("close");
+        disableButtons();
+        INFO_FIELDS_TIPS.add();
+        setReadonly(false);
         DATALISTS.forEach(
           function (dataList, index) {
             $.get(
@@ -341,9 +356,9 @@ $(document).ready(
             ).done(
               function () {
                 if (index == 1) {
-                  SPINNER.stop();
                   FAKE_BUTTONS.toggle(false);
                   SCROLLER.scroll(1);
+                  SPINNER.stop();
                 }
               });
           });
@@ -351,7 +366,7 @@ $(document).ready(
 
     delBtn.click(
       function () {
-        delBtn.addClass("working");
+        delBtn.addClass("working").tooltip("close");
         saveBtn[0].value = "\uF00C Confirmar";
         disableButtons();
         FAKE_BUTTONS.toggle(false);
@@ -360,12 +375,12 @@ $(document).ready(
 
     searchBtn.click(
       function () {
-        searchBtn.addClass("working");
+        SPINNER.run();
+        searchBtn.addClass("working").tooltip("close");
         saveBtn[0].value = "\uF00C Executar";
         disableButtons();
         setValues();
         setReadonly(false);
-        SPINNER.run();
         DATALISTS.forEach(
           function (dataList, index) {
             $.get(
@@ -374,11 +389,12 @@ $(document).ready(
             ).done(
               function () {
                 if (index == 1) {
-                  SPINNER.stop();
                   FAKE_BUTTONS.toggle(false);
                   SCROLLER.scroll(1);
                   fields[2].val("NULL");
+                  DATA_DEVOLUCAO_TIP.add();
                   fields[4].focus(/* input#obra */);
+                  SPINNER.stop();
                 }
               });
           });
@@ -386,11 +402,12 @@ $(document).ready(
 
     newBtn.click(
       function () {
-        newBtn.addClass("working");
+        SPINNER.run();
+        newBtn.addClass("working").tooltip("close");
         disableButtons();
+        INFO_FIELDS_TIPS.add();
         setValues();
         setReadonly(false);
-        SPINNER.run();
         DATALISTS.forEach(
           function (dataList, index) {
             $.get(
@@ -399,10 +416,10 @@ $(document).ready(
             ).done(
               function () {
                 if (index == 1) {
-                  SPINNER.stop();
                   FAKE_BUTTONS.toggle(false);
                   SCROLLER.scroll(1);
                   fields[0].focus(/* input#bibliotecario */);
+                  SPINNER.stop();
                 }
               });
           });
@@ -428,6 +445,7 @@ $(document).ready(
             if (texto.startsWith("Erro")) {
               show("\uF06A Atenção", "<p>Não foi possível registrar novo empréstimo.\n\n" + texto + "</p>");
             } else {
+              INFO_FIELDS_TIPS.remove();
               amount[0].value = ++numRecs;
               indexRec = parseInt(texto);
               counter[0].maxLength = amount[0].value.length;
@@ -453,7 +471,7 @@ $(document).ready(
           funktion = function (texto) {
             SPINNER.stop();
             if (texto.startsWith("Advertência")) {
-              show("\uF05A Informação", "<p><b>Não há dados que satisfaçam a pesquisa.</b>\n\nRevise os valores dos campos e tente novamente.</p>");
+              show("\uF05A Informação", "<p><b>Não há dados que satisfaçam a pesquisa.</b>\n\nRevise os parâmetro da pesquisa e tente novamente.</p>");
             } else {
               let r = texto.split("\n");
               // checa se resultado da pesquisa é registro único
@@ -477,6 +495,7 @@ $(document).ready(
                 let elm = document.activeElement;
                 if (elm.tagName == "INPUT" && elm.type == "text") elm.blur();
                 FAKE_BUTTONS.toggle(true);
+                DATA_DEVOLUCAO_TIP.remove();
               } else {
                 let buf = "> Sucesso: Localizou " + r.length + " registros:\n";
                 // monta a lista dos registros pesquisados
@@ -502,9 +521,10 @@ $(document).ready(
             if (texto.startsWith("Error")) {
               show("\uF06A Atenção", "<p><b>Não foi possível atualizar o registro de empréstimo.</b>\n\n" + texto + "</p>");
             } else {
+              INFO_FIELDS_TIPS.remove();
               var n = parseInt(texto);
               if (n != indexRec) indexRec = n;
-              show("\uF06A Notificação", "O registro de empréstimo foi atualizado com sucesso.");
+              show("\uF06A Notificação", "<p>O registro de empréstimo foi atualizado com sucesso.</p>");
               update();
               commandButtons.forEach(
                 function (el) {
@@ -541,7 +561,7 @@ $(document).ready(
                 // modifica rotulo do botão
                 saveBtn[0].value = "\uF00C Salvar";
                 // somente permite "salvar"
-                cancelBtn[0].disabled = true;
+                cancelBtn.prop("disabled", true);
                 setValues();
                 setReadonly(false);
               }
@@ -557,6 +577,11 @@ $(document).ready(
 
     cancelBtn.click(
       function () {
+        if (newBtn.hasClass("working") || updateBtn.hasClass("working")) {
+          INFO_FIELDS_TIPS.remove();
+        } else if (searchBtn.hasClass("working")) {
+          DATA_DEVOLUCAO_TIP.remove();
+        }
         update();
         commandButtons.forEach(
           function (elm) {
@@ -571,30 +596,32 @@ $(document).ready(
 
     infoBtn.click(
       function () {
+        infoBtn.tooltip("close");
         // requisita listagem dos empréstimos esperado no dia corrente
         // e dos exemplares disponíveis no acervo, agrupados por título
         SPINNER.run();
         $.get(
           aUri + "reporter.php?action=INFO",
           function (texto) {
-            SPINNER.stop();
             if (!MURAL.isEmpty()) MURAL.append("");
             MURAL.append(texto);
             SCROLLER.scroll();
+            SPINNER.stop();
           });
       });
 
     leitorBtn.click(
       function () {
+        leitorBtn.tooltip("close");
         // requisita listagem dos leitores/obras com empréstimos em atraso
         SPINNER.run();
         $.get(
           aUri + "reporter.php?action=LEITOR",
           function (texto) {
-            SPINNER.stop();
             if (!MURAL.isEmpty()) MURAL.append("");
             MURAL.append(texto);
             SCROLLER.scroll();
+            SPINNER.stop();
           });
       });
 
@@ -677,7 +704,9 @@ $(document).ready(
       if (numRecs == 0) {
 
         newBtn.click();
-        cancelBtn[0].disabled = true;
+        cancelBtn.prop("disabled", true);
+
+        SPINNER.stop();
 
       } else {
 
@@ -692,30 +721,33 @@ $(document).ready(
         $.get(
           uri + "?action=GETREC&recnumber=" + indexRec,
           function (texto) {
-            SPINNER.stop();
             // atualiza os valores do registro corrente
             if (texto.startsWith("Erro")) {
               firstBtn.click();
             } else {
               setValues(texto.split("|"));
             }
-          });
+          }).done(
+            function () {
 
-        // habilita edição e declara a quantidade máxima de
-        // caracteres do input do índice do registro corrente
-        counter[0].disabled = false;
-        counter[0].maxLength = amount[0].value.length;
+              // habilita edição e declara a quantidade máxima de
+              // caracteres do input do índice do registro corrente
+              counter[0].disabled = false;
+              counter[0].maxLength = amount[0].value.length;
 
-        // habilita/desabilita botões de navegação
-        setDisabled([firstBtn, previousBtn], indexRec <= 1);
-        setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
+              // habilita/desabilita botões de navegação
+              setDisabled([firstBtn, previousBtn], indexRec <= 1);
+              setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
 
-        commandButtons.forEach(
-          function (btn) {
-            btn.removeClass("working").prop("disabled", false);
-          });
+              commandButtons.forEach(
+                function (btn) {
+                  btn.removeClass("working").prop("disabled", false);
+                });
 
-        setDisabled(actionButtons, true); // desabilita os "action buttons'
+              setDisabled(actionButtons, true);
+
+              SPINNER.stop();
+            });
 
       }
 
@@ -724,18 +756,18 @@ $(document).ready(
       $.get(
         uri + "?action=COUNT",
         function (texto) {
-          SPINNER.stop();
           // declara a quantidade inicial de registros da tabela
           numRecs = parseInt(amount[0].value = texto);
           // declara a quantidade máxima de caracteres do input
           counter[0].maxLength = texto.length;
           // ação inicial conforme quantidade de registros da tabela
           if (numRecs > 0) {
-            lastBtn.click();    // mostra o último registro
+            lastBtn.click();
+            $(actionButtons).prop("disabled", true);
           } else {
             whenTableIsEmpty(); // força inserção de registro
           }
-        });
+        }).done(function () { SPINNER.stop(); });
 
     }
 

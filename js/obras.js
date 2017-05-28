@@ -171,7 +171,7 @@ $(document).ready(
             }
           }
         } else {
-          show("\uF06A Atenção", "A tabela está vazia.");
+          show("\uF06A Atenção", "<p>A tabela está vazia.</p>");
           whenTableIsEmpty();
         }
       });
@@ -183,7 +183,7 @@ $(document).ready(
         if (0 < valor && valor <= numRecs) {    // input do índice do registro
           indexRec = valor;                     // corrente, atualizando-o
         } else {
-          show("\uF06A Atenção", "A edição do <strong>número de registro</strong> foi abortada pelo usuário, enquanto era esperado valor maior igual a <strong>1</strong> e menor igual a <strong>" + numRecs + "</strong>.");
+          show("\uF06A Atenção", "<p>A edição do <strong>número de registro</strong> foi abortada pelo usuário, enquanto era esperado valor maior igual a <strong>1</strong> e menor igual a <strong>" + numRecs + "</strong>.</p>");
         }
         update();
       });
@@ -298,7 +298,7 @@ $(document).ready(
           funktion = function (texto) {
             SPINNER.stop();
             if (texto.startsWith("Advertência")) {
-              show("\uF05A Informação", "<p>Não há dados que satisfaçam a pesquisa.</p>\nRevise os valores dos campos e tente novamente.");
+              show("\uF05A Informação", "<p><b>Não há dados que satisfaçam a pesquisa.</b>\n\nRevise os parâmetro da pesquisa e tente novamente.</p>");
               // FOR DEBUG PURPOSE: MURAL.append("SQL: " + texto);
             } else {
               let r = texto.split("\n");

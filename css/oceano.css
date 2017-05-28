@@ -9,14 +9,18 @@ label, footer p, section > div:first-child > p span, body:not([id]) section > p,
   color: lightcyan;
 }
 input#amount {
-  color: #cff;
+  color: lightcyan;
 }
 .alive {
-  color: #cff;
+  color: lightcyan;
 }
 .alive:hover {
-  color: #9ff;
+  color: cyan;
 }
 .alive:active {
-  color: #0ff;
+  color: white;
+}
+label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount, .alive
+{
+  text-shadow: 1px 1px 1px #111;
 }

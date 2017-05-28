@@ -62,7 +62,7 @@ label {
 
 input[type="text"], input[type="tel"], input[type="email"] {
   padding: 2px 5px;
-  font: 400 100% 'Droid Sans Mono', 'Courier New', monospace;
+  font: 400 100% FontAwesome, 'Droid Sans Mono', 'Courier New', monospace;
   line-height: 160%;
   text-overflow: ellipsis;
   color: mediumblue;
@@ -83,8 +83,24 @@ input[type="text"]:focus, input[type="tel"]:focus, input[type="email"]:focus, in
   border-color: #9E9;
   box-shadow: 0px 0px 2px #ccc;
 }
-input[list]:focus { border-color: #f9c; }
+input[list]:focus {
+  border-color: orange;
+  box-shadow: inset 0 0 1px 1px gold;
+}
 input[type="text"][readonly]:focus { color: #966; }
+
+input[type="text"].help {
+  background-repeat: no-repeat;
+  background-image: url("../img/icone-info-violet.png");
+  background-size: auto 50%;
+  background-position: right top;
+}
+input[type="text"].help:hover {
+  background-image: url("../img/icone-info-crimson.png");
+}
+input[type="text"].help:focus {
+  background-image: url("../img/icone-info-gray.png");
+}
 
 input#counter {
   width: 2.5em;
@@ -146,8 +162,8 @@ input[type="button"]:enabled:hover, #saveBtn:enabled, #cancelBtn:enabled {
   background-image: linear-gradient(to top, #fc6, #ffc);
 }
 input[type="button"]:enabled:active, #saveBtn:enabled:active, #cancelBtn:enabled:active {
-  background-image: -webkit-linear-gradient(top, #fc6, #ffc);
-  background-image: linear-gradient(to bottom, #fc6, #ffc);
+  background-image: -webkit-linear-gradient(bottom, #ffc, #fc6);
+  background-image: linear-gradient(to top, #ffc, #fc6);
 }
 input[type="button"]:enabled:focus {
   color: #f40;
