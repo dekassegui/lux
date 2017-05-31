@@ -24,3 +24,16 @@ label, footer p, section > div:first-child > p span, body:not([id]) section > p,
 {
   text-shadow: 1px 1px 1px #111;
 }
+
+input[type="text"].help {
+  background-repeat: no-repeat;
+  background-image: url("../img/corner-stripes-cyan.png");
+  background-size: auto 50%;
+  background-position: right top;
+}
+input[type="text"].help:hover {
+  background-image: url("../img/corner-stripes-orange.png");
+}
+input[type="text"].help:focus {
+  background-image: url("../img/corner-stripes-gray.png");
+}

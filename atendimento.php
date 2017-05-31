@@ -18,6 +18,12 @@
       } else if (strpos($s, 'exemplar') !== FALSE) {
         return 'Erro: O número do <b>Exemplar</b> não foi preenchido.';
       }
+    } else if (strpos($s, 'chk_data_emprestimo') !== FALSE) {
+      return 'Erro: Valor ilegal para data de <b>Empréstimo</b>.';
+    } else if (strpos($s, 'chk_data_devolucao') !== FALSE) {
+      return 'Erro: Valor ilegal para data de <b>Devolução</b>.';
+    } else if (strpos($s, 'chk_dates_range') !== FALSE) {
+      return 'Erro: A data de <b>Devolução</b> não pode ser anterior à data de <b>Empréstimo</b>.';
     }
     return 'Erro: '.$s;
   }

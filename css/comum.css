@@ -107,6 +107,8 @@ input#counter {
   text-align: center;
   color: black;
   background-color: #f6fcff;
+  -webkit-transition: color;
+  transition: color;  /* somente para evitar mudança brusca de cores */
 }
 input#counter:disabled {
   border-color: transparent;

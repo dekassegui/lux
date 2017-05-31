@@ -1,6 +1,8 @@
 /**
  * Este script é parte do projeto LUX, software livre para bibliotecas
  * de casas Espíritas, em desenvolvimento desde 12/11/2016.
+ *
+ * Atende exclusivamente a UI de atendimento.
 */
 $(document).ready(
   function () {
@@ -76,9 +78,9 @@ $(document).ready(
             w.animate({ scrollTop: 0 }, 2000, "easeOutExpo");
           }).insertAfter( $("textarea") );
 
-        this.scroll = function (x) {
+        this.scroll = function (complete) {
           t.click();
-          if (!x) {
+          if (complete) {
             d.slideToggle({ duration: 1000, easing: "swing" });
             updateTip.apply(this);
           }
@@ -86,7 +88,7 @@ $(document).ready(
 
         var self = this;
 
-        h.click(function () { self.scroll(); }).tooltip(TOOLTIP_OPTIONS);
+        h.click(function () { self.scroll(true); }).tooltip(TOOLTIP_OPTIONS);
 
         updateTip();
 
@@ -120,7 +122,7 @@ $(document).ready(
 
     var actionButtons = [saveBtn, cancelBtn];
 
-    // montador/gestor de elementos do tipo LABEL adaptados como BUTTON
+    // gestor/montador de elementos do tipo LABEL adaptados como BUTTON
     // para acionar a atualização e criação de registros de empréstimos
     var FAKE_BUTTONS = (
       function () {
@@ -144,7 +146,7 @@ $(document).ready(
             updateBtn.click();
           }).attr("title", "clique aqui para atualizar o registro de empréstimo apresentado, iniciando pela data de <span>Devolução</span><br><em>equivale a clicar no botão</em> <b>\uf040&nbsp;Atualizar</b> <em>e depois no campo de edição da data de</em> <span>Devolução</span>").tooltip(TOOLTIP_OPTIONS);
 
-        this.toggle = function (bool) {
+        this.set = function (bool) {
           var action =  bool ? "enable" : "disable";
           [lde, ldd].forEach(
             function (el) {
@@ -158,7 +160,7 @@ $(document).ready(
 
     var MURAL = new Mural();
 
-    // nomes dos campos para visualização no MURAL de registros pesquisados
+    // nomes dos campos a visualizar no MURAL de registros pesquisados
     const FIELDNAMES = ["#Registro", "Emprestimo", "Devolução",
       "Agente", "Leitor", "Título", "Autor&Espírito", "Exemplar",
       "Posição", "Comentário"].map(
@@ -166,25 +168,23 @@ $(document).ready(
         return " ".repeat( Math.max(0, 16-name.length) ) + name + ": ";
       });
 
-    var DATALIST_EXEMPLARES = $("#acervo_exemplares");
+    var DATALIST_EXEMPLARES = document.getElementById("acervo_exemplares");
 
-    var DATALIST_OBRAS = $("#acervo_obras");
+    var DATALIST_OBRAS = document.getElementById("acervo_obras");
 
-    var DATALISTS = [DATALIST_OBRAS, $("#leitores")];
+    var DATALISTS = [DATALIST_OBRAS, document.getElementById("leitores")];
 
-    // atrela a cada botão que tem atributo "title", duas funções responsivas a
-    // modificações, via jQuery, na propriedade "disabled", as quais habilitam
-    // a exibição de dicas via jQuery Tooltip, também atrelado a cada botão
+    // atrela a cada botão que tem atributo "title", funções responsivas a
+    // modificações da propriedade "disabled" via jQuery, que habilitam a
+    // exibição de dicas via jQuery Tooltip, também atrelado a cada botão
     $('#cmd input[type="button"][title]').each(
       function (index, input) {
         var btn = $(input);
-        btn.on("disabledSet",
-          function () { btn.tooltip("disable"); }
-        ).on("enabledSet",
-          function () { btn.tooltip("enable"); }
-        ).tooltip(TOOLTIP_OPTIONS);
-      }
-    );
+        btn.on({
+          "disabledSet": function () { btn.tooltip("disable"); },
+           "enabledSet": function () { btn.tooltip("enable"); }
+        }).tooltip(TOOLTIP_OPTIONS);
+      });
 
     function disableButtons() {
       // desabilita botões de navegação & comando
@@ -346,18 +346,20 @@ $(document).ready(
         SPINNER.run();
         updateBtn.addClass("working").tooltip("close");
         disableButtons();
-        INFO_FIELDS_TIPS.add();
         setReadonly(false);
         DATALISTS.forEach(
           function (dataList, index) {
             $.get(
-              aUri + dataList[0].id + ".php?action=GETALL",
-              function (options) { dataList.empty().append(options); }
+              aUri + dataList.id + ".php?action=GETALL",
+              function (options) {
+                dataList.innerHTML = options;
+              }
             ).done(
               function () {
                 if (index == 1) {
-                  FAKE_BUTTONS.toggle(false);
-                  SCROLLER.scroll(1);
+                  FAKE_BUTTONS.set(false);
+                  INFO_FIELDS_TIPS.enable();
+                  SCROLLER.scroll(false);
                   SPINNER.stop();
                 }
               });
@@ -369,8 +371,8 @@ $(document).ready(
         delBtn.addClass("working").tooltip("close");
         saveBtn[0].value = "\uF00C Confirmar";
         disableButtons();
-        FAKE_BUTTONS.toggle(false);
-        SCROLLER.scroll(1);
+        FAKE_BUTTONS.set(false);
+        SCROLLER.scroll(false);
       });
 
     searchBtn.click(
@@ -384,16 +386,18 @@ $(document).ready(
         DATALISTS.forEach(
           function (dataList, index) {
             $.get(
-              aUri + dataList[0].id + ".php?action=PESQUISA",
-              function (options) { dataList.empty().append(options); }
+              aUri + dataList.id + ".php?action=PESQUISA",
+              function (options) {
+                dataList.innerHTML = options;
+              }
             ).done(
               function () {
                 if (index == 1) {
-                  FAKE_BUTTONS.toggle(false);
-                  SCROLLER.scroll(1);
+                  FAKE_BUTTONS.set(false);
+                  SCROLLER.scroll(false);
                   fields[2].val("NULL");
-                  DATA_DEVOLUCAO_TIP.add();
-                  fields[4].focus(/* input#obra */);
+                  DATA_DEVOLUCAO_TIP.enable();
+                  fields[4].focus( /* INPUT#obra */ );
                   SPINNER.stop();
                 }
               });
@@ -405,20 +409,22 @@ $(document).ready(
         SPINNER.run();
         newBtn.addClass("working").tooltip("close");
         disableButtons();
-        INFO_FIELDS_TIPS.add();
         setValues();
         setReadonly(false);
         DATALISTS.forEach(
           function (dataList, index) {
             $.get(
-              aUri + dataList[0].id + ".php?action=GETALL",
-              function (options) { dataList.empty().append(options); }
+              aUri + dataList.id + ".php?action=GETALL",
+              function (options) {
+                dataList.innerHTML = options;
+              }
             ).done(
               function () {
                 if (index == 1) {
-                  FAKE_BUTTONS.toggle(false);
-                  SCROLLER.scroll(1);
-                  fields[0].focus(/* input#bibliotecario */);
+                  FAKE_BUTTONS.set(false);
+                  SCROLLER.scroll(false);
+                  INFO_FIELDS_TIPS.enable();
+                  fields[0].focus( /* INPUT#bibliotecario */ );
                   SPINNER.stop();
                 }
               });
@@ -441,11 +447,10 @@ $(document).ready(
         if (newBtn.hasClass("working")) {
 
           funktion = function (texto) {
-            SPINNER.stop();
             if (texto.startsWith("Erro")) {
               show("\uF06A Atenção", "<p>Não foi possível registrar novo empréstimo.\n\n" + texto + "</p>");
             } else {
-              INFO_FIELDS_TIPS.remove();
+              INFO_FIELDS_TIPS.disable();
               amount[0].value = ++numRecs;
               indexRec = parseInt(texto);
               counter[0].maxLength = amount[0].value.length;
@@ -459,7 +464,7 @@ $(document).ready(
                 });
               setDisabled(actionButtons, true);
               setReadonly(true);
-              FAKE_BUTTONS.toggle(true);
+              FAKE_BUTTONS.set(true);
               show("\uF06A Notificação", "<p><b>O empréstimo foi registrado com sucesso.</b>\n\nInforme a data limite para devolução.</p>");
             }
           };
@@ -469,9 +474,8 @@ $(document).ready(
         } else if (searchBtn.hasClass("working")) {
 
           funktion = function (texto) {
-            SPINNER.stop();
             if (texto.startsWith("Advertência")) {
-              show("\uF05A Informação", "<p><b>Não há dados que satisfaçam a pesquisa.</b>\n\nRevise os parâmetro da pesquisa e tente novamente.</p>");
+              show("\uF05A Informação", "<p><b>Não há dados que satisfaçam a pesquisa.</b>\n\nRevise os parâmetros e tente novamente.</p>");
             } else {
               let r = texto.split("\n");
               // checa se resultado da pesquisa é registro único
@@ -494,8 +498,8 @@ $(document).ready(
                 // "desfoca" algum input focado
                 let elm = document.activeElement;
                 if (elm.tagName == "INPUT" && elm.type == "text") elm.blur();
-                FAKE_BUTTONS.toggle(true);
-                DATA_DEVOLUCAO_TIP.remove();
+                FAKE_BUTTONS.set(true);
+                DATA_DEVOLUCAO_TIP.disable();
               } else {
                 let buf = "> Sucesso: Localizou " + r.length + " registros:\n";
                 // monta a lista dos registros pesquisados
@@ -507,7 +511,7 @@ $(document).ready(
                   }
                 }
                 MURAL.append(buf);
-                SCROLLER.scroll();
+                SCROLLER.scroll(true);
               }
             }
           };
@@ -517,11 +521,10 @@ $(document).ready(
         } else if (updateBtn.hasClass("working")) {
 
           funktion = function (texto) {
-            SPINNER.stop();
-            if (texto.startsWith("Error")) {
+            if (texto.startsWith("Erro")) {
               show("\uF06A Atenção", "<p><b>Não foi possível atualizar o registro de empréstimo.</b>\n\n" + texto + "</p>");
             } else {
-              INFO_FIELDS_TIPS.remove();
+              INFO_FIELDS_TIPS.disable();
               var n = parseInt(texto);
               if (n != indexRec) indexRec = n;
               show("\uF06A Notificação", "<p>O registro de empréstimo foi atualizado com sucesso.</p>");
@@ -533,7 +536,7 @@ $(document).ready(
               setDisabled(actionButtons, true);
               counter[0].disabled = false;
               setReadonly(true);
-              FAKE_BUTTONS.toggle(true);
+              FAKE_BUTTONS.set(true);
             }
           };
           par.push("?action=UPDATE&recnumber=", indexRec);
@@ -542,7 +545,6 @@ $(document).ready(
         } else if (delBtn.hasClass("working")) {
 
           funktion = function (texto) {
-            SPINNER.stop();
             if (texto.startsWith("Error")) {
               show("\uF06A Atenção", "<p>Não foi possível excluir o registro de empréstimo.\n\n" + texto + "</p>");
               cancelBtn.click();
@@ -571,16 +573,16 @@ $(document).ready(
 
         }
 
-        $.get(par.join(""), funktion);
+        $.get(par.join(""), funktion).done(function () { SPINNER.stop(); });
 
       });
 
     cancelBtn.click(
       function () {
         if (newBtn.hasClass("working") || updateBtn.hasClass("working")) {
-          INFO_FIELDS_TIPS.remove();
+          INFO_FIELDS_TIPS.disable();
         } else if (searchBtn.hasClass("working")) {
-          DATA_DEVOLUCAO_TIP.remove();
+          DATA_DEVOLUCAO_TIP.disable();
         }
         update();
         commandButtons.forEach(
@@ -591,7 +593,7 @@ $(document).ready(
         counter[0].disabled = false;        // habilita edição no input..
         saveBtn[0].value = "\uF00C Salvar"; // restaura o rotulo do botão
         setReadonly(true);                  // desabilita edição dos inputs
-        FAKE_BUTTONS.toggle(true);
+        FAKE_BUTTONS.set(true);
       });
 
     infoBtn.click(
@@ -605,9 +607,8 @@ $(document).ready(
           function (texto) {
             if (!MURAL.isEmpty()) MURAL.append("");
             MURAL.append(texto);
-            SCROLLER.scroll();
-            SPINNER.stop();
-          });
+            SCROLLER.scroll(true);
+          }).done(function () { SPINNER.stop(); });
       });
 
     leitorBtn.click(
@@ -620,27 +621,26 @@ $(document).ready(
           function (texto) {
             if (!MURAL.isEmpty()) MURAL.append("");
             MURAL.append(texto);
-            SCROLLER.scroll();
-            SPINNER.stop();
-          });
+            SCROLLER.scroll(true);
+          }).done(function () { SPINNER.stop(); });
       });
 
-    // declara o listener de evento "input" no INPUT #obra para atualizar
-    // as opções do DATALIST de "exemplares", "autor&espirito" e "posição"
-    // conforme "título da obra" selecionado na atualização ou criação de
-    // novo registro de empréstimo
-    fields[4].bind("input",
+    // atrela ao INPUT#obra a função responsiva ao evento de tipo "input"
+    // que atualiza OPTIONs do DATALIST de "Autor&Espírito", "exemplares"
+    // e "posição", conforme "Título da Obra" selecionado na atualização
+    // ou registro de novo empréstimo
+    fields[4].on("input",
       function () {
         if (newBtn.hasClass("working") || updateBtn.hasClass("working")) {
           // esvazia os valores dos INPUTs "exemplar", "autor" e "posicao"
-          for (var i=5; i<8; ++i) fields[i].val("");
+          for (var i=7; i>=5; --i) fields[i].val("");
           // checa se o valor do INPUT "obra" não está vazio
           if (fields[4].val()) {
             var code;
             // pesquisa via busca binária da OPTION selecionada no DATALIST
-            // associado ao INPUT de obras, para extrair o valor do atributo
-            // "code" correspondente se a pesquisa foi bem sucedida
-            for (var collection = DATALIST_OBRAS[0].options, element,
+            // do INPUT de obras, para extrair o valor do atributo "code"
+            // correspondente se a pesquisa foi bem sucedida
+            for (var collection = DATALIST_OBRAS.options, element,
               key = fields[4].val(), lo = 0, hi = collection.length - 1, mid;
               !code && lo <= hi;) {
               mid = ((lo + hi) >> 1);
@@ -664,11 +664,11 @@ $(document).ready(
                   fields[7].val(values[1]);
                   // substitui todos os itens da lista de opções, que pode
                   // tornar-se vazia caso não haja exemplares disponíveis
-                  DATALIST_EXEMPLARES.empty().html(values[2]);
+                  DATALIST_EXEMPLARES.innerHTML = values[2];
                   if (values[2].length > 0) {
                     // atualiza o valor do INPUT "exemplar" com o valor
                     // do primeiro item do DATALIST
-                    fields[6].val(DATALIST_EXEMPLARES[0].options.item(0).value);
+                    fields[6].val(DATALIST_EXEMPLARES.options.item(0).value);
                   } else {
                     show("\uF06A Atenção", "Não há exemplar desta obra, disponível no momento.");
                     fields[6].val("\u2639 Não achei!");
@@ -679,20 +679,14 @@ $(document).ready(
         }
       });
 
-    // preenche DATALISTs cujos IDs correspondem ao nome (sem extensão)
-    // do script backend que atende a requisição dos seus dados
-    (
-      function () {
-        [$("#bibliotecarios"), DATALIST_EXEMPLARES].forEach(
-          function (dataList) {
-            $.get(
-              aUri + dataList[0].id + ".php?action=GETALL",
-              function (options, index) {
-                dataList.html(options);
-              });
+    // preenche DATALIST do INPUT#bibliotecarios e do INPUT#exemplares
+    [document.getElementById("bibliotecarios"), DATALIST_EXEMPLARES].forEach(
+      function (dataList) {
+        $.get(aUri + dataList.id + ".php?action=GETALL",
+          function (options) {
+            dataList.innerHTML = options;
           });
-      }
-    )();
+      });
 
     // testa se valores de ambos INPUTs mostradores de status da tabela não
     // são string vazia, evidenciando que o documento foi atualizado durante

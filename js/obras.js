@@ -298,7 +298,7 @@ $(document).ready(
           funktion = function (texto) {
             SPINNER.stop();
             if (texto.startsWith("Advertência")) {
-              show("\uF05A Informação", "<p><b>Não há dados que satisfaçam a pesquisa.</b>\n\nRevise os parâmetro da pesquisa e tente novamente.</p>");
+              show("\uF05A Informação", "<p><b>Não há dados que satisfaçam a pesquisa.</b>\n\nRevise os parâmetros e tente novamente.</p>");
               // FOR DEBUG PURPOSE: MURAL.append("SQL: " + texto);
             } else {
               let r = texto.split("\n");

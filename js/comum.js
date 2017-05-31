@@ -3,14 +3,42 @@
 */
 
 const TOOLTIP_OPTIONS = {
-  content: function (ui) {        // indispensável para conteúdo HTML
-    return $(this).attr("title");
+  content: function (ui) {
+    return $(this).attr("title"); // indispensável para conteúdo HTML
   },
   track: true,
   position: { my: "left+20 top+20", at: "right bottom" },
   show: { effect: "fade", duration: 500, delay: 1500 },
   hide: { effect: "fade", duration: 500 },
 };
+
+/**
+ * Gestor da ativação de Tooltips atrelados a um ou mais elementos jQuery
+ * para apresentar a mesma mensagem.
+ *
+ * @param array Array de elements jQuery.
+ * @param message String container da mensagem.
+*/
+function Tips(array, message) {
+
+  for (var j=array.length-1; j>=0; --j) {
+    array[j].addClass("help").attr("title", message).tooltip(TOOLTIP_OPTIONS);
+  }
+
+  function set(status) {
+    const action = ["disable", "enable"];
+    for (var j=array.length-1; j>=0; --j)
+      array[j].toggleClass("help", status).tooltip(action[+status]);
+  }
+
+  set(false);
+
+  this.enable = function () { set(true); };
+
+  this.disable = function () { set(false); };
+
+  return this;
+}
 
 /**
  * Gestor de TEXTAREA com preenchimento cumulativo de conteúdo, que pode ser
@@ -209,6 +237,14 @@ function StyleSwitcher() {
   return this;
 }
 
+/**
+ * Gestor de ícone com animação controlada para evidenciar status de
+ * processamento, adicionado como apêndice de algum elemento.
+ *
+ * Importante: Widget implementado conforme http://loading.io
+ *
+ * @param parent DOM element container do ícone.
+*/
 function Spinner(parent) {
 
   var scope = parent;
@@ -218,21 +254,6 @@ function Spinner(parent) {
   function toggle() { spinner.toggleClass("paused"); }
 
   this.stop = this.run = function () { toggle.apply(scope); };
-
-  return this;
-}
-
-function Tips(array, message) {
-
-  this.add = function () {
-    for (var j=array.length-1; j>=0; --j)
-      array[j].addClass("help").attr("title", message).tooltip(TOOLTIP_OPTIONS);
-  };
-
-  this.remove = function () {
-    for (var j=array.length-1; j>=0; --j)
-      array[j].removeClass("help").removeAttr("title").tooltip("destroy");
-  };
 
   return this;
 }
