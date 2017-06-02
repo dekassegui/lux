@@ -130,8 +130,10 @@ EOT
 EOT
       );
       if ($result !== FALSE AND $row = $result->fetch(PDO::FETCH_NUM)) {
-        if (strpos($row[2], '00:00') !== FALSE) {
-          $row[2] = substr($row[2], 0, 10);
+        for ($j=1; $j<3; ++$j) {
+          if (strpos($row[1], '00:00') !== FALSE) {
+            $row[1] = substr($row[1], 0, 10);
+          }
         }
         echo join('|', $row);
       } else {

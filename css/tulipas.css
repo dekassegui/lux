@@ -5,8 +5,9 @@ body {
   background-position: left bottom;
   background-size: 100% 100%;
 }
-label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled {
+label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, .alive {
   color: #933;
+  text-shadow: -1px -1px 1px #fff, 1px 1px 1px #888;
 }
 input#amount {
   color: #622;

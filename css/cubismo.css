@@ -6,17 +6,39 @@ body {
   background-size: 150% 150%;
 }
 label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled {
-  color: #eee;
+  color: lightcyan;
 }
 input#amount {
-  color: white;
+  color: lightcyan;
 }
 .alive {
-  color: #cff;
+  color: lightcyan;
 }
 .alive:hover {
-  color: #9ff;
+  color: cyan;
 }
 .alive:active {
-  color: #0ff;
+  color: white;
+}
+label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount, .alive
+{
+  text-shadow: -1px -1px 1px #ccc, 1px 1px 1px #333;
+}
+
+input[type="text"].help {
+  background-repeat: no-repeat;
+  background-image: url("../img/corner-stripes-cyan.png");
+  background-size: auto 50%;
+  background-position: right top;
+}
+input[type="text"].help:hover {
+  background-image: url("../img/corner-stripes-orange.png");
+}
+input[type="text"].help:focus {
+  background-image: url("../img/corner-stripes-gray.png");
+}
+
+input[list]:focus {
+  border-color: orangered;
+  box-shadow: inset 0 0 1px 1px orangered;
 }

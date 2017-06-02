@@ -4,6 +4,17 @@
 
   require 'utils.php';
 
+  function translate($s) {
+    if (strpos($s, 'NULL') !== FALSE) {
+      $i = strpos($s, 'obras.') + 6;
+      $k = stripos($s, ' ');
+      return 'Erro: O campo <b>'.substr($s, $i, $k-$i).'</b> não pode ser NULO.';
+    } else if (strpos($s, 'foreign key constraint') !== FALSE) {
+      return 'Erro: Algum registro em outra tabela usa informações desse registro.';
+    }
+    return "Erro: $s";
+  }
+
   try {
     $db = new SQLitePDO();
     $db->connect();
@@ -47,7 +58,11 @@ EOT;
   WHERE rowid == {$_GET['recnumber']};
 EOT
       );
-      echo join('|', $result->fetch(PDO::FETCH_NUM));
+      if ($result !== FALSE AND $row = $result->fetch(PDO::FETCH_NUM)) {
+        echo join('|', $row);
+      } else {
+        echo 'Erro: Requisição de registro #', $_GET['recnumber'], '.';
+      }
       break;
 
     case 'COUNT':
@@ -77,7 +92,7 @@ EOT;
       }
       // requisita a atualização ou inserção
       if ($db->exec($sql) === FALSE) {
-        echo 'Error: ', $db->lastErrorMsg();
+        echo translate($db->lastErrorMsg());
       } else {
         if (rebuildTable($db)) {
           echo $db->querySingle(
@@ -94,7 +109,7 @@ EOT;
   DELETE FROM obras WHERE rowid = {$_GET['recnumber']};
 EOT;
       if ($db->exec($sql) === FALSE) {
-        echo 'Error: ', $db->lastErrorMsg();
+        echo translate($db->lastErrorMsg());
       } else {
         rebuildTable($db);
         echo 'TRUE';

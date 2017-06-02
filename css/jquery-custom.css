@@ -56,11 +56,15 @@
 .ui-datepicker td a { /* botões p/dias do mês */
   width: 3em !important;
   color: #000;
-  background-image: -webkit-linear-gradient(top, transparent, #ddd) !important;
-  background-image: linear-gradient(to bottom, transparent, #ddd) !important;
+  background-color: #eee !important;
+  background-image: -webkit-linear-gradient(top, transparent, #ccc) !important;
+  background-image: linear-gradient(to bottom, transparent, #ccc) !important;
   font-weight: 600 !important;
   text-align: center;
   border-radius: 5px;
+}
+.ui-datepicker td a:hover {
+  background-color: white !important;
 }
 /* domingo */
 .ui-datepicker th:first-child, .ui-datepicker td:first-child a {
@@ -85,6 +89,9 @@ td.ui-datepicker-current-day a {
   background-color: #69c !important;
   -webkit-background-image: none !important;
   background-image: none !important;
+}
+td.ui-datepicker-current-day a:hover {
+  background-color: #36c !important;
 }
 /* ícones dos botões de seleção do mês */
 #ui-datepicker-div > div > a span.ui-icon {

@@ -212,12 +212,18 @@ function StyleSwitcher() {
       function (a) { return a.attr("title") == title; });
   }
 
+  function dayOfWeek() {
+    return "DOMSEGTERQUAQUISEXSÁB".substr((new Date()).getDay() * 3, 3);
+  }
+
   this.save = function (title) {
-    localStorage.setItem("style",
+    localStorage.setItem("style" + dayOfWeek(),
       isValid(title) ? title : self.getActiveStyleSheet());
   };
 
-  this.load = function () { return localStorage.getItem("style"); };
+  this.load = function () {
+    return localStorage.getItem("style" + dayOfWeek());
+  };
 
   /**
    * Cache "persistente" do título da folha de estilo ativa.

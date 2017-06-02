@@ -18,35 +18,47 @@ $(document).ready(
 
     ["#data_emprestimo", "#data_devolucao"].forEach(
       function (element) {
+
+        function zeroPad(x) { return (x < 10 ? "0" : "") + x; }
+
         $(element).datepicker({
             showAnim: "fade",
             duration: 1500,
             constrainInput: false,
+            showOtherMonths: true,
+            selectOtherMonths: true,
             beforeShow: function (input, object) {
-                var $input = $(input);
+                var $input = $(input).data("preserved", input.value);
                 var t = $input.tooltip("instance");
                 if (t) t.close();
-                if (input.readOnly) {
-                  $input.data("preserved", input.value);
-                }
               },
             onClose: function (dateText, instance) {
+                var oldValue = $(this).data("preserved");
                 if (this.readOnly) {
-                  var input = $(this);
-                  var valor = input.data("preserved");
-                  if (dateText != valor) {
-                    if (valor !== undefined) input.val(valor);
+                  if (dateText != oldValue) {
+                    if (oldValue !== undefined) this.value = oldValue;
                     var msg = "<p>O campo está disponível <strong>somente para leitura</strong>.</p>\n<p>Clique no botão <b>\uf040&nbsp;Atualizar</b> ";
                     if (this.id == "data_devolucao") msg += "ou em <b>\uf040&nbsp;Devolução</b>";
                     msg += " para digitar ou selecionar a data no calendário.</p>"
                     show("\uF06A READ ONLY", msg);
                   }
-                } else if (dateText.length == 10) {
-                  function pad(x) { return (x < 10 ? "0" : "") + x; }
-                  var d = new Date();
-                  var hoje = pad(d.getDate()) + "-" + pad(d.getMonth()+1) + "-" + d.getFullYear();
-                  console.log(dateText + " " + hoje);
-                  if (dateText == hoje) this.value = hoje + " " + pad(d.getHours()) + ":" + pad(d.getMinutes());
+                } else {
+                  if (dateText.length == 10) {
+                    var d = new Date();
+                    var hoje = zeroPad(d.getDate()) + "-"
+                      + zeroPad(d.getMonth()+1) + "-" + d.getFullYear();
+                    if (dateText == hoje) {
+                      this.value = hoje + " " + zeroPad(d.getHours()) + ":"
+                        + zeroPad(d.getMinutes());
+                    }
+                  }
+                  // se houver modificação da data de empréstimo durante
+                  // atualização do registro, então esvaziará o campo do
+                  // comentário sobre a data limite que será recalculada
+                  if (this.id == "data_emprestimo" && dateText != oldValue
+                      && updateBtn.hasClass("working")) {
+                    fields[8].val("");
+                  }
                 }
               },
           });
@@ -182,9 +194,17 @@ $(document).ready(
         var btn = $(input);
         btn.on({
           "disabledSet": function () { btn.tooltip("disable"); },
-           "enabledSet": function () { btn.tooltip("enable"); }
+           "enabledSet": function () { btn.tooltip("enable"); },
+                "click": function () { btn.tooltip("close"); }
         }).tooltip(TOOLTIP_OPTIONS);
       });
+
+    // elementos a ocultar, via fade, nas operações de novo registro
+    var RETURN_DATE = $('#fields div:first-child label[for="data_devolucao"], #fields div:first-child input[name="data_devolucao"]')
+      .wrapAll("<span></span>").first().parent();
+
+    // elementos a ocultar, via slide, nas operações de novo registro
+    var LIMIT_DATE = $('#fields div:last-child label[for="comentario"], #fields div:first-child input[name="comentario"]').first().parent();
 
     function disableButtons() {
       // desabilita botões de navegação & comando
@@ -319,7 +339,6 @@ $(document).ready(
 
     previousBtn.click(
       function () {
-        $(this).tooltip("close");
         if (indexRec-1 > 0) { // evita o "bug do botão pressionado", cuja
           --indexRec;         // habilitação sai de sincronia com o índice
           update();           // do registro corrente devido a latência do
@@ -328,7 +347,6 @@ $(document).ready(
 
     nextBtn.click(
       function () {
-        $(this).tooltip("close");
         if (indexRec+1 <= numRecs) {
           ++indexRec;
           update();
@@ -344,7 +362,7 @@ $(document).ready(
     updateBtn.click(
       function () {
         SPINNER.run();
-        updateBtn.addClass("working").tooltip("close");
+        updateBtn.addClass("working");
         disableButtons();
         setReadonly(false);
         DATALISTS.forEach(
@@ -368,7 +386,7 @@ $(document).ready(
 
     delBtn.click(
       function () {
-        delBtn.addClass("working").tooltip("close");
+        delBtn.addClass("working");
         saveBtn[0].value = "\uF00C Confirmar";
         disableButtons();
         FAKE_BUTTONS.set(false);
@@ -378,7 +396,7 @@ $(document).ready(
     searchBtn.click(
       function () {
         SPINNER.run();
-        searchBtn.addClass("working").tooltip("close");
+        searchBtn.addClass("working");
         saveBtn[0].value = "\uF00C Executar";
         disableButtons();
         setValues();
@@ -407,10 +425,12 @@ $(document).ready(
     newBtn.click(
       function () {
         SPINNER.run();
-        newBtn.addClass("working").tooltip("close");
+        newBtn.addClass("working");
         disableButtons();
         setValues();
         setReadonly(false);
+        RETURN_DATE.fadeOut(1000, "swing");
+        LIMIT_DATE.slideUp(1000, "swing");
         DATALISTS.forEach(
           function (dataList, index) {
             $.get(
@@ -450,6 +470,8 @@ $(document).ready(
             if (texto.startsWith("Erro")) {
               show("\uF06A Atenção", "<p>Não foi possível registrar novo empréstimo.\n\n" + texto + "</p>");
             } else {
+              RETURN_DATE.fadeIn(1000, "swing");
+              LIMIT_DATE.slideDown(1000, "swing");
               INFO_FIELDS_TIPS.disable();
               amount[0].value = ++numRecs;
               indexRec = parseInt(texto);
@@ -545,7 +567,7 @@ $(document).ready(
         } else if (delBtn.hasClass("working")) {
 
           funktion = function (texto) {
-            if (texto.startsWith("Error")) {
+            if (texto.startsWith("Erro")) {
               show("\uF06A Atenção", "<p>Não foi possível excluir o registro de empréstimo.\n\n" + texto + "</p>");
               cancelBtn.click();
             } else {
@@ -581,6 +603,10 @@ $(document).ready(
       function () {
         if (newBtn.hasClass("working") || updateBtn.hasClass("working")) {
           INFO_FIELDS_TIPS.disable();
+          if (newBtn.hasClass("working")) {
+            RETURN_DATE.fadeIn(1000, "swing");
+            LIMIT_DATE.slideDown(1000, "swing");
+          }
         } else if (searchBtn.hasClass("working")) {
           DATA_DEVOLUCAO_TIP.disable();
         }
@@ -598,7 +624,6 @@ $(document).ready(
 
     infoBtn.click(
       function () {
-        infoBtn.tooltip("close");
         // requisita listagem dos empréstimos esperado no dia corrente
         // e dos exemplares disponíveis no acervo, agrupados por título
         SPINNER.run();
@@ -613,7 +638,6 @@ $(document).ready(
 
     leitorBtn.click(
       function () {
-        leitorBtn.tooltip("close");
         // requisita listagem dos leitores/obras com empréstimos em atraso
         SPINNER.run();
         $.get(
@@ -757,7 +781,7 @@ $(document).ready(
           // ação inicial conforme quantidade de registros da tabela
           if (numRecs > 0) {
             lastBtn.click();
-            $(actionButtons).prop("disabled", true);
+            setDisabled(actionButtons, true);
           } else {
             whenTableIsEmpty(); // força inserção de registro
           }

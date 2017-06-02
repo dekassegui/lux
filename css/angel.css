@@ -22,5 +22,5 @@ input#amount {
 }
 label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount, .alive
 {
-  text-shadow: 1px 1px 1px #111;
+  text-shadow: 1px 1px 1px #222;
 }

@@ -5,8 +5,10 @@ body {
   background-position: right top;
   background-size: 125%;
 }
-label, footer p, section > div:first-child > p span, body:not([id]) section > p  {
-  color: #903;
+label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount, .alive
+{
+  color: #f69;
+  text-shadow: -1px -1px 1px #fff, 1px 1px 1px #888;
 }
 input[type="text"], input[type="tel"], input[type="email"] {
   background-color: lightcyan;

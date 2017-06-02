@@ -2,15 +2,16 @@
  * Este script é parte do projeto LUX, software livre para bibliotecas de
  * casas Espíritas, em desenvolvimento desde 12/11/2016.
 */
+
 $(document).ready(
   function () {
 
     // URI do script backend que atende requisições ao DB
     const uri = location.href.replace("html", "php");
 
-    new StyleSwitcher();
-
     var SPINNER = new Spinner("header");
+
+    new StyleSwitcher();
 
     // ajuste da largura do elemento ASIDE container do TEXTAREA
     $(window).resize(
@@ -70,6 +71,29 @@ $(document).ready(
           });
       }
     )();
+
+    // atrela a cada botão que tem atributo "title", funções responsivas a
+    // modificações da propriedade "disabled" via jQuery, que habilitam a
+    // exibição de dicas via jQuery Tooltip, também atrelado a cada botão
+    var provisorio = ["clique aqui para <b>acessar o primeiro registro</b>",
+      "clique aqui para <b>acessar o registro anterior</b>",
+      "clique aqui para <b>acessar o próximo registro</b>",
+      "clique aqui para <b>acessar o último registro</b>",
+      "clique aqui para <b>atualizar o registro de empréstimo apresentado</b>",
+      "clique aqui para <b>excluir o registro de empréstimo apresentado</b>",
+      "clique aqui para <b>pesquisar registros de empréstimos</b> com qualquer status",
+      "clique aqui para <b>registrar novo empréstimo</b>",
+      "clique aqui para <b>confirmar ou executar a operação</b>",
+      "clique aqui para <b>cancelar a modificação</b> ou <b>encerrar a operação</b>"];
+    $('#cmd input[type="button"]').each(
+      function (index, input) {
+        var btn = $(input).attr("title", provisorio[index]);
+        btn.on({
+            "disabledSet": function () { btn.tooltip("disable"); },
+             "enabledSet": function () { btn.tooltip("enable"); },
+                  "click": function () { btn.tooltip("close"); }
+          }).tooltip(TOOLTIP_OPTIONS);
+      });
 
     function disableButtons() {
       // desabilita botões de navegação & comando
@@ -272,9 +296,8 @@ $(document).ready(
         if (newBtn.hasClass("working")) {
 
           funktion = function (texto) {
-            SPINNER.stop();
             if (texto.startsWith("Erro")) {
-              show("\uF06A Atenção", "<p>Não foi possível adicionar novo registro.</p>\n" + texto);
+              show("\uF06A Atenção", "<p>Não foi possível adicionar novo registro.\n\n" + texto + "</p>");
             } else {
               amount[0].value = ++numRecs;
               indexRec = parseInt(texto);
@@ -296,7 +319,6 @@ $(document).ready(
         } else if (searchBtn.hasClass("working")) {
 
           funktion = function (texto) {
-            SPINNER.stop();
             if (texto.startsWith("Advertência")) {
               show("\uF05A Informação", "<p><b>Não há dados que satisfaçam a pesquisa.</b>\n\nRevise os parâmetros e tente novamente.</p>");
               // FOR DEBUG PURPOSE: MURAL.append("SQL: " + texto);
@@ -345,9 +367,8 @@ $(document).ready(
         } else if (updateBtn.hasClass("working")) {
 
           funktion = function (texto) {
-            SPINNER.stop();
             if (texto.startsWith("Erro")) {
-              show("\uF06A Atenção", "<p>Não foi possível atualizar o registro.</p>\n" + texto);
+              show("\uF06A Atenção", "<p>Não foi possível atualizar o registro.\n\n" + texto + "</p>");
             } else {
               var n = parseInt(texto);
               if (n != indexRec) indexRec = n;
@@ -361,9 +382,8 @@ $(document).ready(
         } else if (delBtn.hasClass("working")) {
 
           funktion = function (texto) {
-            SPINNER.stop();
             if (texto.startsWith("Erro")) {
-              show("\uF06A Atenção", "<p>Não foi possível excluir o registro.</p>\n<p>" + texto + "</p>");
+              show("\uF06A Atenção", "<p><b>Não foi possível excluir o registro.</b>\n\n" + texto + "</p>");
               cancelBtn.click();
             } else {
               amount[0].value = --numRecs;
@@ -391,7 +411,7 @@ $(document).ready(
 
         }
 
-        $.get(par.join(""), funktion);
+        $.get(par.join(""), funktion).done(function () { SPINNER.stop(); });
 
       });
 
@@ -408,22 +428,19 @@ $(document).ready(
         setReadonly(true);                  // desabilita os inputs dos..
       });
 
-    // preenche DATALISTs cujos IDs correspondem ao nome (sem extensão)
-    // do script backend que atende a requisição dos seus dados
-    (
-      function () {
-        var listas = $("#fields > datalist");
-        if (listas.length > 0) {
-          var URI = uri.substring(0, uri.lastIndexOf("/")+1);
-          listas.toArray().map($).forEach(
-            function (dataList) {
-              $.get(
-                URI + dataList[0].id + ".php?action=GETALL",
-                function (options) { dataList.html(options); });
-            });
-        }
+    // preenche DATALISTs nas UIs da tabelas "acervo" e "obras"
+    {
+      let listas = $("#fields > datalist");
+      if (listas.length > 0) {
+        var URI = uri.substring(0, uri.lastIndexOf("/")+1);
+        listas.each(
+          function (index, dataList) {
+            $.get(
+              URI + dataList.id + ".php?action=GETALL",
+              function (options) { dataList.innerHTML = options; });
+          });
       }
-    )();
+    }
 
     // testa se valores de ambos inputs mostradores de status da tabela não
     // são string vazia, evidenciando que o documento foi atualizado durante
@@ -433,10 +450,9 @@ $(document).ready(
       numRecs = parseInt(amount[0].value); // extrai o valor numérico do input
 
       if (numRecs == 0) {
-
         newBtn.click();
         cancelBtn[0].disabled = true;
-
+        SPINNER.stop();
       } else {
 
         indexRec = parseInt(counter[0].value); // extrai o valor do input
@@ -445,26 +461,28 @@ $(document).ready(
         $.get(
           uri + "?action=GETREC&recnumber=" + indexRec,
           function (texto) {
-            SPINNER.stop();
             // atualiza os valores do registro corrente
-            setValues(texto.split("|"));
-          });
-
-        // habilita edição e declara a quantidade máxima de
-        // caracteres do input do índice do registro corrente
-        counter[0].disabled = false;
-        counter[0].maxLength = amount[0].value.length;
-
-        // habilita/desabilita botões de navegação
-        setDisabled([firstBtn, previousBtn], indexRec <= 1);
-        setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
-
-        commandButtons.forEach(
-          function (btn) {
-            btn.removeClass("working").prop("disabled", false);
-          });
-
-        setDisabled(actionButtons, true); // desabilita os "action buttons'
+            if (texto.startsWith("Erro")) {
+              firstBtn.click();
+            } else {
+              setValues(texto.split("|"));
+            }
+          }).done(
+            function () {
+              // habilita edição e declara a quantidade máxima de
+              // caracteres do input do índice do registro corrente
+              counter[0].disabled = false;
+              counter[0].maxLength = amount[0].value.length;
+              // habilita botões de navegação conforme número do registro
+              setDisabled([firstBtn, previousBtn], indexRec <= 1);
+              setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
+              commandButtons.forEach(
+                function (btn) {
+                  btn.removeClass("working").prop("disabled", false);
+                });
+              setDisabled(actionButtons, true);
+              SPINNER.stop();
+            });
 
       }
 
@@ -473,7 +491,6 @@ $(document).ready(
       $.get(
         uri + "?action=COUNT",
         function (texto) {
-          SPINNER.stop();
           // declara a quantidade inicial de registros da tabela
           numRecs = parseInt(amount[0].value = texto);
           // declara a quantidade máxima de caracteres do input
@@ -481,10 +498,11 @@ $(document).ready(
           // ação inicial conforme quantidade de registros da tabela
           if (numRecs > 0) {
             firstBtn.click();   // mostra o primeiro registro
+            setDisabled(actionButtons, true);
           } else {
             whenTableIsEmpty(); // força inserção de registro
           }
-        });
+        }).done(function () { SPINNER.stop(); });
 
     }
 
