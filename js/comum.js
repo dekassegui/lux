@@ -176,72 +176,35 @@ function setDisabled(array, value) {
 }
 
 /**
- * Gestor de persistência de folhas de estilo temáticas.
+ * Gestor de folhas de estilo temáticas, persistentes para cada dia da semana.
 */
-function StyleSwitcher() {
+var StyleManager = {
 
-  var self = this;
+  dayOfWeek: function () {
+      return ["DOM","SEG","TER","QUA","QUI","SEX","SÁB"][new Date().getDay()];
+    },
 
-  var links = $("link[rel$='stylesheet'][title]").toArray().map($);
+  save: function () {
+      // pesquisa pela folha de estilo "ativa"
+      var a = $("link[rel$='stylesheet'][title]")
+        .filter(function () { return !this.disabled; });
+      // extrai o título se a pesquisa foi bem sucedida
+      var title = a.length ? a.attr("title") : null;
+      // cache persistente do título conforme dia da semana
+      localStorage.setItem("style" + this.dayOfWeek(), title);
+    },
 
-  function search(callback) {
-    var a = links.find(callback);
-    return (a === undefined) ? null : a.attr("title");
-  }
-
-  this.getActiveStyleSheet = function () {
-    return search(
-        function (a) { return !a.prop("disabled"); }
-      );
-  };
-
-  this.getPreferredStyleSheet = function() {
-    return search(
-        function (a) { return !a.attr("rel").startsWith("alternate"); }
-      );
-  };
-
-  this.setActiveStyleSheet = function (title) {
-    links.forEach(
-      function (a) { a.prop("disabled", a.attr("title") != title); }
-    );
-  };
-
-  function isValid(title) {
-    return title && links.some(
-      function (a) { return a.attr("title") == title; });
-  }
-
-  function dayOfWeek() {
-    return "DOMSEGTERQUAQUISEXSÁB".substr((new Date()).getDay() * 3, 3);
-  }
-
-  this.save = function (title) {
-    localStorage.setItem("style" + dayOfWeek(),
-      isValid(title) ? title : self.getActiveStyleSheet());
-  };
-
-  this.load = function () {
-    return localStorage.getItem("style" + dayOfWeek());
-  };
-
-  /**
-   * Cache "persistente" do título da folha de estilo ativa.
-  */
-  window.addEventListener("unload", function () { self.save(); }, true);
-
-  /**
-   * Ativa a folha de estilo preferencial se não há título válido em cache.
-  */
-  (
-    function (title) {
-      self.setActiveStyleSheet(
-        isValid(title) ? title : self.getPreferredStyleSheet());
+  load: function () {
+      // carrega o título de folha de estilo em cache persistente
+      var title = localStorage.getItem("style" + this.dayOfWeek());
+      var a, links = $("link[rel$='stylesheet'][title]");
+      // seleciona a folha de estilo correspondente ao título ou a "preferida"
+      if (!title || !(a = links.filter("[title='" + title + "']")).length)
+        a = links.filter("[rel='stylesheet']");
+      // ativa a folha de estilo selecionada
+      links.each(function (i, x) { x.disabled = (a[0] != x); });
     }
-  )(self.load());
-
-  return this;
-}
+};
 
 /**
  * Gestor de ícone com animação controlada para evidenciar status de

@@ -56,7 +56,7 @@
 .ui-datepicker td a { /* botões p/dias do mês */
   width: 3em !important;
   color: #000;
-  background-color: #eee !important;
+  background-color: #f6f6f6 !important;
   background-image: -webkit-linear-gradient(top, transparent, #ccc) !important;
   background-image: linear-gradient(to bottom, transparent, #ccc) !important;
   font-weight: 600 !important;
@@ -65,6 +65,8 @@
 }
 .ui-datepicker td a:hover {
   background-color: white !important;
+  background-image: -webkit-linear-gradient(top, transparent, #bbb) !important;
+  background-image: linear-gradient(to bottom, transparent, #bbb) !important;
 }
 /* domingo */
 .ui-datepicker th:first-child, .ui-datepicker td:first-child a {
@@ -79,19 +81,18 @@
 }
 .ui-datepicker .ui-state-highlight:hover {
   background-color: purple !important;
+  background-image: -webkit-linear-gradient(bottom, transparent, orchid) !important;
+  background-image: linear-gradient(to top, transparent, orchid) !important;
 }
 /* dia corrente */
-td.ui-datepicker-current-day {
-  background: none !important;
-}
 td.ui-datepicker-current-day a {
-  border: solid 1px white !important;
-  background-color: #69c !important;
-  -webkit-background-image: none !important;
-  background-image: none !important;
+  border: solid 1px #999 !important;
+  background-image: -webkit-linear-gradient(top, #09c, #069) !important;
+  background-image: linear-gradient(to bottom, #09c, #069) !important;
 }
 td.ui-datepicker-current-day a:hover {
-  background-color: #36c !important;
+  background-image: -webkit-linear-gradient(top, #069, #036) !important;
+  background-image: linear-gradient(to bottom, #069, #036) !important;
 }
 /* ícones dos botões de seleção do mês */
 #ui-datepicker-div > div > a span.ui-icon {
@@ -113,7 +114,7 @@ td.ui-datepicker-current-day a:hover {
 .ui-dialog .ui-dialog-titlebar {
   border: none;
   background-color: transparent;
-  color: #333;
+  color: #111;
   font-size: 1.25em !important;
   font-weight: 400;
   font-variant: small-caps;
@@ -144,15 +145,15 @@ td.ui-datepicker-current-day a:hover {
   background-image: none;
   border-color: #ccc;
 }
+.ui-dialog p {
+  text-align: center;
+  letter-spacing: 0.03125em;
+}
 .ui-dialog b {
-  color: #009;
+  color: #039;
   font-weight: 600;
 }
 .ui-dialog strong {
   color: #069;
-  font-weight: 600;
-}
-.ui-dialog p {
-  text-align: center;
   font-weight: 600;
 }

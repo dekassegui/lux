@@ -14,7 +14,9 @@ $(document).ready(
 
     var SPINNER = new Spinner("header");
 
-    new StyleSwitcher();
+    StyleManager.load();
+
+    $(window).on({"unload":function(){StyleManager.save();}});
 
     ["#data_emprestimo", "#data_devolucao"].forEach(
       function (element) {
@@ -180,11 +182,11 @@ $(document).ready(
         return " ".repeat( Math.max(0, 16-name.length) ) + name + ": ";
       });
 
-    var DATALIST_EXEMPLARES = document.getElementById("acervo_exemplares");
+    var DATALIST_EXEMPLARES = $("#acervo_exemplares");
 
-    var DATALIST_OBRAS = document.getElementById("acervo_obras");
+    var DATALIST_OBRAS = $("#acervo_obras");
 
-    var DATALISTS = [DATALIST_OBRAS, document.getElementById("leitores")];
+    var DATALISTS = [DATALIST_OBRAS, $("#leitores")];
 
     // atrela a cada botão que tem atributo "title", funções responsivas a
     // modificações da propriedade "disabled" via jQuery, que habilitam a
@@ -200,11 +202,11 @@ $(document).ready(
       });
 
     // elementos a ocultar, via fade, nas operações de novo registro
-    var RETURN_DATE = $('#fields div:first-child label[for="data_devolucao"], #fields div:first-child input[name="data_devolucao"]')
+    var RETURN_DATE = $('#fields label[for="data_devolucao"], #fields input[name="data_devolucao"]')
       .wrapAll("<span></span>").first().parent();
 
     // elementos a ocultar, via slide, nas operações de novo registro
-    var LIMIT_DATE = $('#fields div:last-child label[for="comentario"], #fields div:first-child input[name="comentario"]').first().parent();
+    var LIMIT_DATE = $('#fields label[for="comentario"], #fields input[name="comentario"]').first().parent();
 
     function disableButtons() {
       // desabilita botões de navegação & comando
@@ -367,10 +369,11 @@ $(document).ready(
         setReadonly(false);
         DATALISTS.forEach(
           function (dataList, index) {
+            dataList.empty();
             $.get(
-              aUri + dataList.id + ".php?action=GETALL",
+              aUri + dataList[0].id + ".php?action=GETALL",
               function (options) {
-                dataList.innerHTML = options;
+                dataList.html(options);
               }
             ).done(
               function () {
@@ -403,10 +406,11 @@ $(document).ready(
         setReadonly(false);
         DATALISTS.forEach(
           function (dataList, index) {
+            dataList.empty();
             $.get(
-              aUri + dataList.id + ".php?action=PESQUISA",
+              aUri + dataList[0].id + ".php?action=PESQUISA",
               function (options) {
-                dataList.innerHTML = options;
+                dataList.html(options);
               }
             ).done(
               function () {
@@ -433,10 +437,11 @@ $(document).ready(
         LIMIT_DATE.slideUp(1000, "swing");
         DATALISTS.forEach(
           function (dataList, index) {
+            dataList.empty();
             $.get(
-              aUri + dataList.id + ".php?action=GETALL",
+              aUri + dataList[0].id + ".php?action=GETALL",
               function (options) {
-                dataList.innerHTML = options;
+                dataList.html(options);
               }
             ).done(
               function () {
@@ -487,7 +492,7 @@ $(document).ready(
               setDisabled(actionButtons, true);
               setReadonly(true);
               FAKE_BUTTONS.set(true);
-              show("\uF06A Notificação", "<p><b>O empréstimo foi registrado com sucesso.</b>\n\nInforme a data limite para devolução.</p>");
+              show("\uF06A Notificação", "<p><b>O empréstimo foi registrado com sucesso.</b>\n\nInforme a <strong>Data Limite</strong> para devolução.</p>");
             }
           };
           par.push("?action=INSERT");
@@ -664,7 +669,7 @@ $(document).ready(
             // pesquisa via busca binária da OPTION selecionada no DATALIST
             // do INPUT de obras, para extrair o valor do atributo "code"
             // correspondente se a pesquisa foi bem sucedida
-            for (var collection = DATALIST_OBRAS.options, element,
+            for (var collection = DATALIST_OBRAS[0].options, element,
               key = fields[4].val(), lo = 0, hi = collection.length - 1, mid;
               !code && lo <= hi;) {
               mid = ((lo + hi) >> 1);
@@ -688,11 +693,11 @@ $(document).ready(
                   fields[7].val(values[1]);
                   // substitui todos os itens da lista de opções, que pode
                   // tornar-se vazia caso não haja exemplares disponíveis
-                  DATALIST_EXEMPLARES.innerHTML = values[2];
+                  DATALIST_EXEMPLARES.html(values[2]);
                   if (values[2].length > 0) {
                     // atualiza o valor do INPUT "exemplar" com o valor
                     // do primeiro item do DATALIST
-                    fields[6].val(DATALIST_EXEMPLARES.options.item(0).value);
+                    fields[6].val(DATALIST_EXEMPLARES[0].options.item(0).value);
                   } else {
                     show("\uF06A Atenção", "Não há exemplar desta obra, disponível no momento.");
                     fields[6].val("\u2639 Não achei!");
@@ -704,11 +709,11 @@ $(document).ready(
       });
 
     // preenche DATALIST do INPUT#bibliotecarios e do INPUT#exemplares
-    [document.getElementById("bibliotecarios"), DATALIST_EXEMPLARES].forEach(
+    [$("#bibliotecarios"), DATALIST_EXEMPLARES].forEach(
       function (dataList) {
-        $.get(aUri + dataList.id + ".php?action=GETALL",
+        $.get(aUri + dataList[0].id + ".php?action=GETALL",
           function (options) {
-            dataList.innerHTML = options;
+            dataList.html(options);
           });
       });
 

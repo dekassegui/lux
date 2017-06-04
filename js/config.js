@@ -14,7 +14,9 @@ $(document).ready(function () {
 
   var SPINNER = new Spinner("header");
 
-  new StyleSwitcher();
+  StyleManager.load();
+
+  $(window).on({"unload":function(){StyleManager.save();}});
 
   /**
    * Gestor do botão que efetiva a atualização quando clicado.

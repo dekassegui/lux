@@ -11,7 +11,9 @@ $(document).ready(
 
     var SPINNER = new Spinner("header");
 
-    new StyleSwitcher();
+    StyleManager.load();
+
+    $(window).on({"unload":function(){StyleManager.save();}});
 
     // ajuste da largura do elemento ASIDE container do TEXTAREA
     $(window).resize(
