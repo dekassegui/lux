@@ -61,6 +61,42 @@ div table:hover {
   background-color: darkorchid;
 }
 
+#pager {
+  margin-top: 1em;
+  font-family: FontAwesome, "Open Sans", sans-serif;
+  font-size: .88em;
+  text-align: center;
+}
+#pager > * {
+  margin-top: .5em;
+  display: inline-block;
+  width: 2.25em;
+  border: solid 1px transparent;
+  border-radius: 5px;
+}
+#pager > * + * {
+  margin-left: .125em;
+}
+#pager > *:first-child, #pager > *:last-child {
+  font-size: .9em;
+  line-height: 100%;
+  padding: 5px 0 3px 0;
+}
+#pager a {
+  color: dodgerblue;
+}
+#pager a:hover {
+  color: red;
+  background: -webkit-linear-gradient(top, transparent, #e0e0e0);
+  background: linear-gradient(to bottom, transparent, #e0e0e0);
+  border-color: #ccc;
+  text-shadow: -1px -1px 1px #ccc, 1px 1px 1px #fff;
+}
+#pager a:active {
+  background: -webkit-linear-gradient(bottom, transparent, #f0f0f0);
+  background: linear-gradient(to top, transparent, #f0f0f0);
+}
+
 footer {
   display: block !important;
   visibility: visible !important;

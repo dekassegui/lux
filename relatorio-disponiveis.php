@@ -8,9 +8,6 @@
 <link href="css/reset.css" rel="stylesheet" type="text/css" media="screen">
 <link href="css/comum.css" rel="stylesheet" type="text/css" media="screen">
 <link href="css/relatorio.css" rel="stylesheet" type="text/css" media="screen">
-<script src="js/jquery.js"></script>
-<script src="js/jquery.scrollTo.min.js"></script>
-<script src="js/relatorio.js"></script>
 </head>
 <body>
 
@@ -48,8 +45,17 @@
     exit(0);
   }
 
-  $sql = 'SELECT count(distinct titulo) FROM exemplares_disponiveis';
-  $m = $db->querySingle($sql);
+  $numRecs = $m = $db->querySingle('SELECT count(distinct titulo) FROM exemplares_disponiveis');
+
+  $recsPerPage = 10;
+
+  $numPages = ceil($numRecs / $recsPerPage);
+
+  $pagina = (isset($_GET['pagina']) && is_numeric($_GET['pagina'])) ?
+            ((max(1, $_GET['pagina']) - 1) % $numPages) + 1 : 1;
+
+  $inicio = ($pagina - 1) * $recsPerPage;
+
   echo '<tr><td>#Títulos:</td><td>', $m, '</td></tr>', PHP_EOL;
   echo '</table>', PHP_EOL;
 
@@ -62,8 +68,13 @@ FROM disponiveis_acervo JOIN (
   ) AS books ON books.code == disponiveis_acervo.obra
   JOIN scribas ON scribas.code == books.autor
   JOIN generos ON generos.code == books.genero
-GROUP BY books.titulo ORDER BY books.titulo COLLATE portuguese ASC;
+GROUP BY books.titulo ORDER BY books.titulo COLLATE portuguese ASC
+LIMIT
+  $recsPerPage
+OFFSET
+  $inicio;
 EOT;
+
   $result = $db->query($sql);
   while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
     echo '<table>', PHP_EOL;
@@ -83,6 +94,20 @@ EOT;
     echo '  <tr><td>Posição:</td><td>', $row['posicao'], '</td></tr>', PHP_EOL;
     echo '</table>', PHP_EOL;
   }
+
+  echo "\t", '<p id="pager">';
+  $a = '<a href="'.$_SERVER['PHP_SELF'].'?pagina=';
+  $c = ($pagina == 1) ? '<span>&#xf053;</span>'
+       : $a.($pagina-1).'" title="página anterior">&#xf053;</a>';
+  echo $c;
+  for ($i=1; $i <= $numPages; ++$i) {
+    $c = ($i == $pagina) ? "<span>$i</span>" : $a.$i.'">'."$i</a>";
+    echo $c;
+  }
+  $c = ($pagina == $numPages) ? '<span>&#xf054;</span>'
+       : $a.($pagina+1).'" title="próxima página">&#xf054;</a>';
+  echo $c, '</p>';
+
   echo '</div>', PHP_EOL;
 
 ?>

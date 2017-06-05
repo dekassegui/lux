@@ -8,9 +8,6 @@
 <link href="css/reset.css" rel="stylesheet" type="text/css" media="screen">
 <link href="css/comum.css" rel="stylesheet" type="text/css" media="screen">
 <link href="css/relatorio.css" rel="stylesheet" type="text/css" media="screen">
-<script src="js/jquery.js"></script>
-<script src="js/jquery.scrollTo.min.js"></script>
-<script src="js/relatorio.js"></script>
 </head>
 <body>
 
@@ -59,6 +56,18 @@
   echo '</table>', PHP_EOL;
 
   echo '<div>', PHP_EOL;
+
+  $numRecs = $n;
+
+  $recsPerPage = 10;
+
+  $numPages = ceil($numRecs / $recsPerPage);
+
+  $pagina = (isset($_GET['pagina']) && is_numeric($_GET['pagina'])) ?
+            ((max(1, $_GET['pagina']) - 1) % $numPages) + 1 : 1;
+
+  $inicio = ($pagina - 1) * $recsPerPage;
+
   $sql = <<<EOT
 SELECT v.obra AS code, titulo, autores, generos.nome AS genero, exemplar, posicao, comentario, strftime("%d-%m-%Y", data_emprestimo) AS data_emprestimo, strftime("%d-%m-%Y", data_limite) AS data_limite
 FROM (
@@ -70,8 +79,13 @@ FROM (
 ) AS v JOIN obras ON v.obra IS obras.code
   JOIN scribas ON obras.autor IS scribas.code
   JOIN generos ON obras.genero IS generos.code
-ORDER BY titulo COLLATE portuguese ASC;
+ORDER BY titulo COLLATE portuguese ASC
+LIMIT
+  $recsPerPage
+OFFSET
+  $inicio;
 EOT;
+
   $result = $db->query($sql);
   while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
     echo '<table>', PHP_EOL;
@@ -88,6 +102,20 @@ EOT;
     }
     echo '</table>', PHP_EOL;
   }
+
+  echo "\t<p id=\"pager\">";
+  $a = '<a href="'.$_SERVER['PHP_SELF'].'?pagina=';
+  $c = ($pagina == 1) ? '<span>&#xf053;</span>'
+       : $a.($pagina-1).'" title="página anterior">&#xf053;</a>';
+  echo $c;
+  for ($i=1; $i <= $numPages; ++$i) {
+    $c = ($i == $pagina) ? "<span>$i</span>" : $a.$i.'">'."$i</a>";
+    echo $c;
+  }
+  $c = ($pagina == $numPages) ? '<span>&#xf054;</span>'
+       : $a.($pagina+1).'" title="próxima página">&#xf054;</a>';
+  echo $c, '</p>';
+
   echo '</div>', PHP_EOL;
 
 ?>

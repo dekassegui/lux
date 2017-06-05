@@ -6,9 +6,9 @@
 
   function translate($s) {
     if (strpos($s, 'NULL') !== FALSE) {
-      $i = strpos($s, 'acervo.') + 7;
-      $k = stripos($s, ' ');
-      return 'Erro: O campo <b>'.substr($s, $i, $k-$i).'</b> não pode ser NULO.';
+      preg_match('/\b\w+\.(\S+)\b/', $s, $match);
+      $fieldname = ($match[1] == 'code') ? 'Código' : $match[1];
+      return "Erro: O campo <b>$fieldname</b> não pode ser NULO.";
     } else if (strpos($s, 'foreign key constraint') !== FALSE) {
       return 'Erro: Algum registro em outra tabela usa informações desse registro.';
     }
