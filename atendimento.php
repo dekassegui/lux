@@ -245,6 +245,7 @@ EOT;
         echo 'Advertência: Parâmetros insuficientes para montagem das restrições de pesquisa.';
       }
       break;
+
   }
 
 ?>

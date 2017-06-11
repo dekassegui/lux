@@ -81,7 +81,7 @@ input[type="text"]:focus, input[type="tel"]:focus, input[type="email"]:focus, in
   color: darkblue;
   background-color: white;
   border-color: #9E9;
-  box-shadow: 0px 0px 2px #ccc;
+  box-shadow: inset 0 0 1px 1px greenyellow;
 }
 input[list]:focus {
   border-color: orange;
@@ -136,22 +136,22 @@ input[type="button"] {
   border: solid 1px #999;
   border-left-color: #aaa;
   border-top-color: #bbb;
-  border-radius: 5px;
+  border-radius: 6px;
   /* configura uso de "transition" */
   -webkit-transition: color .5s, background-color .5s;
   -webkit-transition-timing-function: ease-in;
   transition: color .5s, background-color .5s;
   transition-timing-function: ease-in;
 }
+input[type="button"]:enabled , .working { text-shadow: 1px 1px 1px rgba(0,0,0,.33); }
 input[type="button"]:disabled { color: #b9b9b9; }
-input[type="button"]:disabled.working {
-  color: #609;
-  text-shadow: 1px 1px 0px white; /* efeito de "esculpido" */
+input[type="button"].working {
+  color: #037;
+  background-color: lightcyan;
+  background-image: linear-gradient(to bottom, transparent, #cff) !important;
   border: solid 1px #777;
   border-right-color: #aaa;
   border-bottom-color: #999;
-  background-image: none;         /* botao pressionado :: plano */
-  background-color: #fc6;
 }
 input[type="button"]:enabled:hover {
   color: red;
@@ -172,6 +172,12 @@ input[type="button"]:enabled:focus {
   border-color: #c63;
   border-top-color: #fc9;
   border-left-color: #f96;
+}
+input[type="text"][list] {
+  background-repeat: no-repeat;
+  background-image: url("../img/triangle-down.png");
+  background-position: right center;
+  background-size: 20px 15px;
 }
 div#cmd p { overflow: auto; }
 div#cmd * + p { margin-top: .125em; }
@@ -207,6 +213,7 @@ textarea.empty { font-style: italic; color: #99c; }
   font: 400 .7em "Open Sans", sans-serif;
   letter-spacing: .03125em;
   color: #777;
+  text-shadow: 1px 1px white;
   background-color: #eee;
   background-image: -webkit-linear-gradient(top, transparent, #bbb);
   background-image: linear-gradient(to bottom, transparent, #bbb);

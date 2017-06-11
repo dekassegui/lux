@@ -87,11 +87,11 @@
 /* dia corrente */
 td.ui-datepicker-current-day a {
   border: solid 1px #aaa !important;
-  background-image: -webkit-linear-gradient(top, #09c, #069) !important;
+  background-image: -webkit-linear-gradient(top, #999, #777) !important;
   background-image: linear-gradient(to bottom, #999, #777) !important;
 }
 td.ui-datepicker-current-day a:hover {
-  background-image: -webkit-linear-gradient(top, #069, #036) !important;
+  background-image: -webkit-linear-gradient(top, #a6a6a6, #777) !important;
   background-image: linear-gradient(to bottom, #a6a6a6, #777) !important;
 }
 /* ícones dos botões de seleção do mês */

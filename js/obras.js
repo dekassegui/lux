@@ -1,8 +1,9 @@
 /**
  * Este script é parte do projeto LUX, software livre para bibliotecas de
  * casas Espíritas, em desenvolvimento desde 12/11/2016.
+ *
+ * -- Atende a quase todas UIs, portanto seus métodos são genéricos.
 */
-
 $(document).ready(
   function () {
 
@@ -13,7 +14,7 @@ $(document).ready(
 
     StyleManager.load();
 
-    $(window).on({"unload":function(){StyleManager.save();}});
+    $(window).on({ "unload": function () { StyleManager.save(); } });
 
     // ajuste da largura do elemento ASIDE container do TEXTAREA
     $(window).resize(
@@ -74,6 +75,8 @@ $(document).ready(
       }
     )();
 
+    // TODO: remover a declaração abaixo quando possível.
+
     // atrela a cada botão que tem atributo "title", funções responsivas a
     // modificações da propriedade "disabled" via jQuery, que habilitam a
     // exibição de dicas via jQuery Tooltip, também atrelado a cada botão
@@ -107,32 +110,32 @@ $(document).ready(
       counter[0].disabled = true;
     }
 
+    // procedimento específico para tabelas vazias :: zero registros
     function whenTableIsEmpty() {
-      // prepara a única ação possível quando a tabela está vazia
       counter[0].value = indexRec = 0;
       newBtn.click();                   // inserir registro :: o primeiro
       cancelBtn[0].disabled = true;     // somente será possível "salvar"
     }
 
+    // preenchimento de todos INPUTs dos campos
     function setValues(array) {
-      // preenche os inputs com componentes do argumento do tipo Array
-      // ou com strings vazias se o argumento for indeterminado
-      fields.forEach(
-        (array === undefined) ? function (input) { input[0].value = ""; }
-          : function (input, index) {
-              input[0].value = (array[index] == "NULL") ? "" : array[index];
-            }
-      );
+      // preenche com componentes do "array" ou com strings vazias na ausência
+      // de argumentos ou se argumento for indeterminado
+      var f = (array === undefined) ? function (input) { input[0].value = ""; }
+        : function (input, index) {
+            input[0].value = (array[index] == "NULL") ? "" : array[index];
+          };
+      fields.forEach(f);
     }
 
-    function setReadonly(bool) {
-      // declara os valores do atributo readonly dos inputs de campos..
-      fields.forEach(function (input) { input[0].readOnly = bool; });
+    // declara o valor do atributo "readonly" dos inputs dos campos
+    function setReadonly(value) {
+      fields.forEach(function (input) { input.attr("readonly", value); });
     }
 
+    // atualiza os campos conforme número do registro ou invoca procedimento
+    // para entrada de dados em tabela vazia
     function update() {
-      // testa o índice do registro corrente para atualizar os
-      // respectivos dados ou preparar inserção na tabela vazia
       if (indexRec > 0) {
         $.get(
           uri + "?action=GETREC&recnumber=" + indexRec,
@@ -150,29 +153,31 @@ $(document).ready(
       }
     }
 
-    // incrementa a responsividade ao digitar nos INPUTs do registro
+    // atrela aos INPUTs dos campos a função responsiva ao evento "input"
+    // que executa comando pendente se <Enter> é pressionado ou cancela
+    // se <Escape> pressionado
     fields.forEach(
       function (input) {
         input.keydown(
           function (ev) {
-            // ignora o evento na exclusão de registros
-            if (delBtn.hasClass("working")) return;
-            // testa se "action buttons" estão habilitados
-            if (actionButtons.every(item => item[0].disabled == false)) {
-              if (ev.keyCode == 13) {
-                // ignora o evento se o input é associado a datalist
-                // e nao foi pressionado <Ctrl> simultaneamente
-                if (!ev.ctrlKey && ev.target.hasAttribute("list")) return;
-                saveBtn.click();  // (<Ctrl>+)<Enter> aciona comando pendente
-              } else if (ev.keyCode == 27) {
-                cancelBtn.click(); // <Escape> cancela comando pendente
-                ev.target.blur();  // remove o foco do input
-              }
+            // ignora evento se algum "action button" está desabilitado
+            // ou na exclusão de registros
+            if (saveBtn.is(":disabled") || cancelBtn.is(":disabled")
+                || delBtn.hasClass("working")) return;
+            if (ev.keyCode == 13) { // <Enter>
+              // ignora evento se não foi pressionado <Ctrl>+<Enter>
+              // num input associado a DataList
+              if (!ev.ctrlKey && input.attr("list") !== undefined) return;
+              saveBtn.click();    // executa comando pendente
+            } else if (ev.keyCode == 27) { // <Escape>
+              cancelBtn.click();  // cancela comando pendente
+              input.blur();       // remove o foco do input
             }
           });
       });
 
-    // incrementa a responsividade ao digitar no INPUT #counter
+    // atrela ao INPUT #counter a função responsiva ao evento "keydown" que
+    // além de filtrar teclas, também modifica o valor do INPUT #counter
     counter.keydown(
       function (ev) {
         if (numRecs > 0) {
@@ -202,7 +207,8 @@ $(document).ready(
         }
       });
 
-    // incrementa a responsividade na perda de foco do INPUT #counter
+    // atrela ao INPUT #counter a função responsiva ao evento de tipo "blur"
+    // que atualiza ou impede valor ilegal
     counter.blur(
       function () {
         var valor = parseInt(counter[0].value); // aborta edição pendente do
@@ -444,21 +450,17 @@ $(document).ready(
       }
     }
 
-    // testa se valores de ambos inputs mostradores de status da tabela não
-    // são string vazia, evidenciando que o documento foi atualizado durante
-    // pesquisa, atualização, exclusão ou inserção de novo registro
-    if (counter[0].value.length > 0 && amount[0].value.length > 0) {
-
+    // checa se há evidência de recarga do documento durante atualização,
+    // pesquisa, exclusão ou inserção de novo registro, checando os valores
+    // dos INPUTs mostradores de status da tabela
+    if (counter.val() && amount.val()) {
       numRecs = parseInt(amount[0].value); // extrai o valor numérico do input
-
       if (numRecs == 0) {
         newBtn.click();
         cancelBtn[0].disabled = true;
         SPINNER.stop();
       } else {
-
         indexRec = parseInt(counter[0].value); // extrai o valor do input
-
         // restaura os valores dos inputs consultando o DB por segurança
         $.get(
           uri + "?action=GETREC&recnumber=" + indexRec,
@@ -485,11 +487,8 @@ $(document).ready(
               setDisabled(actionButtons, true);
               SPINNER.stop();
             });
-
       }
-
     } else {
-
       $.get(
         uri + "?action=COUNT",
         function (texto) {
@@ -505,7 +504,6 @@ $(document).ready(
             whenTableIsEmpty(); // força inserção de registro
           }
         }).done(function () { SPINNER.stop(); });
-
     }
 
   });

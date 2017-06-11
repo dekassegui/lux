@@ -16,8 +16,9 @@ $(document).ready(
 
     StyleManager.load();
 
-    $(window).on({"unload":function(){StyleManager.save();}});
+    $(window).on({ "unload": function () { StyleManager.save(); } });
 
+    // atrela calendário aos INPUTs de datas
     ["#data_emprestimo", "#data_devolucao"].forEach(
       function (element) {
 
@@ -92,15 +93,17 @@ $(document).ready(
             w.animate({ scrollTop: 0 }, 2000, "easeOutExpo");
           }).insertAfter( $("textarea") );
 
-        this.scroll = function (complete) {
+        var self = this;
+
+        this.slideOptions = { duration: 1000, easing: "swing" };
+
+        this.scroll = function (full) {
           t.click();
-          if (complete) {
-            d.slideToggle({ duration: 1000, easing: "swing" });
+          if (full) {
+            d.slideToggle(self.slideOptions);
             updateTip.apply(this);
           }
         };
-
-        var self = this;
 
         h.click(function () { self.scroll(true); }).tooltip(TOOLTIP_OPTIONS);
 
@@ -201,12 +204,109 @@ $(document).ready(
         }).tooltip(TOOLTIP_OPTIONS);
       });
 
-    // elementos a ocultar, via fade, nas operações de novo registro
+    // elemento a ocultar via efeito FADE, nas operações de novo registro
     var RETURN_DATE = $('#fields label[for="data_devolucao"], #fields input[name="data_devolucao"]')
       .wrapAll("<span></span>").first().parent();
 
-    // elementos a ocultar, via slide, nas operações de novo registro
-    var LIMIT_DATE = $('#fields label[for="comentario"], #fields input[name="comentario"]').first().parent();
+    // elemento a ocultar via efeito SLIDE, nas operações de novo registro
+    var LIMIT_DATE = $("#comentario").parent();
+
+    var LIMIT_DATE_SLIDE_UP_OPTIONS = { duration: 1000, easing: "swing" };
+
+    var LIMIT_DATE_SLIDE_DOWN_OPTIONS = { duration: 1000, easing: "swing" };
+
+    /**
+     * Instalação de "pseudo frame" para apresentação de conteúdo HTML, munido
+     * de mecanismo de persistência da inibição da apresentação conforme o dia
+     * da semana, portanto cada agente tem livre arbítrio sobre sua remoção na
+     * sessão corrente ou de forma permanente.
+    */
+
+    // prefixo do código a serializar que se detectado, inibe instalação do
+    // "pseudo frame", aka DOCAREA, "quasi" persistentemente entre sessões
+    // de atendimento em algum dia da semana
+    const DOCAREA_PREFIX = "VOID_DOCAREA_ON_";
+
+    if (!localStorage.getItem(DOCAREA_PREFIX + StyleManager.dayOfWeek())) {
+
+      var DIV = $("section div").has("#fields");
+
+      var DOCAREA = $('<div id="docArea"></div>').appendTo("section").hide();
+
+      var MAX_HEIGHT = DIV.outerHeight(true) - 10;
+
+      var MIN_HEIGHT = (MAX_HEIGHT - LIMIT_DATE.outerHeight(true)) + "px";
+
+      MAX_HEIGHT += "px";
+
+      // atrela função responsiva ao redimensionamento da window,
+      // que calcula as novas dimensões e posição do frame
+      $(window).resize(function () {
+          var x = DIV.position().left + DIV.outerWidth(true) - 15;
+          DOCAREA.css({
+              "top": $("header").outerHeight(true) + "px",
+              "left": x + "px",
+              "width": ($(document.body).outerWidth() - x - 10) + "px",
+              "height": MAX_HEIGHT
+            });
+        }).resize( /* POSICIONAMENTO INICIAL */ );
+
+      $.get(
+          aUri + "about.php?title=BASIC",
+          function (texto) { DOCAREA.html(texto); }
+        ).done(
+          function () {
+
+            // atrela função responsiva a BUTTONs, que remove a DOCAREA
+            // assim como todas as funções que alteram sua visibilidade
+            // e dimensões, em sincronia com outras automações da UI
+            $("#hideDoc, #dropDoc").click(
+                function () {
+                  DOCAREA.fadeOut({
+                      duration: 1000,
+                      done: function () {
+                          DOCAREA.remove();
+                          delete SCROLLER.slideOptions.start;
+                          delete LIMIT_DATE_SLIDE_UP_OPTIONS.start;
+                          delete LIMIT_DATE_SLIDE_DOWN_OPTIONS.start;
+                        }
+                    });
+                }
+              ).last().click(
+                // atrela função ao último BUTTON, que serializa o prefixo
+                // do código mais acronismo do dia corrente da semana, para
+                // inibir instalações do DOCAREA em dias coincidentes
+                function () {
+                  localStorage.setItem(
+                    DOCAREA_PREFIX + StyleManager.dayOfWeek(), "SIM");
+                }
+              );
+
+            // atrela função ao SCROLLER, que altera visibilidade da DOCAREA
+            // sincronizada com rolamento e visibilidade do formulário
+            SCROLLER.slideOptions.start = function () {
+                if (DOCAREA.is(":visible")) {
+                  DOCAREA.fadeOut(500);
+                } else {
+                  DOCAREA.delay(700).fadeIn(750);
+                }
+              };
+
+            // atrela função que minimiza o DOCAREA quando LABEL e INPUT
+            // do "comentário container da data limite" são ocultados
+            LIMIT_DATE_SLIDE_UP_OPTIONS.start = function () {
+                DOCAREA.animate({ "height": MIN_HEIGHT });
+              };
+
+            // atrela função que maximiza o DOCAREA quando LABEL e INPUT
+            // do "comentário container da data limite" são restaurados
+            LIMIT_DATE_SLIDE_DOWN_OPTIONS.start = function () {
+                DOCAREA.delay(450).animate({ "height": MAX_HEIGHT });
+              };
+
+            DOCAREA.fadeIn(750); // primeira aparição
+          });
+    }
 
     function disableButtons() {
       // desabilita botões de navegação & comando
@@ -218,34 +318,32 @@ $(document).ready(
       counter[0].disabled = true;
     }
 
+    // procedimento específico para tabelas vazias :: zero registros
     function whenTableIsEmpty() {
-      // prepara a única ação possível quando a tabela está vazia
       counter[0].value = indexRec = 0;
       newBtn.click();                   // inserir registro :: o primeiro
       cancelBtn.prop("disabled", true); // somente será possível "salvar"
     }
 
+    // preenchimento de todos INPUTs dos campos
     function setValues(array) {
-      // preenche os INPUTs com componentes do argumento do tipo Array
-      // ou com strings vazias se o argumento for indeterminado
-      fields.forEach(
-        (array === undefined) ? function (input) { input[0].value = ""; }
+      var f = (array === undefined) ? function (input) { input[0].value = ""; }
           : function (input, index) {
               input[0].value = (array[index] == "NULL") ? "" : array[index];
-            }
-      );
+            };
+      fields.forEach(f);
     }
 
-    function setReadonly(boolValue) {
-      // declara os valores do atributo readonly dos inputs de campos..
-      (boolValue || searchBtn.hasClass("working") ?
+    // declara o valor do atributo readonly dos inputs dos campos
+    function setReadonly(value) {
+      (value || searchBtn.hasClass("working") ?
         [0, 1, 2, 3, 4, 5, 6, 7, 8] : [0, 1, 2, 3, 4, 6]).forEach(
-          function (index) { fields[index].prop("readonly", boolValue); });
+          function (index) { fields[index].prop("readonly", value); });
     }
 
+    // atualiza os campos conforme número do registro ou invoca procedimento
+    // para entrada de dados em tabela vazia
     function update() {
-      // testa o índice do registro corrente para atualizar os
-      // respectivos dados ou preparar inserção na tabela vazia
       if (indexRec > 0) {
         $.get(
           uri + "?action=GETREC&recnumber=" + indexRec,
@@ -263,29 +361,31 @@ $(document).ready(
       }
     }
 
-    // incrementa a responsividade ao digitar nos INPUTs do registro
+    // atrela aos INPUTs dos campos a função responsiva ao evento "input"
+    // que executa comando pendente se <Enter> é pressionado ou cancela
+    // se <Escape> pressionado
     fields.forEach(
       function (input) {
         input.keydown(
           function (ev) {
-            // ignora o evento na exclusão de registros
-            if (delBtn.hasClass("working")) return;
-            // testa se "action buttons" estão habilitados
-            if (actionButtons.every(item => item[0].disabled == false)) {
-              if (ev.keyCode == 13) {
-                // ignora o evento se o input é associado a datalist
-                // e nao foi pressionado <Ctrl> simultaneamente
-                if (!ev.ctrlKey && ev.target.hasAttribute("list")) return;
-                saveBtn.click();  // (<Ctrl>+)<Enter> aciona comando pendente
-              } else if (ev.keyCode == 27) {
-                cancelBtn.click(); // <Escape> cancela comando pendente
-                ev.target.blur();  // remove o foco do input
-              }
+            // ignora evento se algum "action button" está desabilitado
+            // ou na exclusão de registros
+            if (saveBtn.is(":disabled") || cancelBtn.is(":disabled")
+                || delBtn.hasClass("working")) return;
+            if (ev.keyCode == 13) { // <Enter>
+              // ignora evento se não foi pressionado <Ctrl>+<Enter>
+              // num input associado a DataList
+              if (!ev.ctrlKey && input.attr("list") !== undefined) return;
+              saveBtn.click();    // executa comando pendente
+            } else if (ev.keyCode == 27) { // <Escape>
+              cancelBtn.click();  // cancela comando pendente
+              input.blur();       // remove o foco do input
             }
           });
       });
 
-    // incrementa a responsividade ao digitar no INPUT #counter
+    // atrela ao INPUT #counter a função responsiva ao evento "keydown" que
+    // além de filtrar teclas, também modifica o valor do INPUT #counter
     counter.keydown(
       function (ev) {
         if (numRecs > 0) {
@@ -315,7 +415,8 @@ $(document).ready(
         }
       });
 
-    // incrementa a responsividade na perda de foco do INPUT #counter
+    // atrela ao INPUT #counter a função responsiva ao evento de tipo "blur"
+    // que atualiza ou impede valor ilegal
     counter.blur(
       function () {
         var valor = parseInt(counter[0].value); // aborta edição pendente do
@@ -434,7 +535,7 @@ $(document).ready(
         setValues();
         setReadonly(false);
         RETURN_DATE.fadeOut(1000, "swing");
-        LIMIT_DATE.slideUp(1000, "swing");
+        LIMIT_DATE.slideUp(LIMIT_DATE_SLIDE_UP_OPTIONS);
         DATALISTS.forEach(
           function (dataList, index) {
             dataList.empty();
@@ -476,7 +577,7 @@ $(document).ready(
               show("\uF06A Atenção", "<p>Não foi possível registrar novo empréstimo.\n\n" + texto + "</p>");
             } else {
               RETURN_DATE.fadeIn(1000, "swing");
-              LIMIT_DATE.slideDown(1000, "swing");
+              LIMIT_DATE.slideDown(LIMIT_DATE_SLIDE_DOWN_OPTIONS);
               INFO_FIELDS_TIPS.disable();
               amount[0].value = ++numRecs;
               indexRec = parseInt(texto);
@@ -610,7 +711,7 @@ $(document).ready(
           INFO_FIELDS_TIPS.disable();
           if (newBtn.hasClass("working")) {
             RETURN_DATE.fadeIn(1000, "swing");
-            LIMIT_DATE.slideDown(1000, "swing");
+            LIMIT_DATE.slideDown(LIMIT_DATE_SLIDE_DOWN_OPTIONS);
           }
         } else if (searchBtn.hasClass("working")) {
           DATA_DEVOLUCAO_TIP.disable();
@@ -717,29 +818,22 @@ $(document).ready(
           });
       });
 
-    // testa se valores de ambos INPUTs mostradores de status da tabela não
-    // são string vazia, evidenciando que o documento foi atualizado durante
-    // pesquisa, atualização, exclusão ou inserção de novo registro
-    if (counter[0].value.length > 0 && amount[0].value.length > 0) {
-
+    // checa se há evidência de recarga do documento durante atualização,
+    // pesquisa, exclusão ou inserção de novo registro, checando os valores
+    // dos INPUTs mostradores de status da tabela
+    if (counter.val() && amount.val()) {
       numRecs = parseInt(amount[0].value); // extrai o valor do input
-
       if (numRecs == 0) {
-
         newBtn.click();
         cancelBtn.prop("disabled", true);
-
         SPINNER.stop();
-
       } else {
-
         indexRec = parseInt(counter[0].value);
         if (indexRec < 1) {
           counter[0].value = indexRec = 1;
         } else if (indexRec > numRecs) {
           counter[0].value = indexRec = numRecs;
         }
-
         // restaura os valores dos inputs consultando o DB por segurança
         $.get(
           uri + "?action=GETREC&recnumber=" + indexRec,
@@ -752,30 +846,22 @@ $(document).ready(
             }
           }).done(
             function () {
-
               // habilita edição e declara a quantidade máxima de
               // caracteres do input do índice do registro corrente
               counter[0].disabled = false;
               counter[0].maxLength = amount[0].value.length;
-
               // habilita/desabilita botões de navegação
               setDisabled([firstBtn, previousBtn], indexRec <= 1);
               setDisabled([lastBtn, nextBtn], indexRec >= numRecs);
-
               commandButtons.forEach(
                 function (btn) {
                   btn.removeClass("working").prop("disabled", false);
                 });
-
               setDisabled(actionButtons, true);
-
               SPINNER.stop();
             });
-
       }
-
     } else {
-
       $.get(
         uri + "?action=COUNT",
         function (texto) {
@@ -791,7 +877,6 @@ $(document).ready(
             whenTableIsEmpty(); // força inserção de registro
           }
         }).done(function () { SPINNER.stop(); });
-
     }
 
   });

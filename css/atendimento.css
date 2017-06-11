@@ -76,6 +76,7 @@ body > header > * { /* evita seleção de texto ao clicar no canvas */
   margin-top: 10px;
   padding: 3px 10px 5px 10px;
   font-size: .7em;
+  text-shadow: 1px 1px white;
   border: solid 1px #afafaf;
   border-radius: 5px;
   background-color: #eee;
@@ -89,4 +90,66 @@ body > header > * { /* evita seleção de texto ao clicar no canvas */
 #GoTop:active {
   background-color: #dee;
   background-image: none;
+}
+
+#docArea { /* Posicionado via script. */
+  position: absolute;
+  /* z-index: 1; */
+  min-width: 240px;
+  padding: 10px 10px 10px 10px;
+  overflow: auto;
+  font: 400 14px FontAwesome, "Open Sans", sans-serif;
+  color: #333;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0px 0px 8px 8px white;
+}
+#docArea h3 {
+  color: black;
+  font-variant: small-caps;
+  font-weight: 700;
+}
+#docArea ol + h3 { margin-top: 1em; }
+#docArea ol { list-style-type: decimal; }
+#docArea ol > li { margin: .5em 0 0 1.25em; color: navy; }
+#docArea ol > li:nth-child(odd) { color: black; }
+#docArea ol ul { list-style-type: disc; margin-left: 1em; }
+#docArea ul > li { margin-top: .125em; }
+#docArea ul > li, #docArea span.field { font-weight: 600; color: purple; }
+#docArea span.botao {
+  padding: 2px 4px 2px 4px;
+  font-weight: 600;
+  color: dodgerblue;
+  background-color: #ffc;
+}
+#docArea li > p { margin-top: .25em; }
+#docArea > p:last-child {
+  margin-top: 2em;
+  margin-bottom: 10px;
+  overflow: auto;
+}
+#docArea button {
+  padding: 1px 5px 2px 5px;
+  font: 400 1em FontAwesome, "Open Sans", sans-serif;
+  text-shadow: 1px 1px 1px #999;
+  background-color: white;
+  background-image: -webkit-linear-gradient(bottom, #ccc, transparent);
+  background-image: linear-gradient(to top, #ccc, transparent);
+  border-radius: 5px;
+}
+#dropDoc { float: left; color: orangered; border: solid 1px orangered; }
+#dropDoc:hover { color: crimson; border: solid 1px crimson; }
+#dropDoc:active {
+  background-color: #fff6f6;
+  background-image: none;
+  color: red;
+  border: solid 1px red;
+}
+#hideDoc { float: right; color: #069; border: solid 1px #069; }
+#hideDoc:hover { color: #036; border: solid 1px #036; }
+#hideDoc:active {
+  background-image: none;
+  background-color: #fff6f6;
+  color: #0cf;
+  border: solid 1px #0cf;
 }
