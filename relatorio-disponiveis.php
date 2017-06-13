@@ -75,9 +75,12 @@ OFFSET
   $inicio;
 EOT;
 
+  $recno = $inicio;
+
   $result = $db->query($sql);
   while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
     echo '<table>', PHP_EOL;
+    echo '  <tr><td>Número:</td><td>', ++$recno, '</td></tr>', PHP_EOL;
     echo '  <tr><td>Título:</td><td>', $row['titulo'], '</td></tr>', PHP_EOL;
     echo '  <tr><td>Autor&amp;Espírito:</td><td>', $row['autores'], '</td></tr>', PHP_EOL;
     echo '  <tr><td>Gênero:</td><td>', $row['genero'], '</td></tr>', PHP_EOL;

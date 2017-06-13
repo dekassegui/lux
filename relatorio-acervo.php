@@ -69,9 +69,9 @@
   $inicio = ($pagina - 1) * $recsPerPage;
 
   $sql = <<<EOT
-SELECT v.obra AS code, titulo, autores, generos.nome AS genero, exemplar, posicao, comentario, strftime("%d-%m-%Y", data_emprestimo) AS data_emprestimo, strftime("%d-%m-%Y", data_limite) AS data_limite
+SELECT rowid, v.obra AS code, titulo, autores, generos.nome AS genero, exemplar, posicao, comentario, strftime("%d-%m-%Y", data_emprestimo) AS data_emprestimo, strftime("%d-%m-%Y", data_limite) AS data_limite
 FROM (
-  SELECT acervo.*, data_emprestimo, data_limite
+  SELECT acervo.rowid, acervo.*, data_emprestimo, data_limite
   FROM acervo LEFT OUTER JOIN (
     SELECT obra, exemplar, DATE(data_emprestimo) AS data_emprestimo, data_limite
     FROM emprestimos WHERE data_devolucao ISNULL
@@ -89,6 +89,7 @@ EOT;
   $result = $db->query($sql);
   while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
     echo '<table>', PHP_EOL;
+    echo '  <tr><td>Número:</td><td>', $row['rowid'], '</td></tr>', PHP_EOL;
     echo '  <tr><td>Código:</td><td>', $row['code'], '</td></tr>', PHP_EOL;
     echo '  <tr><td>Título:</td><td>', $row['titulo'], '</td></tr>', PHP_EOL;
     echo '  <tr><td>Autor&amp;Espírito:</td><td>', $row['autores'], '</td></tr>', PHP_EOL;

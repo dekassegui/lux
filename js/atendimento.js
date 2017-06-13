@@ -125,6 +125,8 @@ $(document).ready(
 
     var INFO_FIELDS_TIPS = new Tips([fields[5], fields[7], fields[8]], "este campo é <b>AUTO PREENCHIDO</b> e está disponível <b>SOMENTE PARA LEITURA</b>");
 
+    var EXEMPLAR_TIPS = new Tips([fields[6]], "este campo está <span>MOMENTANEAMENTE</span> disponível <b>SOMENTE PARA LEITURA</b>");
+
     var DATA_DEVOLUCAO_TIP = new Tips([fields[2]], "somente neste campo, <b>NULL</b> é parâmetro para pesquisar registro(s) cuja data de <span>Devolução</span> não foi preenchida ou seja; <em>o exemplar não foi devolvido</em> e quando o campo estiver vazio, será ignorado");
 
     var firstBtn  = $("#firstBtn"),  previousBtn = $("#previousBtn"),
@@ -486,6 +488,16 @@ $(document).ready(
                 }
               });
           });
+        $.get(
+            aUri + "acervo_exemplares.php?titulo=" + fields[4].val(),
+            function (options) {
+              DATALIST_EXEMPLARES.html(options);
+              if (DATALIST_EXEMPLARES[0].options.length <= 1) {
+                fields[6].prop("readonly", true);
+                EXEMPLAR_TIPS.enable();
+              }
+            }
+          );
       });
 
     delBtn.click(
@@ -579,6 +591,7 @@ $(document).ready(
               RETURN_DATE.fadeIn(1000, "swing");
               LIMIT_DATE.slideDown(LIMIT_DATE_SLIDE_DOWN_OPTIONS);
               INFO_FIELDS_TIPS.disable();
+              EXEMPLAR_TIPS.disable();
               amount[0].value = ++numRecs;
               indexRec = parseInt(texto);
               counter[0].maxLength = amount[0].value.length;
@@ -653,9 +666,10 @@ $(document).ready(
               show("\uF06A Atenção", "<p><b>Não foi possível atualizar o registro de empréstimo.</b>\n\n" + texto + "</p>");
             } else {
               INFO_FIELDS_TIPS.disable();
+              EXEMPLAR_TIPS.disable();
               var n = parseInt(texto);
               if (n != indexRec) indexRec = n;
-              show("\uF06A Notificação", "<p>O registro de empréstimo foi atualizado com sucesso.</p>");
+              show("\uF06A Notificação", '<p style="margin-top:1em">O registro de empréstimo foi atualizado com sucesso.</p>');
               update();
               commandButtons.forEach(
                 function (el) {
@@ -709,6 +723,7 @@ $(document).ready(
       function () {
         if (newBtn.hasClass("working") || updateBtn.hasClass("working")) {
           INFO_FIELDS_TIPS.disable();
+          EXEMPLAR_TIPS.disable();
           if (newBtn.hasClass("working")) {
             RETURN_DATE.fadeIn(1000, "swing");
             LIMIT_DATE.slideDown(LIMIT_DATE_SLIDE_DOWN_OPTIONS);
@@ -756,16 +771,16 @@ $(document).ready(
       });
 
     // atrela ao INPUT#obra a função responsiva ao evento de tipo "input"
-    // que atualiza OPTIONs do DATALIST de "Autor&Espírito", "exemplares"
-    // e "posição", conforme "Título da Obra" selecionado na atualização
+    // que atualiza OPTIONs do DATALIST de "Autor&Espírito", "Exemplares"
+    // e "Posição", conforme "Título da Obra" selecionado na atualização
     // ou registro de novo empréstimo
     fields[4].on("input",
       function () {
         if (newBtn.hasClass("working") || updateBtn.hasClass("working")) {
           // esvazia os valores dos INPUTs "exemplar", "autor" e "posicao"
           for (var i=7; i>=5; --i) fields[i].val("");
-          // checa se o valor do INPUT "obra" não está vazio
-          if (fields[4].val()) {
+          // --- checa se o valor do INPUT "obra" não está vazio
+          // --- if (fields[4].val()) {
             var code;
             // pesquisa via busca binária da OPTION selecionada no DATALIST
             // do INPUT de obras, para extrair o valor do atributo "code"
@@ -784,6 +799,7 @@ $(document).ready(
               }
             }
             if (code) {
+              DATALIST_EXEMPLARES.empty();
               $.get(
                 aUri + "acervo_exemplares.php?code=" + code,
                 function (texto) {
@@ -795,17 +811,21 @@ $(document).ready(
                   // substitui todos os itens da lista de opções, que pode
                   // tornar-se vazia caso não haja exemplares disponíveis
                   DATALIST_EXEMPLARES.html(values[2]);
-                  if (values[2].length > 0) {
+                  var collection = DATALIST_EXEMPLARES[0].options;
+                  if (collection.length) {
                     // atualiza o valor do INPUT "exemplar" com o valor
                     // do primeiro item do DATALIST
-                    fields[6].val(DATALIST_EXEMPLARES[0].options.item(0).value);
-                  } else {
-                    show("\uF06A Atenção", "Não há exemplar desta obra, disponível no momento.");
-                    fields[6].val("\u2639 Não achei!");
+                    fields[6].val(collection.item(0).value)
+                      .prop("readonly", (collection.length == 1));
+                    if (collection.length == 1) {
+                      EXEMPLAR_TIPS.enable();
+                    } else {
+                      EXEMPLAR_TIPS.disable();
+                    }
                   }
                 });
             }
-          }
+          // --- }
         }
       });
 

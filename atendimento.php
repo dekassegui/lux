@@ -10,11 +10,11 @@
       if (strpos($s, 'data_emprestimo') !== FALSE) {
         return 'Erro: A <b>Data de Empréstimo</b> não foi preenchida.';
       } else if (strpos($s, 'bibliotecario') !== FALSE) {
-        return 'Erro: O nome do <b>Agente</b> não foi preenchido.';
+        return 'Erro: O nome do <b>Agente</b> não foi preenchido ou não está cadastrado.';
       } else if (strpos($s, 'leitor') !== FALSE) {
-        return 'Erro: O nome do <b>Leitor</b> não foi preenchido.';
+        return 'Erro: O nome do <b>Leitor</b> não foi preenchido ou não está cadastrado.';
       } else if (strpos($s, 'obra') !== FALSE) {
-        return 'Erro: O título da <b>Obra</b> não foi preenchido.';
+        return 'Erro: O título da <b>Obra</b> não foi preenchido ou não está cadastrado.';
       } else if (strpos($s, 'exemplar') !== FALSE) {
         return 'Erro: O número do <b>Exemplar</b> não foi preenchido.';
       }
@@ -24,6 +24,8 @@
       return 'Erro: Valor ilegal para data de <b>Devolução</b>.';
     } else if (strpos($s, 'chk_dates_range') !== FALSE) {
       return 'Erro: A data de <b>Devolução</b> não pode ser anterior à data de <b>Empréstimo</b>.';
+    } else if (strpos($s, 'foreign key') !== FALSE) {
+      return 'Erro: Algum campo contém <strong>valor sem correspondente na sua tabela "pai"</strong>.';
     }
     return 'Erro: '.$s;
   }

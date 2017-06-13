@@ -26,6 +26,14 @@ EOT;
   WHERE obra == "{$_GET['code']}"
 EOT;
 
+  } else if (isset($_GET['titulo'])) {
+
+    $sql = <<<EOT
+  SELECT '<option code="' || exemplar || '">' || exemplar || '</option>'
+  FROM disponiveis_acervo
+  WHERE obra == (SELECT code FROM obras WHERE titulo == "{$_GET['titulo']}")
+EOT;
+
   } else {
 
     $sql = <<<EOT
