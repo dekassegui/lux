@@ -8,6 +8,9 @@ body {
 label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled {
   color: lightcyan;
 }
+label {
+  transform: skew(-7deg);
+}
 input#amount {
   color: lightcyan;
 }
@@ -23,4 +26,17 @@ input#amount {
 label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount, .alive
 {
   text-shadow: 1px 1px 1px #222;
+}
+
+input[type="text"].help {
+  background-repeat: no-repeat;
+  background-image: url("../img/icone-info-violet.png");
+  background-size: auto 50%;
+  background-position: right top;
+}
+input[type="text"].help:hover {
+  background-image: url("../img/icone-info-crimson.png");
+}
+input[type="text"].help:focus {
+  background-image: url("../img/icone-info-gray.png");
 }

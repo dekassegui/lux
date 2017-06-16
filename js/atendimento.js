@@ -73,7 +73,7 @@ $(document).ready(
     var SCROLLER = (
       function () {
 
-        var h = $("header");
+        var h = $("header h1");
         var d = $("section > div:first-child"); // container do formulário
         var b = false;                          // status da tangibilidade
 
@@ -83,7 +83,7 @@ $(document).ready(
           h.tooltip("close");
           h.attr("title",
             "clique aqui para <b>" + par[+(b=!b)].action + "</b> o formulário")
-            .children().animate({color:"#cfc"}).animate({color:par[+b].cor});
+            .animate({color:"#cfc"}).animate({color:par[+b].cor});
         }
 
         var w = $(window.opera ? "html" : "html, body");
@@ -213,27 +213,20 @@ $(document).ready(
     // elemento a ocultar via efeito SLIDE, nas operações de novo registro
     var LIMIT_DATE = $("#comentario").parent();
 
-    var LIMIT_DATE_SLIDE_UP_OPTIONS = { duration: 1000, easing: "swing" };
+    var LIMIT_DATE_SLIDE_UP_OPTIONS = { duration: "slow", easing: "swing" };
 
-    var LIMIT_DATE_SLIDE_DOWN_OPTIONS = { duration: 1000, easing: "swing" };
+    var LIMIT_DATE_SLIDE_DOWN_OPTIONS = { duration: "slow", easing: "swing" };
 
     /**
      * Instalação de "pseudo frame" para apresentação de conteúdo HTML, munido
-     * de mecanismo de persistência da inibição da apresentação conforme o dia
-     * da semana, portanto cada agente tem livre arbítrio sobre sua remoção na
-     * sessão corrente ou de forma permanente.
+     * de mecanismo de persistência da visibilidade na inicialização, conforme
+     * o dia da semana.
     */
+    (function () {
+      // prefixo do código de serialização da visibilidade da "pseudo frame"
+      const DOCAREA_PREFIX = "DOCAREA_ON_";
 
-    // prefixo do código a serializar que se detectado, inibe instalação do
-    // "pseudo frame", aka DOCAREA, "quasi" persistentemente entre sessões
-    // de atendimento em algum dia da semana
-    const DOCAREA_PREFIX = "VOID_DOCAREA_ON_";
-
-    if (!localStorage.getItem(DOCAREA_PREFIX + StyleManager.dayOfWeek())) {
-
-      var DIV = $("section div").has("#fields");
-
-      var DOCAREA = $('<div id="docArea"></div>').appendTo("section").hide();
+      var DIV = $("section > div").has("#fields");
 
       var MAX_HEIGHT = DIV.outerHeight(true) - 10;
 
@@ -241,14 +234,33 @@ $(document).ready(
 
       MAX_HEIGHT += "px";
 
+      var WIDTH;
+
+      var DOCAREA = $('<div id="docArea"></div>').appendTo("section").hide();
+
+      var TEACHER = $('<button id="teacherBtn" title="clique aqui para apresentar ou ocultar o resumo das sequências de operações">&#xF059;</button>')
+        .appendTo('header').click(
+          function () {
+            if (DIV.is(":visible")) {
+              DOCAREA.fadeToggle({
+                done: function () {
+                  TEACHER.toggleClass("pressed", !DOCAREA.is(":visible"));
+                }
+              });
+            }
+            TEACHER.tooltip("close");
+          }).tooltip(TOOLTIP_OPTIONS);
+
       // atrela função responsiva ao redimensionamento da window,
       // que calcula as novas dimensões e posição do frame
       $(window).resize(function () {
-          var x = DIV.position().left + DIV.outerWidth(true) - 15;
+          var divFields = $("#fields");
+          var x = divFields.position().left + divFields.outerWidth() + 10;
+          WIDTH = ($(document.body).outerWidth() - x - 15) + "px";
           DOCAREA.css({
               "top": $("header").outerHeight(true) + "px",
               "left": x + "px",
-              "width": ($(document.body).outerWidth() - x - 10) + "px",
+              "width": WIDTH,
               "height": MAX_HEIGHT
             });
         }).resize( /* POSICIONAMENTO INICIAL */ );
@@ -258,38 +270,12 @@ $(document).ready(
           function (texto) { DOCAREA.html(texto); }
         ).done(
           function () {
-
-            // atrela função responsiva a BUTTONs, que remove a DOCAREA
-            // assim como todas as funções que alteram sua visibilidade
-            // e dimensões, em sincronia com outras automações da UI
-            $("#hideDoc, #dropDoc").click(
-                function () {
-                  DOCAREA.fadeOut({
-                      duration: 1000,
-                      done: function () {
-                          DOCAREA.remove();
-                          delete SCROLLER.slideOptions.start;
-                          delete LIMIT_DATE_SLIDE_UP_OPTIONS.start;
-                          delete LIMIT_DATE_SLIDE_DOWN_OPTIONS.start;
-                        }
-                    });
-                }
-              ).last().click(
-                // atrela função ao último BUTTON, que serializa o prefixo
-                // do código mais acronismo do dia corrente da semana, para
-                // inibir instalações do DOCAREA em dias coincidentes
-                function () {
-                  localStorage.setItem(
-                    DOCAREA_PREFIX + StyleManager.dayOfWeek(), "SIM");
-                }
-              );
-
             // atrela função ao SCROLLER, que altera visibilidade da DOCAREA
             // sincronizada com rolamento e visibilidade do formulário
             SCROLLER.slideOptions.start = function () {
                 if (DOCAREA.is(":visible")) {
                   DOCAREA.fadeOut(500);
-                } else {
+                } else if (!TEACHER.hasClass("pressed")) {
                   DOCAREA.delay(700).fadeIn(750);
                 }
               };
@@ -303,12 +289,26 @@ $(document).ready(
             // atrela função que maximiza o DOCAREA quando LABEL e INPUT
             // do "comentário container da data limite" são restaurados
             LIMIT_DATE_SLIDE_DOWN_OPTIONS.start = function () {
-                DOCAREA.delay(450).animate({ "height": MAX_HEIGHT });
+                DOCAREA.delay("slow").animate({ "height": MAX_HEIGHT });
               };
 
-            DOCAREA.fadeIn(750); // primeira aparição
+            // restaura a visibilidade do DOCAREA conforme valor serializado
+            // no final da sessão anterior mais recente
+            if (localStorage.getItem(
+                DOCAREA_PREFIX + StyleManager.dayOfWeek()) !== "0") {
+              DOCAREA.fadeIn(750);
+            } else {
+              TEACHER.addClass("pressed");  // ajusta o look do botão
+            }
           });
-    }
+
+      // serializa a visibilidade da DOCAREA no fim da sessão corrente
+      $(window).on({ "unload": function () {
+          localStorage.setItem(
+            DOCAREA_PREFIX + StyleManager.dayOfWeek(),
+              DOCAREA.is(":visible") ? null : "0");
+        } });
+    })();
 
     function disableButtons() {
       // desabilita botões de navegação & comando
@@ -546,7 +546,7 @@ $(document).ready(
         disableButtons();
         setValues();
         setReadonly(false);
-        RETURN_DATE.fadeOut(1000, "swing");
+        RETURN_DATE.fadeOut("slow", "swing");
         LIMIT_DATE.slideUp(LIMIT_DATE_SLIDE_UP_OPTIONS);
         DATALISTS.forEach(
           function (dataList, index) {
@@ -588,7 +588,7 @@ $(document).ready(
             if (texto.startsWith("Erro")) {
               show("\uF06A Atenção", "<p>Não foi possível registrar novo empréstimo.\n\n" + texto + "</p>");
             } else {
-              RETURN_DATE.fadeIn(1000, "swing");
+              RETURN_DATE.fadeIn("slow", "swing");
               LIMIT_DATE.slideDown(LIMIT_DATE_SLIDE_DOWN_OPTIONS);
               INFO_FIELDS_TIPS.disable();
               EXEMPLAR_TIPS.disable();
@@ -694,7 +694,7 @@ $(document).ready(
               amount[0].value = --numRecs;
               if (indexRec > numRecs) --indexRec;
               counter[0].maxLength = amount[0].value.length;
-              show("\uF06A Notificação", "<p>O registro de empréstimo foi excluído com sucesso.</p>");
+              show("\uF06A Notificação", '<p style="margin-top:1em">O registro de empréstimo foi excluído com sucesso.</p>');
               if (indexRec > 0) {
                 cancelBtn.click();
               } else {
@@ -725,7 +725,7 @@ $(document).ready(
           INFO_FIELDS_TIPS.disable();
           EXEMPLAR_TIPS.disable();
           if (newBtn.hasClass("working")) {
-            RETURN_DATE.fadeIn(1000, "swing");
+            RETURN_DATE.fadeIn("slow", "swing");
             LIMIT_DATE.slideDown(LIMIT_DATE_SLIDE_DOWN_OPTIONS);
           }
         } else if (searchBtn.hasClass("working")) {
@@ -779,53 +779,51 @@ $(document).ready(
         if (newBtn.hasClass("working") || updateBtn.hasClass("working")) {
           // esvazia os valores dos INPUTs "exemplar", "autor" e "posicao"
           for (var i=7; i>=5; --i) fields[i].val("");
-          // --- checa se o valor do INPUT "obra" não está vazio
-          // --- if (fields[4].val()) {
-            var code;
-            // pesquisa via busca binária da OPTION selecionada no DATALIST
-            // do INPUT de obras, para extrair o valor do atributo "code"
-            // correspondente se a pesquisa foi bem sucedida
-            for (var collection = DATALIST_OBRAS[0].options, element,
-              key = fields[4].val(), lo = 0, hi = collection.length - 1, mid;
-              !code && lo <= hi;) {
-              mid = ((lo + hi) >> 1);
-              element = collection.item(mid);
-              if (element.value < key) {
-                lo = mid + 1;
-              } else if (element.value > key) {
-                hi = mid - 1;
-              } else {
-                code = element.getAttribute("code");
-              }
+          var code;
+          // pesquisa via busca binária da OPTION selecionada no DATALIST
+          // do INPUT de obras, para extrair o valor do atributo "code"
+          // correspondente se a pesquisa foi bem sucedida
+          for (var collection = DATALIST_OBRAS[0].options, element,
+            key = fields[4].val(), lo = 0, hi = collection.length - 1, mid;
+            !code && lo <= hi;) {
+            mid = ((lo + hi) >> 1);
+            element = collection.item(mid);
+            if (element.value < key) {
+              lo = mid + 1;
+            } else if (element.value > key) {
+              hi = mid - 1;
+            } else {
+              code = element.getAttribute("code");
             }
-            if (code) {
-              DATALIST_EXEMPLARES.empty();
-              $.get(
-                aUri + "acervo_exemplares.php?code=" + code,
-                function (texto) {
-                  var values = texto.split("|");
-                  // atualiza o valor do INPUT "autor"
-                  fields[5].val(values[0]);
-                  // atualiza o valor do INPUT "posicao"
-                  fields[7].val(values[1]);
-                  // substitui todos os itens da lista de opções, que pode
-                  // tornar-se vazia caso não haja exemplares disponíveis
-                  DATALIST_EXEMPLARES.html(values[2]);
-                  var collection = DATALIST_EXEMPLARES[0].options;
-                  if (collection.length) {
-                    // atualiza o valor do INPUT "exemplar" com o valor
-                    // do primeiro item do DATALIST
-                    fields[6].val(collection.item(0).value)
-                      .prop("readonly", (collection.length == 1));
-                    if (collection.length == 1) {
-                      EXEMPLAR_TIPS.enable();
-                    } else {
-                      EXEMPLAR_TIPS.disable();
-                    }
+          }
+          if (code) {
+            DATALIST_EXEMPLARES.empty();
+            $.get(
+              aUri + "acervo_exemplares.php?code=" + code,
+              function (texto) {
+                var values = texto.split("|");
+                // atualiza o valor do INPUT "autor"
+                fields[5].val(values[0]);
+                // atualiza o valor do INPUT "posicao"
+                fields[7].val(values[1]);
+                // substitui todos os itens da lista de opções, que pode
+                // tornar-se vazia caso não haja exemplares disponíveis
+                DATALIST_EXEMPLARES.html(values[2]);
+                var collection = DATALIST_EXEMPLARES[0].options;
+                if (collection.length) {
+                  // atualiza o valor do INPUT "exemplar" com o valor
+                  // do primeiro item do DATALIST
+                  fields[6].val(collection.item(0).value);
+                  if (collection.length == 1) {
+                    fields[6].prop("readonly", true);
+                    EXEMPLAR_TIPS.enable();
+                  } else {
+                    fields[6].prop("readonly", false);
+                    EXEMPLAR_TIPS.disable();
                   }
-                });
-            }
-          // --- }
+                }
+              });
+          }
         }
       });
 

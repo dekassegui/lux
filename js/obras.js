@@ -318,7 +318,7 @@ $(document).ready(
                 });
               setDisabled(actionButtons, true);
               setReadonly(true);
-              show("\uF06A Notificação", "<p>O novo registro foi adicionado com sucesso.</p>");
+              show("\uF06A Notificação", '<p style="margin-top:1em">O novo registro foi adicionado com sucesso.</p>');
             }
           };
           par.push("?action=INSERT");
@@ -380,7 +380,7 @@ $(document).ready(
             } else {
               var n = parseInt(texto);
               if (n != indexRec) indexRec = n;
-              show("\uF06A Notificação", "<p>O registro foi atualizado com sucesso.</p>");
+              show("\uF06A Notificação", '<p style="margin-top:1em">O registro foi atualizado com sucesso.</p>');
               cancelBtn.click();
             }
           };
@@ -397,7 +397,7 @@ $(document).ready(
               amount[0].value = --numRecs;
               if (indexRec > numRecs) --indexRec;
               counter[0].maxLength = amount[0].value.length;
-              show("\uF06A Notificação", "<p>O registro foi excluído com sucesso.</p>");
+              show("\uF06A Notificação", '<p style="margin-top:1em">O registro foi excluído com sucesso.</p>');
               if (indexRec > 0) {
                 cancelBtn.click();
               } else {

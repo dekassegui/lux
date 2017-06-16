@@ -29,10 +29,6 @@ EOT;
 </ol>
 EOT;
 
-      echo <<<EOT
-<p><button id="hideDoc" title="clique aqui para esconder este box pelo resto desta sessão de atendimento">&#xF06E;&nbsp;Esconda-me!</button><button id="dropDoc" title="clique aqui para remover permanentemente este box">&#xF014;&nbsp;Remova-me!</button></p>
-EOT;
-
       break;
 
   }

@@ -8,6 +8,9 @@ body {
 label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled {
   color: lightcyan;
 }
+label {
+  transform: skew(-7deg);
+}
 input#amount {
   color: lightcyan;
 }

@@ -10,7 +10,9 @@ label, footer p, section > div:first-child > p span, body:not([id]) section > p,
   color: #069;
   text-shadow: -1px -1px 1px lightcyan, 1px 1px 1px #aaa;
 }
-
+label {
+  transform: skew(-7deg);
+}
 input[type="text"].help {
   background-repeat: no-repeat;
   background-image: url("../img/corner-stripes-cyan.png");

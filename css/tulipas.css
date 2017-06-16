@@ -9,6 +9,9 @@ label, footer p, section > div:first-child > p span, body:not([id]) section > p,
   color: #933;
   text-shadow: -1px -1px 1px #fff, 1px 1px 1px #888;
 }
+label {
+  transform: skew(-7deg);
+}
 input#amount {
   color: #622;
 }
@@ -20,4 +23,16 @@ input#amount {
 }
 .alive:active {
   color: #f00;
+}
+input[type="text"].help {
+  background-repeat: no-repeat;
+  background-image: url("../img/icone-info-violet.png");
+  background-size: auto 50%;
+  background-position: right top;
+}
+input[type="text"].help:hover {
+  background-image: url("../img/icone-info-crimson.png");
+}
+input[type="text"].help:focus {
+  background-image: url("../img/icone-info-gray.png");
 }

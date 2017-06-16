@@ -1,3 +1,6 @@
+h1 {
+  cursor: pointer;
+}
 div, section > div:first-child > p { padding: 1px; }
 
 section > div { margin-top: 1em; overflow: auto; }
@@ -94,15 +97,18 @@ body > header > * { /* evita seleção de texto ao clicar no canvas */
 
 #docArea { /* Posicionado via script. */
   position: absolute;
-  /* z-index: 1; */
+  z-index: 100;
   min-width: 240px;
   padding: 10px 10px 10px 10px;
-  overflow: auto;
   font: 400 14px FontAwesome, "Open Sans", sans-serif;
   color: #333;
   background-color: white;
   border-radius: 4px;
   box-shadow: 0px 0px 8px 8px white;
+  /* sempre apresentará a scrollbar vertical no Firefox */
+  overflow: -moz-scrollbars-vertical;
+  overflow-y: scroll;
+  overflow-x: auto;
 }
 #docArea h3 {
   color: black;
@@ -123,33 +129,39 @@ body > header > * { /* evita seleção de texto ao clicar no canvas */
   background-color: #ffc;
 }
 #docArea li > p { margin-top: .25em; }
-#docArea > p:last-child {
-  margin-top: 2em;
-  margin-bottom: 10px;
-  overflow: auto;
+#docArea > *:last-child {
+  margin-bottom: 1em;
 }
-#docArea button {
-  padding: 1px 5px 2px 5px;
-  font: 400 1em FontAwesome, "Open Sans", sans-serif;
-  text-shadow: 1px 1px 1px #999;
-  background-color: white;
-  background-image: -webkit-linear-gradient(bottom, #ccc, transparent);
-  background-image: linear-gradient(to top, #ccc, transparent);
-  border-radius: 5px;
+#teacherBtn {
+  position: absolute;
+  top: .25em;
+  left: .25em;
+  padding: 0 .2em 0 .2em;
+  color: #666;
+  background-color: #fff;
+  background-image: -webkit-linear-gradient(-45deg, #ccc, transparent);
+  background-image: linear-gradient(-45deg, #ccc, transparent);
+  font: 400 1em FontAwesome;
+  text-shadow: 1px 1px #fff;
+  border: solid 1px #ccc;
+  border-radius: 6px;
+  cursor: pointer;
 }
-#dropDoc { float: left; color: orangered; border: solid 1px orangered; }
-#dropDoc:hover { color: crimson; border: solid 1px crimson; }
-#dropDoc:active {
-  background-color: #fff6f6;
-  background-image: none;
-  color: red;
-  border: solid 1px red;
+#teacherBtn.pressed {
+  background-image: -webkit-linear-gradient(135deg, #ccc, transparent);
+  background-image: linear-gradient(135deg, #ccc, transparent);
+  text-shadow: -1px -1px #fff;
 }
-#hideDoc { float: right; color: #069; border: solid 1px #069; }
-#hideDoc:hover { color: #036; border: solid 1px #036; }
-#hideDoc:active {
-  background-image: none;
-  background-color: #fff6f6;
-  color: #0cf;
-  border: solid 1px #0cf;
+/* ajustes exclusivos para Webkit */
+@media (-webkit-min-device-pixel-ratio:0) {
+  label {
+    font-weight: 600;
+  }
+  input[type="button"] {
+    font-weight: 400;
+    text-shadow: 0px 0px #999, 1px 1px #999;
+  }
+  #teacherBtn {
+    padding: .15em .2em .15em .2em;
+  }
 }

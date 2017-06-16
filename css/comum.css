@@ -32,6 +32,8 @@ header {
   box-shadow: 0 0 2px 2px rgba(0, 0, 0, .2);
 }
 h1 {
+  width: 60%;
+  margin: 0 auto 0 auto;
   font: 300 normal 1.25em "Open Sans", sans-serif;
   text-shadow: 1px 0px 1px #676767;
   /* font: 700 normal 1.25em "Droid Serif", serif; */
@@ -42,6 +44,7 @@ h1 {
   text-transform: capitalize;
   /* text-shadow: 2px 2px 4px #777; */
   color: darkblue;
+  cursor: pointer;
 }
 header img { /* spinner image */
   position: absolute;

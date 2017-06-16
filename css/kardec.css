@@ -1,5 +1,5 @@
 body {
-  background-color: aliceblue;
+  background-color: whitesmoke;
   background-attachment: fixed, fixed, fixed;
   background-image:
     -webkit-linear-gradient(left, transparent -200%, white 200%),
@@ -20,22 +20,25 @@ body {
   background-repeat: no-repeat, no-repeat, no-repeat;
 }
 label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled {
-  color: lightcyan;
+  color: paleturquoise;
 }
 input#amount {
-  color: lightcyan;
+  color: paleturquoise;
 }
 .alive {
-  color: lightcyan;
+  color: paleturquoise;
 }
 .alive:hover {
-  color: cyan;
+  color: turquoise;
 }
 .alive:active {
-  color: white;
+  color: cyan;
 }
 label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount, .alive {
-  text-shadow: 1px 1px 1px #111;
+  text-shadow: 1px 1px 1px #404040;
+}
+label {
+  transform: skew(-7deg);
 }
 #docArea {
   box-shadow: 0px 0px 8px 8px rgba(0, 0, 0, .125);
