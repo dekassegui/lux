@@ -11,14 +11,18 @@
 .ui-tooltip b {
   font-weight: 600;
   color: gold;
-  margin-left:.125em;
-  margin-right: .125em;
+}
+.ui-tooltip strong {
+  font-weight: 600;
+  color: #aef;
 }
 .ui-tooltip em {
   color: #aef;
   letter-spacing: .075em;
 }
 .ui-tooltip span {
+  margin-left:.125em;
+  margin-right: .125em;
   color: #99ffd5;
 }
 .ui-button, .ui-tooltip *, .ui-datepicker *, .ui-dialog * {
@@ -108,7 +112,7 @@ td.ui-datepicker-current-day a:hover {
   background-image: url('../img/toRight.png');
 }
 .ui-dialog {
-  background-color: #cff !important;
+  background-color: #fed !important;
   box-shadow: 5px 5px 5px 5px rgba(0, 0, 0, .25);
 }
 .ui-dialog .ui-dialog-titlebar {

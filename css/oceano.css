@@ -5,6 +5,9 @@ body {
   background-position: center top;
   background-size: 100% 100%;
 }
+header {
+  background-color: #dff;
+}
 label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled {
   color: lightcyan;
 }

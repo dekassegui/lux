@@ -47,12 +47,12 @@ $(document).ready(
                   }
                 } else {
                   if (dateText.length == 10) {
-                    var d = new Date();
-                    var hoje = zeroPad(d.getDate()) + "-"
-                      + zeroPad(d.getMonth()+1) + "-" + d.getFullYear();
+                    var date = new Date();
+                    var hoje = zeroPad(date.getDate()) + "-"
+                      + zeroPad(date.getMonth()+1) + "-" + date.getFullYear();
                     if (dateText == hoje) {
-                      this.value = hoje + " " + zeroPad(d.getHours()) + ":"
-                        + zeroPad(d.getMinutes());
+                      this.value = hoje + " " + zeroPad(date.getHours()) + ":"
+                        + zeroPad(date.getMinutes());
                     }
                   }
                   // se houver modificação da data de empréstimo durante
@@ -67,6 +67,8 @@ $(document).ready(
           });
       });
 
+    var FIELDS_PARENT = $("section > div").has("#fields");
+
     /*
      * Gestor de rolagem da WINDOW e da tangibilidade do formulário.
     */
@@ -74,16 +76,15 @@ $(document).ready(
       function () {
 
         var h = $("header h1");
-        var d = $("section > div:first-child"); // container do formulário
         var b = false;                          // status da tangibilidade
 
         function updateTip() {
-          const par = [ { "action":"restaurar", "cor":"#060" },
-                        { "action":"ocultar", "cor":"#009" } ];
+          const par = [ { "action":"restaurar", "cor":"forestgreen" },
+                        { "action":"ocultar", "cor":"darkblue" } ];
           h.tooltip("close");
           h.attr("title",
-            "clique aqui para <b>" + par[+(b=!b)].action + "</b> o formulário")
-            .animate({color:"#cfc"}).animate({color:par[+b].cor});
+            "clique aqui para <b>" + par[+(b=!b)].action + " o formulário</b>")
+            .css({ "color": par[+b].cor });
         }
 
         var w = $(window.opera ? "html" : "html, body");
@@ -100,12 +101,23 @@ $(document).ready(
         this.scroll = function (full) {
           t.click();
           if (full) {
-            d.slideToggle(self.slideOptions);
+            FIELDS_PARENT.slideToggle(self.slideOptions);
             updateTip.apply(this);
           }
         };
 
-        h.click(function () { self.scroll(true); }).tooltip(TOOLTIP_OPTIONS);
+        var letterSpacing = { onEnter: h.css("letter-spacing") };
+
+        letterSpacing.onExit = (5 * parseFloat(letterSpacing.onEnter)) + "px";
+
+        h.tooltip(TOOLTIP_OPTIONS).click(function () { self.scroll(true); })
+          .hover(
+            function () {
+              h.animate({ "letter-spacing": letterSpacing.onExit });
+            },
+            function () {
+              h.animate({ "letter-spacing": letterSpacing.onEnter });
+            });
 
         updateTip();
 
@@ -157,13 +169,13 @@ $(document).ready(
             if (busy()) return;
             ev.preventDefault();
             newBtn.click();
-          }).attr("title", "clique aqui para registrar <span>Empréstimo</span><br><em>equivale a clicar no botão</em> <b>\uf067&nbsp;Novo</b>").tooltip(TOOLTIP_OPTIONS);
+          }).attr("title", "clique aqui para <b>registrar</b> <strong>Empréstimo</strong><br>&#x2012; <b>equivale a clicar no botão <span>\uf067&nbsp;Novo</span></b>").tooltip(TOOLTIP_OPTIONS);
 
         var ldd = $('label[for="data_devolucao"]').addClass("alive").click(
           function () {
             if (busy()) return;
             updateBtn.click();
-          }).attr("title", "clique aqui para atualizar o registro de empréstimo apresentado, iniciando pela data de <span>Devolução</span><br><em>equivale a clicar no botão</em> <b>\uf040&nbsp;Atualizar</b> <em>e depois no campo de edição da data de</em> <span>Devolução</span>").tooltip(TOOLTIP_OPTIONS);
+          }).attr("title", "clique aqui para <b>atualizar o registro de empréstimo apresentado, iniciando pela</b> <strong>Data de Devolução</strong><br>&#x2012; <b>equivale a clicar no botão <span>\uf040&nbsp;Atualizar</span> e depois no campo de edição da</b> <strong>Data de Devolução</strong>").tooltip(TOOLTIP_OPTIONS);
 
         this.set = function (bool) {
           var action =  bool ? "enable" : "disable";
@@ -226,41 +238,50 @@ $(document).ready(
       // prefixo do código de serialização da visibilidade da "pseudo frame"
       const DOCAREA_PREFIX = "DOCAREA_ON_";
 
-      var DIV = $("section > div").has("#fields");
+      var TOP = (FIELDS_PARENT.position().top - 5) + "px";
 
-      var MAX_HEIGHT = DIV.outerHeight(true) - 10;
+      var MAX_HEIGHT = FIELDS_PARENT.outerHeight(true) - 20;
 
       var MIN_HEIGHT = (MAX_HEIGHT - LIMIT_DATE.outerHeight(true)) + "px";
 
       MAX_HEIGHT += "px";
 
-      var WIDTH;
-
       var DOCAREA = $('<div id="docArea"></div>').appendTo("section").hide();
 
-      var TEACHER = $('<button id="teacherBtn" title="clique aqui para apresentar ou ocultar o resumo das sequências de operações">&#xF059;</button>')
-        .appendTo('header').click(
+      var TEACHER = $('<button id="teacherBtn">&#xF0CB;</button>')
+        .insertBefore("header img").tooltip(TOOLTIP_OPTIONS)
+        .click(
           function () {
-            if (DIV.is(":visible")) {
-              DOCAREA.fadeToggle({
-                done: function () {
-                  TEACHER.toggleClass("pressed", !DOCAREA.is(":visible"));
-                }
-              });
-            }
-            TEACHER.tooltip("close");
-          }).tooltip(TOOLTIP_OPTIONS);
+            DOCAREA.fadeToggle({
+              done: function () {
+                TEACHER.tooltip("close")
+                  .toggleClass("pressed", !DOCAREA.is(":visible"));
+                updateTEACHERtooltip();
+              }
+            });
+          }).focus(
+            // evita que TEACHER torne-se o elemento ativo da window,
+            // possibilitando aparição indesejável do tooltip, mesmo
+            // que nenhum "mouse event" tenha ocorrido
+            function () { TEACHER.blur(); }
+          );
+
+      function updateTEACHERtooltip(status) {
+        TEACHER.attr("title", "clique aqui para <b>"
+          + ((status | DOCAREA.is(":visible")) ? "ocultar" : "restaurar")
+          + " o resumo das sequências de operações</b>");
+      }
 
       // atrela função responsiva ao redimensionamento da window,
       // que calcula as novas dimensões e posição do frame
       $(window).resize(function () {
           var divFields = $("#fields");
-          var x = divFields.position().left + divFields.outerWidth() + 10;
-          WIDTH = ($(document.body).outerWidth() - x - 15) + "px";
+          var LEFT = divFields.position().left + divFields.outerWidth() + 10;
           DOCAREA.css({
-              "top": $("header").outerHeight(true) + "px",
-              "left": x + "px",
-              "width": WIDTH,
+              "top": TOP,
+              "left": LEFT + "px",
+              "width": ($(window.opera ? "html" : "html, body").outerWidth()
+                - LEFT - 15) + "px",
               "height": MAX_HEIGHT
             });
         }).resize( /* POSICIONAMENTO INICIAL */ );
@@ -270,6 +291,7 @@ $(document).ready(
           function (texto) { DOCAREA.html(texto); }
         ).done(
           function () {
+
             // atrela função ao SCROLLER, que altera visibilidade da DOCAREA
             // sincronizada com rolamento e visibilidade do formulário
             SCROLLER.slideOptions.start = function () {
@@ -278,6 +300,22 @@ $(document).ready(
                 } else if (!TEACHER.hasClass("pressed")) {
                   DOCAREA.delay(700).fadeIn(750);
                 }
+              };
+
+            // atrela função ao SCROLLER, que habilita o botão TEACHER
+            // conforme visibilidade do formulário no final de rolamento
+            SCROLLER.slideOptions.done = function () {
+                var status = !FIELDS_PARENT.is(":visible");
+                TEACHER.prop("disabled", status)
+                  .tooltip(status ? "disable" : "enable");
+              };
+
+            // atrela função ao SCROLLER, que oculta rapidamente o DOCAREA e
+            // habilita o botão TEACHER conforme visibilidade do formulário se
+            // as animações não estiverem sincronizadas no fim do rolamento
+            SCROLLER.slideOptions.fail = function () {
+                DOCAREA.fadeOut("fast");
+                SCROLLER.slideOptions.done();
               };
 
             // atrela função que minimiza o DOCAREA quando LABEL e INPUT
@@ -293,20 +331,22 @@ $(document).ready(
               };
 
             // restaura a visibilidade do DOCAREA conforme valor serializado
-            // no final da sessão anterior mais recente
+            // no final da sessão anterior à corrente
             if (localStorage.getItem(
                 DOCAREA_PREFIX + StyleManager.dayOfWeek()) !== "0") {
               DOCAREA.fadeIn(750);
+              updateTEACHERtooltip(true);
             } else {
               TEACHER.addClass("pressed");  // ajusta o look do botão
+              updateTEACHERtooltip(false);
             }
+
           });
 
       // serializa a visibilidade da DOCAREA no fim da sessão corrente
       $(window).on({ "unload": function () {
-          localStorage.setItem(
-            DOCAREA_PREFIX + StyleManager.dayOfWeek(),
-              DOCAREA.is(":visible") ? null : "0");
+          localStorage.setItem(DOCAREA_PREFIX + StyleManager.dayOfWeek(),
+            DOCAREA.is(":visible") ? "1" : "0");
         } });
     })();
 
