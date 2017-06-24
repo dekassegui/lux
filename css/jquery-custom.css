@@ -16,14 +16,25 @@
   font-weight: 600;
   color: #aef;
 }
-.ui-tooltip em {
-  color: #aef;
-  letter-spacing: .075em;
+.ui-tooltip i {
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: .04em;
+  color: lightgreen;
 }
 .ui-tooltip span {
   margin-left:.125em;
   margin-right: .125em;
   color: #99ffd5;
+}
+.ui-tooltip cite {
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: .04em;
+  color: lightpink;
+}
+.ui-tooltip u {
+  color: lightgoldenrodyellow;
 }
 .ui-button, .ui-tooltip *, .ui-datepicker *, .ui-dialog * {
   font-family: FontAwesome, "Open Sans", sans-serif !important;

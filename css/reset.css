@@ -111,6 +111,12 @@ a { text-decoration: none; }
   src: local('Open Sans Bold Italic'), local('OpenSans-BoldItalic'), url('font/OpenSans-Bold.ttf') format('truetype');
 }
 @font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 800;
+  src: local('Open Sans Extrabold'), local('OpenSans-Extrabold'), url('font/OpenSans-ExtraBold.ttf') format('truetype');
+}
+@font-face {
   font-family: 'FontAwesome';
   font-style: normal;
   font-weight: 400;

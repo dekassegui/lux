@@ -139,7 +139,7 @@ $(document).ready(
 
     var EXEMPLAR_TIPS = new Tips([fields[6]], "este campo está <span>MOMENTANEAMENTE</span> disponível <b>SOMENTE PARA LEITURA</b>");
 
-    var DATA_DEVOLUCAO_TIP = new Tips([fields[2]], "somente neste campo, <b>NULL</b> é parâmetro para pesquisar registro(s) cuja data de <span>Devolução</span> não foi preenchida ou seja; <em>o exemplar não foi devolvido</em> e quando o campo estiver vazio, será ignorado");
+    var DATA_DEVOLUCAO_TIP = new Tips([fields[2]], "somente neste campo, <cite>NULL</cite> é parâmetro para <b>pesquisar registros cuja</b> <strong>Data de Devolução</strong> <b>não foi preenchida</b> ou seja; <b>o exemplar não foi devolvido</b> e se o campo <i>está vazio</i> ou seja; <i>não tem conteúdo</i>, então <i>será ignorado na pesquisa</i>");
 
     var firstBtn  = $("#firstBtn"),  previousBtn = $("#previousBtn"),
         nextBtn   = $("#nextBtn"),   lastBtn     = $("#lastBtn");
@@ -238,7 +238,7 @@ $(document).ready(
       // prefixo do código de serialização da visibilidade da "pseudo frame"
       const DOCAREA_PREFIX = "DOCAREA_ON_";
 
-      var TOP = (FIELDS_PARENT.position().top - 5) + "px";
+      var TOP = (FIELDS_PARENT.position().top + 10) + "px";
 
       var MAX_HEIGHT = FIELDS_PARENT.outerHeight(true) - 20;
 
@@ -334,12 +334,15 @@ $(document).ready(
             // no final da sessão anterior à corrente
             if (localStorage.getItem(
                 DOCAREA_PREFIX + StyleManager.dayOfWeek()) !== "0") {
-              DOCAREA.fadeIn(750);
+              DOCAREA.fadeIn(2500);
               updateTEACHERtooltip(true);
             } else {
               TEACHER.addClass("pressed");  // ajusta o look do botão
               updateTEACHERtooltip(false);
             }
+
+            DOCAREA.accordion({ collapsible: true, header: "h3",
+              heightStyle: "content", icons: null });
 
           });
 
