@@ -341,8 +341,19 @@ $(document).ready(
               updateTEACHERtooltip(false);
             }
 
-            DOCAREA.accordion({ collapsible: true, header: "h3",
-              heightStyle: "content", icons: null });
+            DOCAREA.accordion({ collapsible: true, header: "h3", active: false,
+              heightStyle: "content", icons: null, animate: {
+                duration: 1000, easing: "easeInOutSine", down: 1500 },
+              activate: function /* scroll to ui.newHeader */ (ev, ui) {
+                var OFFSET = ui.newHeader.offset();
+                if (OFFSET) {
+                  var me = $(this);
+                  me.animate({
+                    scrollTop: OFFSET.top - me.offset().top + me.scrollTop(),
+                  });
+                }
+              }
+            });
 
           });
 

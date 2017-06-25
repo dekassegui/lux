@@ -43,9 +43,9 @@ EOT;
   <p>Acionadas ao clicar no botão <span class="botao">&#xF002;&nbsp;Pesquisar</span>, para localizar registros sujeitos a restrições, tal que:</p>
   <ol class="simpleList">
     <li>Toda restrição é declarada pelo preenchimento de campo, no formato geral:<span class="evidence"><span>OPERADOR</span>&nbsp;<span>PARÂMETRO</span></span>onde o OPERADOR pode estar implícito e PARÂMETRO é valor arbitrário de referência, que pode ser opcional.</li>
+    <li><strong>Todos</strong> <b>os operadores estão disponíveis em</b> <strong>todos</strong> <b>os campos de formulários de</b> <strong>todas</strong> <b>as tabelas</b>, inclusive os de caráter informativo <i>que não são editáveis na prática</i>, para montagem de restrições sobre os conteúdos dos campos.</li>
     <li>Cada restrição está relacionada únicamente ao campo preenchido que, em caso contrário será ignorado.</li>
-    <li>Se houver duas ou mais restrições, então ocorrerá <b>sucesso</b> somente se <b>satisfeitas simultâneamente</b>.</li>
-    <li><strong>Todos</strong> <b>os operadores estão disponíveis em</b> <strong>todos</strong> <b>os campos do formulário</b>, inclusive os de caráter informativo, que não são editáveis na prática.</li>
+    <li>A validação de um registro é <b>bem sucedida</b> quando as restrições sobre os conteúdos de seus campos são satisfeitas simultâneamente e neste caso, diz-se que ocorreu <b>sucesso</b>.</li>
     <li>O uso de letras MAIÚSCULAS ou minúsculas é irrelevante, porém vogais acentuadas e cedilha <b>são semelhantes</b> às não acentuadas e à letra <b>C</b> repectivamente, ou seja; <b>nâo são iguais</b>.</li>
     <li>Se a pesquisa for <b>bem sucedida</b>, resultando em <b>único registro</b>, então este será o registro (<i>corrente</i>) apresentado no formulário.</li>
     <li>Se a pesquisa for <b>bem sucedida</b>, resultando em <b>dois ou mais registros</b>, então serão listados na área de notificação abaixo do formulário.</li>
@@ -61,25 +61,25 @@ EOT;
   <p>Neste padrão de pesquisa, as restrições seguem o formato geral com utilização opcional dos componentes, aplicado tantas vezes quanto necessário.</p>
   <p>Exemplos de uso do operador <cite>*</cite>:</p>
   <ul>
-    <li class="example"><span>*</span>pesquisa qualquer frase com qualquer conteúdo &#x2012; útil para listar todos registros</li>
-    <li class="example"><span>fulano*</span>pesquisa <b>fulano</b> no início de frase</li>
-    <li class="example"><span>*beltrano</span> pesquisa <b>beltrano</b> no final de frase</li>
-    <li class="example"><span>*ciclano*</span> pesquisa <b>ciclano</b> em qualquer posição na frase</li>
+    <li class="example"><span>*</span>validação irrestrita de conteúdo &#x2012; útil para listar todos registros</li>
+    <li class="example"><span>fulano*</span> valida conteúdo iniciado com <b>fulano</b></li>
+    <li class="example"><span>*beltrano</span> valida conteúdo terminado com <b>beltrano</b></li>
+    <li class="example"><span>*ciclano*</span> valida conteúdo que contém <b>ciclano</b> em qualquer posição</li>
   </ul>
   <p>Exemplos de uso do operador <cite>?</cite>:</p>
   <ul>
-    <li class="example"><span>Joanna de ?ngelis</span>pesquisa frase, cuja última palavra inicia com caractere desconhecido</li>
-    <li class="example"><span>espírito Mirame?</span>pesquisa frase, cuja última palavra termina com caractere desconhecido</li>
-    <li class="example"><span>algum con?erto</span>pesquisa frase, cujo quarto caractere da última palavra é desconhecido</li>
+    <li class="example"><span>Joanna de ?ngelis</span> valida conteúdo cuja última palavra inicia com caractere desconhecido</li>
+    <li class="example"><span>espírito Mirame?</span> valida conteúdo cuja última palavra termina com caractere desconhecido</li>
+    <li class="example"><span>algum con?erto</span> valida conteúdo cujo quarto caractere da última palavra é desconhecido</li>
   </ul>
-  <p>Exemplos de uso de <b>classe de caracteres</b> <cite>[]</cite>:</p>
+  <p>Exemplos de uso de <b>Classe de Caracteres</b> <cite>[]</cite>:</p>
   <ul>
-    <li class="example"><span>autor Mirame[sz]</span>pesquisa frase, cuja última palavra termina com <b>s</b> ou <b>z</b></li>
-    <li class="example"><span>amiga M[aáé]rcia</span>pesquisa frase, cujo segundo caractere da última palavra pode ser <b>a</b>, <b>á</b> ou <b>é</b></li>
+    <li class="example"><span>autor Mirame[sz]</span> valida conteúdo cuja última palavra termina com <b>s</b> ou <b>z</b></li>
+    <li class="example"><span>amiga M[aáé]rcia</span> valida conteúdo cujo segundo caractere da última palavra pode ser <b>a</b>, <b>á</b> ou <b>é</b></li>
   </ul>
   <p>Exemplo de uso combinado de operadores:</p>
   <ul>
-    <li class="example"><span>*auto?estima*</span>pesquisa frase contendo as palavras <b>auto</b> e <b>estima</b>, <i>em qualquer posição</i>, separadas por algum caractere</li>
+    <li class="example"><span>*auto?estima*</span> valida conteúdo que contém as palavras <b>auto</b> e <b>estima</b>, em qualquer posição e separadas por algum caractere</li>
   </ul>
 </div>
 EOT;
@@ -87,15 +87,15 @@ EOT;
       echo <<<EOT
 <h3>&#xF0DA; Pesquisas - SONAT</h3>
 <div>
-  <p>Operador para localizar registros, cujo conteúdo do campo visado contém termos <b>SEMELHANTES FONETICAMENTE</b> a todos os itens de <b>lista de parâmetros</b> arbitrária, por exemplo:</p>
+  <p>Operador para validar conteúdo de campo que contém termos <b>SEMELHANTES FONETICAMENTE</b> a todos os itens de <b>lista de parâmetros</b> arbitrária, por exemplo:</p>
   <ul>
-    <li class="example"><span>SONAT Allan Kardec</span> valida conteúdo que soa semelhante, a exemplo de <strong>ALAN&nbsp;CARDEQUI</strong>.</li>
-    <li class="example"><span>SONAT angelis joana</span> valida conteúdo que soa semelhante, a exemplo de <strong>Joanna&nbsp;de&nbsp;Ângelis</strong>.</li>
+    <li class="example"><span>SONAT Allan Kardec</span> valida conteúdo que contém termos que soam semelhante, como <strong>ALAN&nbsp;CARDEQUI</strong>.</li>
+    <li class="example"><span>SONAT angelis joana</span> valida conteúdo que contém termos que soam semelhante, como <strong>Joanna&nbsp;de&nbsp;Ângelis</strong>.</li>
   </ul>
-  <p><em><b>FATOS NOTÁVEIS</b></em></p>
+  <p><em><b>Addendum</b></em></p>
   <ol class="simpleList">
     <li>Usar <b>termos corretos</b> como parâmetros é especialmente útil para localizar semelhantes, grafados erroneamente.</li>
-    <li>A ordem dos parâmetros não importa.</li>
+    <li>O número de parâmetros é ilimitado e <b>a ordem não importa</b>, mas recomenda-se que a lista inicie com itens menos prováveis de haver semelhante.</li>
   </ol>
 </div>
 EOT;
@@ -103,13 +103,14 @@ EOT;
       echo <<<EOT
 <h3>&#xF0DA; Pesquisas - NULL</h3>
 <div>
-  <p>Operador para localizar registros, cujo conteúdo do campo visado é <b>nulo</b>, tal que:</p>
-  <ul>
-    <li><b>nulo</b> não equivale a <b>sequência de 1+ espaços em branco</b>, <b>nulo</b> é ausência de conteúdo, o vazio no sentido de: <b>campo não preenchido</b>.</li>
-    <li><b>NULL</b> é <cite title="equivalente no sentido técnico, sinônimo">alias</cite> de <b>ISNULL</b>.</li>
+  <p>Operador para validar conteúdo <b>nulo</b>, tal que:</p>
+  <ol class="simpleList">
+    <li><b>nulo</b> não equivale a <b>sequência de um ou mais espaços em branco</b>, <b>nulo</b> é ausência de conteúdo, o vazio no sentido de: <b>campo não preenchido</b>.</li>
+    <li><b>NULL</b> é <cite title="comando equivalente">alias</cite> de <b>ISNULL</b>.</li>
     <li>O operador complementar de <b>NULL</b> é <b>NOTNULL</b>, para pesquisar registros cujo conteúdo do campo é <b>não nulo</b>.</li>
     <li>Tanto <b>NULL</b> como <b>NOTNULL</b> dispensam PARÂMETRO, bastando digitá-los.</li>
-  </ul>
+    <li><b>NULL</b> é especialmente útil para pesquisar registros cujas datas de devolução são <b>nulas</b>, isto é: <b>não foram preenchidas</b>.</li>
+  </ol>
 </div>
 EOT;
 
