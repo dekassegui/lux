@@ -46,7 +46,7 @@ EOT;
     <li><strong>Todos</strong> <b>os operadores estão disponíveis em</b> <strong>todos</strong> <b>os campos de formulários de</b> <strong>todas</strong> <b>as tabelas</b>, inclusive os de caráter informativo <i>que não são editáveis na prática</i>, para montagem de restrições sobre os conteúdos dos campos.</li>
     <li>Cada restrição está relacionada únicamente ao campo preenchido que, em caso contrário será ignorado.</li>
     <li>A validação de um registro é <b>bem sucedida</b> quando as restrições sobre os conteúdos de seus campos são satisfeitas simultâneamente e neste caso, diz-se que ocorreu <b>sucesso</b>.</li>
-    <li>O uso de letras MAIÚSCULAS ou minúsculas é irrelevante, porém vogais acentuadas e cedilha <b>são semelhantes</b> às não acentuadas e à letra <b>C</b> repectivamente, ou seja; <b>nâo são iguais</b>.</li>
+    <li>O uso de letras MAIÚSCULAS ou minúsculas é irrelevante, porém vogais acentuadas e cedilha <b>são semelhantes</b> às não acentuadas e à letra <b>C</b> respectivamente, ou seja; <b>nâo são iguais</b>.</li>
     <li>Se a pesquisa for <b>bem sucedida</b>, resultando em <b>único registro</b>, então este será o registro (<i>corrente</i>) apresentado no formulário.</li>
     <li>Se a pesquisa for <b>bem sucedida</b>, resultando em <b>dois ou mais registros</b>, então serão listados na área de notificação abaixo do formulário.</li>
     <li>Se a pesquisa for <b>mal sucedida</b>, então o usuário será notificado na janela de diálogo.</li>
@@ -110,6 +110,19 @@ EOT;
     <li>O operador complementar de <b>NULL</b> é <b>NOTNULL</b>, para pesquisar registros cujo conteúdo do campo é <b>não nulo</b>.</li>
     <li>Tanto <b>NULL</b> como <b>NOTNULL</b> dispensam PARÂMETRO, bastando digitá-los.</li>
     <li><b>NULL</b> é especialmente útil para pesquisar registros cujas datas de devolução são <b>nulas</b>, isto é: <b>não foram preenchidas</b>.</li>
+  </ol>
+</div>
+EOT;
+
+      echo <<<EOT
+<h3>&#xF0DA; Pesquisas - Appendice</h3>
+<div>
+  <p>Outros operadores disponíveis:</p>
+  <ol class="simpleList">
+    <li>Comparação: <cite>&lt;</cite> <cite>&lt;=</cite> <cite>==</cite> <cite>&gt;=</cite> <cite>&gt;</cite> <cite>!=</cite></li>
+    <li>Especiais: <cite>IN</cite> <cite>IS</cite> <cite>NOT</cite> <cite>SONDX</cite></li>
+    <li>Padrão LIKE: <cite>%</cite> <cite>_</cite></li>
+    <li>Expressões Regulares: <cite>REGEX</cite></li>
   </ol>
 </div>
 EOT;

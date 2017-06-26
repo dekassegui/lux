@@ -341,7 +341,7 @@ $(document).ready(
               updateTEACHERtooltip(false);
             }
 
-            DOCAREA.accordion({ collapsible: true, header: "h3", active: false,
+            DOCAREA.accordion({ collapsible: true, header: "h3", active: 0,
               heightStyle: "content", icons: null, animate: {
                 duration: 1000, easing: "easeInOutSine", down: 1500 },
               activate: function /* scroll to ui.newHeader */ (ev, ui) {
@@ -350,6 +350,8 @@ $(document).ready(
                   var me = $(this);
                   me.animate({
                     scrollTop: OFFSET.top - me.offset().top + me.scrollTop(),
+                    duation: 1000,
+                    easing: "easeInOutSine"
                   });
                 }
               }

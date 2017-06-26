@@ -56,3 +56,8 @@ input[type="text"].help:hover {
 input[type="text"].help:focus {
   background-image: url("../img/corner-stripes-gray.png");
 }
+.ui-accordion-header-active {
+  color: black !important;
+  background-color: transparent !important;
+  text-shadow: 1px 0px 1px #999 !important;
+}
