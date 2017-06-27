@@ -267,9 +267,12 @@ $(document).ready(
           );
 
       function updateTEACHERtooltip(status) {
+        var isVisible = (status | DOCAREA.is(":visible"));
         TEACHER.attr("title", "clique aqui para <b>"
-          + ((status | DOCAREA.is(":visible")) ? "ocultar" : "restaurar")
+          + (isVisible ? "ocultar" : "restaurar")
           + " o resumo das sequências de operações</b>");
+        FIELDS_PARENT.css({ "margin-left": (isVisible ? "10px" : "auto") });
+        $(window).resize();
       }
 
       // atrela função responsiva ao redimensionamento da window,
@@ -341,6 +344,7 @@ $(document).ready(
               updateTEACHERtooltip(false);
             }
 
+            // configura "accordion" para rolar heading ativado para o topo
             DOCAREA.accordion({ collapsible: true, header: "h3", active: 0,
               heightStyle: "content", icons: null, animate: {
                 duration: 1000, easing: "easeInOutSine", down: 1500 },

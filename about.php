@@ -42,7 +42,7 @@ EOT;
 <div>
   <p>Acionadas ao clicar no botão <span class="botao">&#xF002;&nbsp;Pesquisar</span>, para localizar registros sujeitos a restrições, tal que:</p>
   <ol class="simpleList">
-    <li>Toda restrição é declarada pelo preenchimento de campo, no formato geral:<span class="evidence"><span>OPERADOR</span>&nbsp;<span>PARÂMETRO</span></span>onde o OPERADOR pode estar implícito e PARÂMETRO é valor arbitrário de referência, que pode ser opcional.</li>
+    <li>Toda restrição é declarada pelo preenchimento de campo, no formato geral:<span class="evidence"><span>OPERADOR</span><span>PARÂMETRO</span></span>onde o OPERADOR pode estar implícito e PARÂMETRO é valor arbitrário de referência, que pode ser opcional.</li>
     <li><strong>Todos</strong> <b>os operadores estão disponíveis em</b> <strong>todos</strong> <b>os campos de formulários de</b> <strong>todas</strong> <b>as tabelas</b>, inclusive os de caráter informativo <i>que não são editáveis na prática</i>, para montagem de restrições sobre os conteúdos dos campos.</li>
     <li>Cada restrição está relacionada únicamente ao campo preenchido que, em caso contrário será ignorado.</li>
     <li>A validação de um registro é <b>bem sucedida</b> quando as restrições sobre os conteúdos de seus campos são satisfeitas simultâneamente e neste caso, diz-se que ocorreu <b>sucesso</b>.</li>
@@ -59,20 +59,20 @@ EOT;
 <h3>&#xF0DA; Pesquisas - GLOB</h3>
 <div>
   <p>Neste padrão de pesquisa, as restrições seguem o formato geral com utilização opcional dos componentes, aplicado tantas vezes quanto necessário.</p>
-  <p>Exemplos de uso do operador <cite>*</cite>:</p>
+  <p>Exemplos de uso do operador <code>*</code>:</p>
   <ul>
     <li class="example"><span>*</span>validação irrestrita de conteúdo &#x2012; útil para listar todos registros</li>
     <li class="example"><span>fulano*</span> valida conteúdo iniciado com <b>fulano</b></li>
     <li class="example"><span>*beltrano</span> valida conteúdo terminado com <b>beltrano</b></li>
     <li class="example"><span>*ciclano*</span> valida conteúdo que contém <b>ciclano</b> em qualquer posição</li>
   </ul>
-  <p>Exemplos de uso do operador <cite>?</cite>:</p>
+  <p>Exemplos de uso do operador <code>?</code>:</p>
   <ul>
     <li class="example"><span>Joanna de ?ngelis</span> valida conteúdo cuja última palavra inicia com caractere desconhecido</li>
     <li class="example"><span>espírito Mirame?</span> valida conteúdo cuja última palavra termina com caractere desconhecido</li>
     <li class="example"><span>algum con?erto</span> valida conteúdo cujo quarto caractere da última palavra é desconhecido</li>
   </ul>
-  <p>Exemplos de uso de <b>Classe de Caracteres</b> <cite>[]</cite>:</p>
+  <p>Exemplos de uso de <code>[Classe de Caracteres]</code>:</p>
   <ul>
     <li class="example"><span>autor Mirame[sz]</span> valida conteúdo cuja última palavra termina com <b>s</b> ou <b>z</b></li>
     <li class="example"><span>amiga M[aáé]rcia</span> valida conteúdo cujo segundo caractere da última palavra pode ser <b>a</b>, <b>á</b> ou <b>é</b></li>
@@ -106,7 +106,7 @@ EOT;
   <p>Operador para validar conteúdo <b>nulo</b>, tal que:</p>
   <ol class="simpleList">
     <li><b>nulo</b> não equivale a <b>sequência de um ou mais espaços em branco</b>, <b>nulo</b> é ausência de conteúdo, o vazio no sentido de: <b>campo não preenchido</b>.</li>
-    <li><b>NULL</b> é <cite title="comando equivalente">alias</cite> de <b>ISNULL</b>.</li>
+    <li><b>NULL</b> equivale a <strong>ISNULL</strong>.</li>
     <li>O operador complementar de <b>NULL</b> é <b>NOTNULL</b>, para pesquisar registros cujo conteúdo do campo é <b>não nulo</b>.</li>
     <li>Tanto <b>NULL</b> como <b>NOTNULL</b> dispensam PARÂMETRO, bastando digitá-los.</li>
     <li><b>NULL</b> é especialmente útil para pesquisar registros cujas datas de devolução são <b>nulas</b>, isto é: <b>não foram preenchidas</b>.</li>
@@ -119,10 +119,28 @@ EOT;
 <div>
   <p>Outros operadores disponíveis:</p>
   <ol class="simpleList">
-    <li>Comparação: <cite>&lt;</cite> <cite>&lt;=</cite> <cite>==</cite> <cite>&gt;=</cite> <cite>&gt;</cite> <cite>!=</cite></li>
-    <li>Especiais: <cite>IN</cite> <cite>IS</cite> <cite>NOT</cite> <cite>SONDX</cite></li>
-    <li>Padrão LIKE: <cite>%</cite> <cite>_</cite></li>
-    <li>Expressões Regulares: <cite>REGEX</cite></li>
+    <li><p>Comparação: <code>&lt;</code> <code>&lt;=</code> <code>==</code> <code>&gt;=</code> <code>&gt;</code> <code>!=</code><br>Exemplos:</p>
+      <ul>
+        <li class="example"><span>== ANDRÉ LUIZ</span> valida conteúdo que seja <b>exatamente igual</b> a ANDRÉ LUIZ &#x2012; este operador pode ser omitido por simplicidade (<i>implicito</i>).</li>
+        <li class="example"><span>!= CHICO XAVIER</span> valida conteúdo <b>diferente</b> de CHICO XAVIER.</li>
+        <li class="example"><span>&lt; 01-01-2017</span> valida DATAS <b>anteriores</b> a 1&#xBA; de janeiro de 2017</li>
+        <li class="example"><span>&gt;= 25-05-2016</span> valida DATAS <b>posteriores inclusive</b> a 25 de maio de 2016</li>
+      </ul>
+    </li>
+    <li><p>Especiais: <code>IN</code> <code>IS</code> <code>NOT</code> <code>SONDX</code><br>Exemplos:</p>
+      <ul>
+        <li class="example"><span><strong>NOT</strong> <i>restrição</i></span> <b>Negação Lógica</b> de qualquer restrição com qualquer operador.</li>
+        <li class="example"><span><strong>IS</strong> <i>texto procurado</i></span> Equivalente ao operador <code>==</code> desde que o conteúdo não seja <b>NULL</b>.</li>
+        <li class="example"><span>IN Miramês Ramatiz Meimei</span> valida conteúdo que contém <b>Miramês</b>, <b>Ramatiz</b> ou <b>Meimei</b> &#x2012; checa se alguma palavra, após operador, existe no conteúdo.</li>
+        <li class="example"><span>SONDX</span> Semelhante a <code>SONAT</code>, mas usa fonemas do Inglês.</li>
+      </ul>
+    </li>
+    <li><p>Padrão LIKE: <code>%</code> <code>_</code></p>
+      <p>Semelhante ao padrão <b>GLOB</b>, porém não tem <code>Classes de Caracteres</code>.</p>
+    </li>
+    <li><p>Expressões Regulares: <code>REGEX</code></p>
+      <p>Poderoso operador via <strong>PCRE do PHP</strong> &#x2012; consulte a documentação oficial por enquanto.</p>
+    </li>
   </ol>
 </div>
 EOT;

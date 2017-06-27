@@ -9,7 +9,11 @@ div, section > div:first-child > p { padding: 1px; }
 
 section > div { margin-top: 1em; overflow: auto; }
 
-section > div:first-child { width: 800px; margin: 0 auto 0 auto; }
+section > div:first-child {
+  width: 800px;
+  margin: 0 auto 0 auto;
+}
+
 section > div:first-child > p span + span { float: right; margin-right: 12px; }
 section > div > div { display: inline; float: left; }
 
@@ -163,21 +167,22 @@ body > header > * { /* evita seleção de texto ao clicar no canvas */
   display: block;
   margin: .5em 0 .5em 0;
   font-size:1.1em;
+  text-align: center;
   overflow: auto;
 }
 .evidence span {
-  float: left;
+  display: inline-block;
   padding: .25em .5em .22em .5em;
 }
 .evidence span:first-child { color: white; background-color: dimgray; }
-.evidence span + span { color: black; background-color: gold;  }
+.evidence span + span { color: black; background-color: gold; }
 
 #docArea { /* Posicionado via script. */
   position: absolute;
   z-index: 100;
   min-width: 240px;
   padding: 10px 5px 10px 5px;
-  font: 400 14px FontAwesome, "Open Sans", sans-serif;
+  font: 400 14pt FontAwesome, "Open Sans", sans-serif;
   color: #333;
   background-color: white;
   border-radius: 5px;
@@ -199,9 +204,9 @@ body > header > * { /* evita seleção de texto ao clicar no canvas */
   margin-left: -.75em;
   list-style-type: none;
   padding-left: 12px;
-  background: url('../img/prompt.png') no-repeat left 10px;
+  background: url('../img/prompt.png') no-repeat left 14pt;
 }
-#docArea li.example span, #docArea cite {
+#docArea li.example span {
   color: #111;
   background-color: azure;
   font: 700 normal 1.1em 'Droid Sans Mono', 'Courier New', monospace;
@@ -225,12 +230,12 @@ body > header > * { /* evita seleção de texto ao clicar no canvas */
   text-shadow: -1px 0px #ccc;
   transform: skew(-6deg);
 }
-#docArea cite[title] {
+#docArea code {
   display: inline-block;
-  color: darkgreen !important;
-  background-color: transparent !important;
-  font-weight: 600 !important;
-  letter-spacing: normal !important;
-  border-bottom: dotted 1px darkgreen;
-  cursor: help;
+  padding: 0 1px 0 1px;
+  color: darkorchid;
+  background-color: whitesmoke;
+  font: 800 normal 1em 'Droid Sans Mono', 'Courier New', monospace;
+  letter-spacing: .03125em;
 }
+#docArea code + code { margin-left: .25em; }
