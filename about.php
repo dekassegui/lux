@@ -45,7 +45,7 @@ EOT;
     <li>Toda restrição é declarada pelo preenchimento de campo, no formato geral:<span class="evidence"><span>OPERADOR</span><span>PARÂMETRO</span></span>onde o OPERADOR pode estar implícito e PARÂMETRO é valor arbitrário de referência, que pode ser opcional.</li>
     <li><strong>Todos</strong> <b>os operadores estão disponíveis em</b> <strong>todos</strong> <b>os campos de formulários de</b> <strong>todas</strong> <b>as tabelas</b>, inclusive os de caráter informativo <i>que não são editáveis na prática</i>, para montagem de restrições sobre os conteúdos dos campos.</li>
     <li>Cada restrição está relacionada únicamente ao campo preenchido que, em caso contrário será ignorado.</li>
-    <li>A validação de um registro é <b>bem sucedida</b> quando as restrições sobre os conteúdos de seus campos são satisfeitas simultâneamente e neste caso, diz-se que ocorreu <b>sucesso</b>.</li>
+    <li>A validação de um registro é <b>bem sucedida</b> quando as restrições sobre os conteúdos de seus campos são satisfeitas simultâneamente e neste caso é dito que ocorreu <b>sucesso</b>.</li>
     <li>O uso de letras MAIÚSCULAS ou minúsculas é irrelevante, porém vogais acentuadas e cedilha <b>são semelhantes</b> às não acentuadas e à letra <b>C</b> respectivamente, ou seja; <b>nâo são iguais</b>.</li>
     <li>Se a pesquisa for <b>bem sucedida</b>, resultando em <b>único registro</b>, então este será o registro (<i>corrente</i>) apresentado no formulário.</li>
     <li>Se a pesquisa for <b>bem sucedida</b>, resultando em <b>dois ou mais registros</b>, então serão listados na área de notificação abaixo do formulário.</li>
@@ -60,26 +60,26 @@ EOT;
 <div>
   <p>Neste padrão de pesquisa, as restrições seguem o formato geral com utilização opcional dos componentes, aplicado tantas vezes quanto necessário.</p>
   <p>Exemplos de uso do operador <code>*</code>:</p>
-  <ul>
-    <li class="example"><span>*</span>validação irrestrita de conteúdo &#x2012; útil para listar todos registros</li>
-    <li class="example"><span>fulano*</span> valida conteúdo iniciado com <b>fulano</b></li>
-    <li class="example"><span>*beltrano</span> valida conteúdo terminado com <b>beltrano</b></li>
-    <li class="example"><span>*ciclano*</span> valida conteúdo que contém <b>ciclano</b> em qualquer posição</li>
+  <ul class="example">
+    <li class="example"><span><strong>*</strong></span> Validação irrestrita de conteúdo &#x2012; útil para listar todos registros.</li>
+    <li class="example"><span>fulano<strong>*</strong></span> Valida conteúdo iniciado com <b>fulano</b>.</li>
+    <li class="example"><span><strong>*</strong>beltrano</span> Valida conteúdo terminado com <b>beltrano</b>.</li>
+    <li class="example"><span><strong>*</strong>ciclano<strong>*</strong></span> Valida conteúdo que contém <b>ciclano</b> em qualquer posição.</li>
   </ul>
   <p>Exemplos de uso do operador <code>?</code>:</p>
   <ul>
-    <li class="example"><span>Joanna de ?ngelis</span> valida conteúdo cuja última palavra inicia com caractere desconhecido</li>
-    <li class="example"><span>espírito Mirame?</span> valida conteúdo cuja última palavra termina com caractere desconhecido</li>
-    <li class="example"><span>algum con?erto</span> valida conteúdo cujo quarto caractere da última palavra é desconhecido</li>
+    <li class="example"><span>Joanna de <strong>?</strong>ngelis</span> Valida conteúdo cuja última palavra inicia com caractere desconhecido.</li>
+    <li class="example"><span>espírito Mirame<strong>?</strong></span> Valida conteúdo cuja última palavra termina com caractere desconhecido.</li>
+    <li class="example"><span>algum con<strong>?</strong>erto</span> Valida conteúdo cujo quarto caractere da última palavra é desconhecido.</li>
   </ul>
   <p>Exemplos de uso de <code>[Classe de Caracteres]</code>:</p>
   <ul>
-    <li class="example"><span>autor Mirame[sz]</span> valida conteúdo cuja última palavra termina com <b>s</b> ou <b>z</b></li>
-    <li class="example"><span>amiga M[aáé]rcia</span> valida conteúdo cujo segundo caractere da última palavra pode ser <b>a</b>, <b>á</b> ou <b>é</b></li>
+    <li class="example"><span>autor Mirame<strong>[sz]</strong></span> Valida conteúdo cuja última palavra termina com <b>s</b> ou <b>z</b>.</li>
+    <li class="example"><span>amiga M<strong>[aáé]</strong>rcia</span> Valida conteúdo cujo segundo caractere da última palavra pode ser <b>a</b>, <b>á</b> ou <b>é</b>.</li>
   </ul>
   <p>Exemplo de uso combinado de operadores:</p>
   <ul>
-    <li class="example"><span>*auto?estima*</span> valida conteúdo que contém as palavras <b>auto</b> e <b>estima</b>, em qualquer posição e separadas por algum caractere</li>
+    <li class="example"><span><strong>*</strong>auto<strong>?</strong>estima<strong>*</strong></span> Valida conteúdo que contém as palavras <b>auto</b> e <b>estima</b>, em qualquer posição e separadas por algum caractere.</li>
   </ul>
 </div>
 EOT;
@@ -88,9 +88,9 @@ EOT;
 <h3>&#xF0DA; Pesquisas - SONAT</h3>
 <div>
   <p>Operador para validar conteúdo de campo que contém termos <b>SEMELHANTES FONETICAMENTE</b> a todos os itens de <b>lista de parâmetros</b> arbitrária, por exemplo:</p>
-  <ul>
-    <li class="example"><span>SONAT Allan Kardec</span> valida conteúdo que contém termos que soam semelhante, como <strong>ALAN&nbsp;CARDEQUI</strong>.</li>
-    <li class="example"><span>SONAT angelis joana</span> valida conteúdo que contém termos que soam semelhante, como <strong>Joanna&nbsp;de&nbsp;Ângelis</strong>.</li>
+  <ul class="example">
+    <li class="example"><span><strong>SONAT</strong> Allan Kardec</span> Valida conteúdo que contém palavras que soam semelhante aos parâmetros &#x2012; como <b>ALAN&nbsp;CARDEQUI</b>.</li>
+    <li class="example"><span><strong>SONAT</strong> angelis joana</span> Valida conteúdo que contém palavras que soam semelhante aos parâmetros &#x2012; como <b>Joanna&nbsp;de&nbsp;Ângelis</b>.</li>
   </ul>
   <p><em><b>Addendum</b></em></p>
   <ol class="simpleList">
@@ -118,28 +118,41 @@ EOT;
 <h3>&#xF0DA; Pesquisas - Appendice</h3>
 <div>
   <p>Outros operadores disponíveis:</p>
-  <ol class="simpleList">
+  <ol class="simpleList example">
     <li><p>Comparação: <code>&lt;</code> <code>&lt;=</code> <code>==</code> <code>&gt;=</code> <code>&gt;</code> <code>!=</code><br>Exemplos:</p>
       <ul>
-        <li class="example"><span>== ANDRÉ LUIZ</span> valida conteúdo que seja <b>exatamente igual</b> a ANDRÉ LUIZ &#x2012; este operador pode ser omitido por simplicidade (<i>implicito</i>).</li>
-        <li class="example"><span>!= CHICO XAVIER</span> valida conteúdo <b>diferente</b> de CHICO XAVIER.</li>
-        <li class="example"><span>&lt; 01-01-2017</span> valida DATAS <b>anteriores</b> a 1&#xBA; de janeiro de 2017</li>
-        <li class="example"><span>&gt;= 25-05-2016</span> valida DATAS <b>posteriores inclusive</b> a 25 de maio de 2016</li>
+        <li class="example"><span><strong>==</strong> ANDRÉ LUIZ</span> Valida conteúdo <b>exatamente igual</b> a ANDRÉ LUIZ &#x2012; este operador pode ser omitido por simplicidade, pois é o operador <b>default implícito</b> quando somente o parâmetro é declarado.</li>
+        <li class="example"><span><strong>!=</strong> CHICO XAVIER</span> Valida conteúdo <b>diferente</b> de CHICO XAVIER.</li>
+        <li class="example"><span><strong>&lt;</strong> 01-01-2017</span> Valida DATAS <b>anteriores</b> a 1&#xBA; de janeiro de 2017.</li>
+        <li class="example"><span><strong>&gt;=</strong> 25-05-2016</span> Valida DATAS <b>posteriores inclusive</b> a 25 de maio de 2016.</li>
       </ul>
     </li>
     <li><p>Especiais: <code>IN</code> <code>IS</code> <code>NOT</code> <code>SONDX</code><br>Exemplos:</p>
       <ul>
-        <li class="example"><span><strong>NOT</strong> <i>restrição</i></span> <b>Negação Lógica</b> de qualquer restrição com qualquer operador.</li>
+        <li class="example"><span><strong>NOT</strong> <i>restrição</i></span> <b>NEGAÇÃO LÓGICA</b> de qualquer restrição com qualquer operador.</li>
         <li class="example"><span><strong>IS</strong> <i>texto procurado</i></span> Equivalente ao operador <code>==</code> desde que o conteúdo não seja <b>NULL</b>.</li>
-        <li class="example"><span>IN Miramês Ramatiz Meimei</span> valida conteúdo que contém <b>Miramês</b>, <b>Ramatiz</b> ou <b>Meimei</b> &#x2012; checa se alguma palavra, após operador, existe no conteúdo.</li>
-        <li class="example"><span>SONDX</span> Semelhante a <code>SONAT</code>, mas usa fonemas do Inglês.</li>
+        <li class="example"><span><strong>IN</strong> Miramês Ramatiz Meimei</span> Valida conteúdo que contém <b>Miramês</b>, <b>Ramatiz</b> ou <b>Meimei</b> &#x2012; checa se alguma palavra declarada após o operador existe no conteúdo.</li>
+        <li class="example"><span><strong>SONDX</strong> RICHARD</span> Valida conteúdo que contém palavra que soa semelhante ao parâmetro &#x2012; funciona como <code>SONAT</code>, mas usa fonemas do Inglês.</li>
       </ul>
     </li>
-    <li><p>Padrão LIKE: <code>%</code> <code>_</code></p>
-      <p>Semelhante ao padrão <b>GLOB</b>, porém não tem <code>Classes de Caracteres</code>.</p>
+    <li><p>Padrão <span class="onamai">LIKE</span>:
+      <ul>
+        <li>Alternativo ao padrão <span class="onamai">GLOB</span>, porém dispõe apenas dos operadores: <code>%</code> <code>_</code></li>
+        <li>Distingue MAIÚSCULAS e minúsculas apenas para vogais acentuadas e cedilha.</li>
+        <li>É nativo do SQL portanto, o de melhor desempenho.</li>
+      </ul>Exemplos:</p>
+      <ul>
+        <li class="example"><span>MÃOS<strong>%</strong></span> Valida conteúdo iniciado por MÃOS.</li>
+        <li class="example"><span>FRIEDRICH Z<strong>_</strong>LLNER</span> Valida conteúdo cujo segundo caractere da última palavra é desconhecido.</li>
+      </ul>
     </li>
-    <li><p>Expressões Regulares: <code>REGEX</code></p>
-      <p>Poderoso operador via <strong>PCRE do PHP</strong> &#x2012; consulte a documentação oficial por enquanto.</p>
+    <li><p>Expressões Regulares: <code>REGEX</code><br>Poderoso operador via <em>PCRE do PHP</em>.<br>Exemplos:</p>
+      <ul>
+        <li class="example"><span><strong>REGEX</strong> <strong>(</strong>SOBRE<strong>)?</strong>VIDA</span> Valida conteúdo que contém a palavra VIDA opcionalmente prefixada por SOBRE.</li>
+        <li class="example"><span><strong>REGEX</strong> <strong>^</strong>DIVALDO<strong>\s+</strong>FRANCO<strong>$</strong></span> Valida conteúdo que inicia com DIVALDO e termina com FRANCO, separado por um ou mais espaços em branco.</li>
+        <li class="example"><span><strong>IREGEX</strong> <strong>(</strong>miramez<strong>|</strong>joanna<strong>|</strong>ramatis<strong>)</strong></span> Valida conteúdo ignorando MAIÚSCULAS e minúsculas que contém MIRAMEZ <i>ou</i> JOANNA <i>ou</i> RAMATIS.</li>
+      </ul>
+      <p><b>Nota:</b> Consulte documentação extra para usar outros recursos, somente disponíveis neste operador.</p>
     </li>
   </ol>
 </div>

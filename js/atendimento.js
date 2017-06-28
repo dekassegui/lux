@@ -354,7 +354,7 @@ $(document).ready(
                   var me = $(this);
                   me.animate({
                     scrollTop: OFFSET.top - me.offset().top + me.scrollTop(),
-                    duation: 1000,
+                    duration: 1000,
                     easing: "easeInOutSine"
                   });
                 }
