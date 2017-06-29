@@ -285,7 +285,7 @@ $(document).ready(
               "left": LEFT + "px",
               "width": ($(window.opera ? "html" : "html, body").outerWidth()
                 - LEFT - 15) + "px",
-              "height": MAX_HEIGHT
+              "height": (newBtn.hasClass("working") ? MIN_HEIGHT : MAX_HEIGHT)
             });
         }).resize( /* POSICIONAMENTO INICIAL */ );
 
