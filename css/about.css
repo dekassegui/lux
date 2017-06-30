@@ -1,0 +1,120 @@
+/* Folha de estilos exclusivos da DOCAREA que deve ser carregada
+   depois da folha de estilos da UI de atendimento.              */
+.ui-accordion-header {
+  font-family: FontAwesome, "Open Sans", sans-serif;
+  font-size: 1.25em !important;
+  font-weight: 600 !important;
+  font-variant: small-caps;
+  letter-spacing: .0625em !important;
+  background-color: transparent !important;
+  border: none !important;
+}
+.ui-accordion-header-active {
+  color: white !important;
+  background-color: #39c !important;
+}
+.ui-accordion-header-collapsed {
+  color: #069 !important;
+}
+.ui-accordion-content { padding: .5em 0em 1em .675em !important; }
+.ui-accordion-content-active { border: none !important; }
+
+.simpleList { list-style-type: disc; }
+.evidence {
+  display: block;
+  margin: .5em 0 .5em 0;
+  font-size:1.1em;
+  text-align: center;
+  overflow: auto;
+}
+.evidence span {
+  display: inline-block;
+  padding: .375em .5em .3125em .5em;
+}
+.evidence span:first-child { color: white; background-color: dimgray; }
+.evidence span + span { color: black; background-color: gold; }
+
+#docArea { /* Posicionado via script. */
+  position: absolute;
+  z-index: 100;
+  min-width: 240px;
+  padding: 10px 5px 10px 5px;
+  font: 400 13pt FontAwesome, "Open Sans", sans-serif;
+  color: #333;
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0px 0px 8px 8px white;
+  /* sempre apresentará a scrollbar vertical no Firefox */
+  overflow: -moz-scrollbars-vertical;
+  overflow-y: scroll;
+  overflow-x: auto;
+}
+#docArea ol { margin-left: 1.1675em; }
+#docArea ol > li { margin-top: .5em; }
+#docArea ol.example > li:nth-child(n+2) { margin-top: 1em; }
+#docArea ol > li:nth-child(odd) { color: navy; }
+#docArea ul { list-style-type: disc; margin-left: 1em; }
+#docArea ul li { color: #603; }
+#docArea ul li:nth-child(even) { color: #900; }
+#docArea li > p { margin-top: .5em; }
+#docArea li.example {
+  margin-top: .5em;
+  margin-left: -.75em;
+  list-style-type: none;
+  padding-left: 5px;
+  border-left: solid 5px #e0f0e0;
+}
+#docArea li.example:nth-child(n+2) { margin-top: 1em; }
+#docArea li.example:nth-child(even) { border-left-color: #e0e0f6; }
+#docArea li.example span {
+  display: block;
+  padding: .5em 0em .25em .5em;
+  margin-bottom: .25em;
+  font: 400 normal 1.1em 'Droid Sans Mono', 'Courier New', monospace;
+  letter-spacing: .03125em;
+  color: #333;
+  background-color: #ffffe0;
+  border: solid 1px #e6e6e6;
+  border-radius: 5px;
+}
+#docArea li.example span strong {
+  margin: auto .03125em;
+  color: darkviolet;
+  font-weight: 400;
+}
+#docArea div > * + p { margin-top: 1em; }
+#docArea b { font-weight: 600; }
+#docArea span.botao {
+  padding: 2px 4px 2px 4px;
+  font-weight: 600;
+  line-height: 140%;
+  color: dodgerblue;
+  background-color: #ffc;
+}
+#docArea span.field {
+  display: inline-block;
+  font-weight: 600;
+  transform: skew(-6deg);
+  color: #900;
+}
+#docArea i { text-shadow: 1px 0px #ccc; }
+#docArea em {
+  display: inline-block;
+  font-style: normal;
+  text-shadow: -1px 0px #ccc;
+  transform: skew(-6deg);
+}
+#docArea code {
+  display: inline-block;
+  padding: 0 1px 0 1px;
+  color: darkorchid;
+  background-color: whitesmoke;
+  font: 400 normal 1em 'Droid Sans Mono', 'Courier New', monospace;
+  letter-spacing: .03125em;
+}
+#docArea code + code { margin-left: .25em; }
+.fakeUnderline { position: relative; top: -4px; }
+#docArea ol ul li {
+  list-style-type: square;
+  margin: .125em auto .125em auto;
+}
