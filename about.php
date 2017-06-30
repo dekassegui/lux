@@ -87,7 +87,7 @@ EOT;
       echo <<<EOT
 <h3>&#xF0DA; Pesquisas - SONAT</h3>
 <div>
-  <p>Operador para validar conteúdo de campo que contém termos <b>SEMELHANTES FONETICAMENTE</b> a todos os itens de <b>lista de parâmetros</b> arbitrária, por exemplo:</p>
+  <p>Operador para validar conteúdo de campo que contém termos <b>SEMELHANTES FONETICAMENTE</b> a todos os itens de <b>lista de parâmetros</b> arbitrária.<br>Exemplos:</p>
   <ul class="example">
     <li class="example"><span><strong>SONAT</strong> Allan Kardec</span> Valida conteúdo que contém palavras que soam semelhante aos parâmetros &#x2012; como <b>ALAN&nbsp;CARDEQUI</b>.</li>
     <li class="example"><span><strong>SONAT</strong> angelis joana</span> Valida conteúdo que contém palavras que soam semelhante aos parâmetros &#x2012; como <b>Joanna&nbsp;de&nbsp;Ângelis</b>.</li>
@@ -115,46 +115,54 @@ EOT;
 EOT;
 
       echo <<<EOT
-<h3>&#xF0DA; Pesquisas - Appendice</h3>
+<h3>&#xF0DA; Pesquisas - Comparadores</h3>
 <div>
-  <p>Outros operadores disponíveis:</p>
-  <ol class="simpleList example">
-    <li><p>Comparação: <code>&lt;</code> <code>&lt;=</code> <code>==</code> <code>&gt;=</code> <code>&gt;</code> <code>!=</code><br>Exemplos:</p>
-      <ul>
-        <li class="example"><span><strong>==</strong> ANDRÉ LUIZ</span> Valida conteúdo <b>exatamente igual</b> a ANDRÉ LUIZ &#x2012; este operador pode ser omitido por simplicidade, pois é o operador <b>default implícito</b> quando somente o parâmetro é declarado.</li>
-        <li class="example"><span><strong>!=</strong> CHICO XAVIER</span> Valida conteúdo <b>diferente</b> de CHICO XAVIER.</li>
-        <li class="example"><span><strong>&lt;</strong> 01-01-2017</span> Valida DATAS <b>anteriores</b> a 1&#xBA; de janeiro de 2017.</li>
-        <li class="example"><span><strong>&gt;=</strong> 25-05-2016</span> Valida DATAS <b>posteriores inclusive</b> a 25 de maio de 2016.</li>
-      </ul>
-    </li>
-    <li><p>Especiais: <code>IN</code> <code>IS</code> <code>NOT</code> <code>SONDX</code><br>Exemplos:</p>
-      <ul>
-        <li class="example"><span><strong>NOT</strong> <i>restrição</i></span> <b>NEGAÇÃO LÓGICA</b> de qualquer restrição com qualquer operador.</li>
-        <li class="example"><span><strong>IS</strong> <i>texto procurado</i></span> Equivalente ao operador <code>==</code> desde que o conteúdo não seja <b>NULL</b>.</li>
-        <li class="example"><span><strong>IN</strong> Miramês Ramatiz Meimei</span> Valida conteúdo que contém <b>Miramês</b>, <b>Ramatiz</b> ou <b>Meimei</b> &#x2012; checa se alguma palavra declarada após o operador existe no conteúdo.</li>
-        <li class="example"><span><strong>SONDX</strong> RICHARD</span> Valida conteúdo que contém palavra que soa semelhante ao parâmetro &#x2012; funciona como <code>SONAT</code>, mas usa fonemas do Inglês.</li>
-      </ul>
-    </li>
-    <li><p>Padrão <span class="onamai">LIKE</span>:
-      <ul>
-        <li>Alternativo ao padrão <span class="onamai">GLOB</span>, porém dispõe apenas dos operadores: <code>%</code> <code>_</code></li>
-        <li>Distingue MAIÚSCULAS e minúsculas apenas para vogais acentuadas e cedilha.</li>
-        <li>É nativo do SQL portanto, o de melhor desempenho.</li>
-      </ul>Exemplos:</p>
-      <ul>
-        <li class="example"><span>MÃOS<strong>%</strong></span> Valida conteúdo iniciado por MÃOS.</li>
-        <li class="example"><span>FRIEDRICH Z<strong>_</strong>LLNER</span> Valida conteúdo cujo segundo caractere da última palavra é desconhecido.</li>
-      </ul>
-    </li>
-    <li><p>Expressões Regulares: <code>REGEX</code><br>Poderoso operador via <em>PCRE do PHP</em>.<br>Exemplos:</p>
-      <ul>
-        <li class="example"><span><strong>REGEX</strong> <strong>(</strong>SOBRE<strong>)?</strong>VIDA</span> Valida conteúdo que contém a palavra VIDA opcionalmente prefixada por SOBRE.</li>
-        <li class="example"><span><strong>REGEX</strong> <strong>^</strong>DIVALDO<strong>\s+</strong>FRANCO<strong>$</strong></span> Valida conteúdo que inicia com DIVALDO e termina com FRANCO, separado por um ou mais espaços em branco.</li>
-        <li class="example"><span><strong>IREGEX</strong> <strong>(</strong>miramez<strong>|</strong>joanna<strong>|</strong>ramatis<strong>)</strong></span> Valida conteúdo ignorando MAIÚSCULAS e minúsculas que contém MIRAMEZ <i>ou</i> JOANNA <i>ou</i> RAMATIS.</li>
-      </ul>
-      <p><b>Nota:</b> Consulte documentação extra para usar outros recursos, somente disponíveis neste operador.</p>
-    </li>
-  </ol>
+  <p>Operadores de comparação: <code>&lt;</code> <code>&lt;=</code> <code>==</code> <code>&gt;=</code> <code>&gt;</code> <code>!=</code><br>Exemplos:</p>
+  <ul>
+    <li class="example"><span><strong>==</strong> ANDRÉ LUIZ</span> Valida conteúdo <b>exatamente igual</b> a ANDRÉ LUIZ &#x2012; este operador pode ser omitido, pois é o operador <b>default implícito</b> quando somente o parâmetro é declarado.</li>
+    <li class="example"><span><strong>!=</strong> CHICO XAVIER</span> Valida conteúdo <b>diferente</b> de CHICO XAVIER.</li>
+    <li class="example"><span><strong>&lt;</strong> 01-01-2017</span> Valida DATAS <b>anteriores</b> a 1&#xBA; de janeiro de 2017.</li>
+    <li class="example"><span><strong>&gt;=</strong> 25-05-2016</span> Valida DATAS <b>posteriores inclusive</b> a 25 de maio de 2016.</li>
+  </ul>
+</div>
+EOT;
+
+      echo <<<EOT
+<h3>&#xF0DA; Pesquisas - Especiais</h3>
+<div>
+  <p>Operadores insubstituíveis em certas ocasiões: <code>IN</code> <code>IS</code> <code>NOT</code> <code>SONDX</code><br>Exemplos:</p>
+  <ul>
+    <li class="example"><span><strong>NOT</strong> <i>restrição</i></span>&#x2012; NEGAÇÃO LÓGICA de qualquer restrição com qualquer operador.</li>
+    <li class="example"><span><strong>IS</strong> <i>texto procurado</i></span> &#x2012; Equivalente ao operador <code>==</code> desde que ambos operandos não sejam NULL, senão invalida a restrição, evitando ABSURDO LÓGICO, tal que: não existe comparação de algum valor, conhecido ou não, com valor desconhecido.</li>
+    <li class="example"><span><strong>IN</strong> Miramês Ramatiz Meimei</span> Valida conteúdo que contém ao menos um dentre <b>Miramês</b>, <b>Ramatiz</b> e <b>Meimei</b> &#x2012; checa se alguma palavra declarada após o operador existe no conteúdo.</li>
+    <li class="example"><span><strong>SONDX</strong> RICHARD</span> Valida conteúdo que contém palavra que soa semelhante ao parâmetro &#x2012; funciona como <code>SONAT</code>, mas usa fonemas do Inglês.</li>
+  </ul>
+</div>
+EOT;
+
+      echo <<<EOT
+<h3>&#xF0DA; Pesquisas - LIKE</h3>
+<div>
+  <p>Alternativo ao padrão <b>GLOB</b>, é nativo do SQL portanto, seus operadores são os de melhor desempenho, disponibilizando somente dois operadores: <code>%</code> <code class="fakeUnderline" title="UNDERLINE">&#x2582;</code><br>Exemplos:</p>
+  <ul>
+    <li class="example"><span>MÃOS<strong>%</strong></span> Valida conteúdo iniciado por MÃOS.</li>
+    <li class="example"><span>FRIEDRICH Z<strong class="fakeUnderline" title="UNDERLINE">&#x2582;</strong>LLNER</span> Valida conteúdo cujo segundo caractere da última palavra é desconhecido.</li>
+  </ul>
+  <p><b>Nota:</b> Distingue MAIÚSCULAS e minúsculas somente nas vogais acentuadas e cedilha.</p>
+</div>
+EOT;
+
+      echo <<<EOT
+<h3>&#xF0DA; Pesquisas - REGEX</h3>
+<div>
+  <p>Poderoso operador via <b>Expressões Regulares</b> PCRE do PHP, para  pesquisas complexas com única expressão.<br>Exemplos:</p>
+  <ul>
+    <li class="example"><span><strong>REGEX</strong> <strong>(</strong>SOBRE<strong>)?</strong>VIDA</span> Valida conteúdo que contém a palavra VIDA opcionalmente prefixada por SOBRE.</li>
+    <li class="example"><span><strong>REGEX</strong> <strong>^</strong>DIVALDO<strong>\s+</strong>FRANCO<strong>$</strong></span> Valida conteúdo que inicia com DIVALDO e termina com FRANCO, separado por um ou mais espaços em branco.</li>
+    <li class="example"><span><strong>IREGEX</strong> <strong>(</strong>miramez<strong>|</strong>joanna<strong>|</strong>ramatis<strong>)</strong></span> Valida conteúdo, ignorando MAIÚSCULAS e minúsculas, que contém MIRAMEZ <i>ou</i> JOANNA <i>ou</i> RAMATIS.</li>
+    <li class="example"><span><strong>REGEX \d\d-\d\d-</strong>2016</span> Valida conteúdo que contém DATA cujo ano é 2016.</li>
+    <li class="example"><span><strong>REGEX (\S{2,})\\1</strong></span> Valida conteúdo que contém repetição de sequência de dois ou mais caracteres diferentes de espaço em branco &#x2012 identificaria AGOGO, CARRARA, MEIMEI, etc.</li>
+  </ul>
 </div>
 EOT;
 
