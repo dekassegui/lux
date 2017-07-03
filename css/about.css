@@ -87,7 +87,6 @@
 #docArea span.botao {
   padding: 2px 4px 2px 4px;
   font-weight: 600;
-  line-height: 140%;
   color: dodgerblue;
   background-color: #ffc;
 }
@@ -101,7 +100,7 @@
 #docArea em {
   display: inline-block;
   font-style: normal;
-  text-shadow: -1px 0px #ccc;
+  text-shadow: 1px 0px 1px #ccc;
   transform: skew(-6deg);
 }
 #docArea code {
@@ -117,4 +116,38 @@
 #docArea ol ul li {
   list-style-type: square;
   margin: .125em auto .125em auto;
+}
+
+#docArea ol.howToList {
+  list-style-type: none;
+  list-style-type: decimal !ie; /*IE 7- hack*/
+  margin-left: 1.625em;
+  counter-reset: li-counter;
+}
+#docArea ol.howToList > li {
+  position: relative;
+  line-height: 150%;
+  margin-top: 1em;
+  padding-left: 0.625em;
+  min-height: 1em;
+  border-left: .125em solid #dcdcdc;
+  /* color: black; */
+}
+/* #docArea ol.howToList > li:nth-child(odd) { color: navy;} */
+#docArea ol.howToList > li:before {
+  position: absolute;
+  top: 0;
+  left: -1.375em;
+  width: 1em;
+  font-size: 2em;
+  line-height: 1;
+  font-weight: 600;
+  text-align: right;
+  color: #AAD;
+  content: counter(li-counter);
+  counter-increment: li-counter;
+}
+/* #docArea ol.howToList > li:nth-child(odd):before { color: #669;} */
+#docArea h3.distak {
+  text-shadow: 0px 0px 10px #6FF, 0px 0px 20px #6DD;
 }

@@ -7,11 +7,11 @@
       echo <<<EOT
 <h3>&#xF0DA; Devolução</h3>
 <div>
-  <ol>
+  <ol class="howToList">
     <li>Acesse o registro de empréstimo do livro que está sendo devolvido, clicando no botão <span class="botao">&#xF002;&nbsp;Pesquisar</span> para localizar o registro se necessário.</li>
     <li>Clique no botão <span class="botao">&#xF040;&nbsp;Atualizar</span> para iniciar o procedimento ou alternativamente, clique no rótulo <span class="botao">&#xF040;&nbsp;Devolução</span> que antecipará parcialmente o próximo passo.</li>
     <li>Clique no campo <span class="field">Devolução</span> para selecionar a data no calendário que aparecerá abaixo do campo.</li>
-    <li>Clique no botão <span class="botao">&#xf00c;&nbsp;Salvar</span> para confirmar o procedimento ou clique no botão <span class="botao">&#xf00d;&nbsp;Cancelar</span> em caso contrário.<p><b>Nota</b>: Se a atualização for mal sucedida, o motivo será informado na janela de diálogo.</p></li>
+    <li>Clique no botão <span class="botao">&#xf00c;&nbsp;Salvar</span> para confirmar a atualização ou clique no botão <span class="botao">&#xf00d;&nbsp;Cancelar</span> em caso contrário.<p><b>Nota</b>: Se o procedimento for mal sucedido, o motivo será informado na janela de diálogo.</p></li>
   </ol>
 </div>
 EOT;
@@ -19,7 +19,7 @@ EOT;
       echo <<<EOT
 <h3>&#xF0DA; Empréstimo</h3>
 <div>
-  <ol>
+  <ol class="howToList">
     <li>Clique no botão <span class="botao">&#xF067;&nbsp;Novo</span> ou alternativamente, clique no rótulo <span class="botao">&#xF067;&nbsp;Empréstimo</span>.</li>
     <li>Preencha os campos:
       <ul>
@@ -30,8 +30,8 @@ EOT;
       </ul>
       <p>Os demais campos serão preenchidos automaticamente e somente o campo <span class="field">Exemplar</span> será editável, se houver mais de um exemplar disponível.</p>
       <p><b>Dica</b>: Antes do preenchimento, pergunte ao leitor se já foi cadastrado.</p></li>
-    <li>Clique no botão <span class="botao">&#xf00c;&nbsp;Salvar</span> para confirmar o procedimento ou clique no botão <span class="botao">&#xf00d;&nbsp;Cancelar</span> em caso contrário.
-    <p><b>Nota</b>: Se a operação de registro do empréstimo for mal sucedida, o motivo será informado na janela de diálogo.</p></li>
+    <li>Clique no botão <span class="botao">&#xf00c;&nbsp;Salvar</span> para confirmar o registro ou clique no botão <span class="botao">&#xf00d;&nbsp;Cancelar</span> em caso contrário.
+    <p><b>Nota</b>: Se o procedimento for mal sucedido, o motivo será informado na janela de diálogo.</p></li>
     <li>Informe a <b>Data Limite</b> para devolução, recém calculada, apresentada no <span class="field">Comentário</span>.</li>
   </ol>
 </div>
@@ -46,7 +46,8 @@ EOT;
     <li><strong>Todos</strong> <b>os operadores estão disponíveis em</b> <strong>todos</strong> <b>os campos de formulários de</b> <strong>todas</strong> <b>as tabelas</b>, inclusive os de caráter informativo <i>que não são editáveis na prática</i>, para montagem de restrições sobre os conteúdos dos campos.</li>
     <li>Cada restrição está relacionada únicamente ao campo preenchido que, em caso contrário será ignorado.</li>
     <li>A validação de um registro é <b>bem sucedida</b> quando as restrições sobre os conteúdos de seus campos são satisfeitas simultâneamente e neste caso é dito que ocorreu <b>sucesso</b>.</li>
-    <li>O uso de letras MAIÚSCULAS ou minúsculas é irrelevante, porém vogais acentuadas e cedilha <b>são semelhantes</b> às não acentuadas e à letra <b>C</b> respectivamente, ou seja; <b>nâo são iguais</b>.</li>
+    <li>Usar letras MAIÚSCULAS ou minúsculas na <b>grafia de operadores</b> é irrelevante &#x2012; também colorizados nos exemplos para fácil identificação.</li>
+    <li>Exceto no operador via expressões regulares (<em>REGEX</em>), usar letras MAIÚSCULAS ou minúsculas na <b>grafia de parâmetros</b> é irrelevante, porém vogais acentuadas e cedilha são semelhantes às não acentuadas e à letra C respectivamente, ou seja; nâo são iguais.</li>
     <li>Se a pesquisa for <b>bem sucedida</b>, resultando em <b>único registro</b>, então este será o registro (<i>corrente</i>) apresentado no formulário.</li>
     <li>Se a pesquisa for <b>bem sucedida</b>, resultando em <b>dois ou mais registros</b>, então serão listados na área de notificação abaixo do formulário.</li>
     <li>Se a pesquisa for <b>mal sucedida</b>, então o usuário será notificado na janela de diálogo.</li>
@@ -89,8 +90,8 @@ EOT;
 <div>
   <p>Operador para validar conteúdo de campo que contém termos <b>SEMELHANTES FONETICAMENTE</b> a todos os itens de <b>lista de parâmetros</b> arbitrária.<br>Exemplos:</p>
   <ul class="example">
-    <li class="example"><span><strong>SONAT</strong> Allan Kardec</span> Valida conteúdo que contém palavras que soam semelhante aos parâmetros &#x2012; como <b>ALAN&nbsp;CARDEQUI</b>.</li>
-    <li class="example"><span><strong>SONAT</strong> angelis joana</span> Valida conteúdo que contém palavras que soam semelhante aos parâmetros &#x2012; como <b>Joanna&nbsp;de&nbsp;Ângelis</b>.</li>
+    <li class="example"><span><strong>SONAT</strong> Allan Kardec</span> Valida conteúdo que contém palavras que soam semelhante aos parâmetros &#x2012; como em <b>ALAN&nbsp;CARDEQUI</b>.</li>
+    <li class="example"><span><strong>SONAT</strong> angelis joana</span> Valida conteúdo que contém palavras que soam semelhante aos parâmetros &#x2012; como em <b>Joanna&nbsp;de&nbsp;Ângelis</b>.</li>
   </ul>
   <p><em><b>Addendum</b></em></p>
   <ol class="simpleList">
@@ -119,10 +120,10 @@ EOT;
 <div>
   <p>Operadores de comparação: <code>&lt;</code> <code>&lt;=</code> <code>==</code> <code>&gt;=</code> <code>&gt;</code> <code>!=</code><br>Exemplos:</p>
   <ul>
-    <li class="example"><span><strong>==</strong> ANDRÉ LUIZ</span> Valida conteúdo <b>exatamente igual</b> a ANDRÉ LUIZ &#x2012; este operador pode ser omitido, pois é o operador <b>default implícito</b> quando somente o parâmetro é declarado.</li>
+    <li class="example"><span><strong>==</strong> ANDRÉ LUIZ</span> Valida conteúdo <b>exatamente igual</b> a ANDRÉ LUIZ<br>&#x2012; o operador pode ser omitido, pois é o <b>default implícito</b> quando somente o parâmetro é declarado.</li>
     <li class="example"><span><strong>!=</strong> CHICO XAVIER</span> Valida conteúdo <b>diferente</b> de CHICO XAVIER.</li>
-    <li class="example"><span><strong>&lt;</strong> 01-01-2017</span> Valida DATAS <b>anteriores</b> a 1&#xBA; de janeiro de 2017.</li>
-    <li class="example"><span><strong>&gt;=</strong> 25-05-2016</span> Valida DATAS <b>posteriores inclusive</b> a 25 de maio de 2016.</li>
+    <li class="example"><span><strong>&lt;</strong> 01-01-2017</span> Valida DATAS <b>anteriores</b> a 1&#xBA; de janeiro de 2017<br>&#x2012; somente nos campos que <b>inputam</b> data.</li>
+    <li class="example"><span><strong>&gt;=</strong> 25-05-2016</span> Valida DATAS <b>posteriores inclusive</b> a 25 de maio de 2016<br>&#x2012; somente nos campos que <b>inputam</b> data.</li>
   </ul>
 </div>
 EOT;
@@ -133,8 +134,8 @@ EOT;
   <p>Operadores insubstituíveis em certas ocasiões: <code>IN</code> <code>IS</code> <code>NOT</code> <code>SONDX</code><br>Exemplos:</p>
   <ul>
     <li class="example"><span><strong>NOT</strong> <i>restrição</i></span>&#x2012; NEGAÇÃO LÓGICA de qualquer restrição com qualquer operador.</li>
-    <li class="example"><span><strong>IS</strong> <i>texto procurado</i></span> &#x2012; Equivalente ao operador <code>==</code> desde que ambos operandos não sejam NULL, senão invalida a restrição, evitando ABSURDO LÓGICO, tal que: não existe comparação de algum valor, conhecido ou não, com valor desconhecido.</li>
-    <li class="example"><span><strong>IN</strong> Miramês Ramatiz Meimei</span> Valida conteúdo que contém ao menos um dentre <b>Miramês</b>, <b>Ramatiz</b> e <b>Meimei</b> &#x2012; checa se alguma palavra declarada após o operador existe no conteúdo.</li>
+    <li class="example"><span><strong>IS</strong> <i>texto procurado</i></span> &#x2012; Equivalente ao operador <code>==</code> desde que ambos operandos não sejam NULL, senão invalida a restrição evitando ABSURDO LÓGICO, pois não existe comparação de valor, conhecido ou não, com outro valor desconhecido.</li>
+    <li class="example"><span><strong>IN</strong> Miramês Ramatiz Meimei</span> Valida conteúdo que contém ao menos um dentre; <b>Miramês</b>, <b>Ramatiz</b> e <b>Meimei</b> &#x2012; checa no conteúdo, a existência de alguma palavra declarada após o operador.</li>
     <li class="example"><span><strong>SONDX</strong> RICHARD</span> Valida conteúdo que contém palavra que soa semelhante ao parâmetro &#x2012; funciona como <code>SONAT</code>, mas usa fonemas do Inglês.</li>
   </ul>
 </div>
@@ -161,7 +162,7 @@ EOT;
     <li class="example"><span><strong>REGEX</strong> <strong>^</strong>DIVALDO<strong>\s+</strong>FRANCO<strong>$</strong></span> Valida conteúdo que inicia com DIVALDO e termina com FRANCO, separado por um ou mais espaços em branco.</li>
     <li class="example"><span><strong>IREGEX</strong> <strong>(</strong>miramez<strong>|</strong>joanna<strong>|</strong>ramatis<strong>)</strong></span> Valida conteúdo, ignorando MAIÚSCULAS e minúsculas, que contém MIRAMEZ <i>ou</i> JOANNA <i>ou</i> RAMATIS.</li>
     <li class="example"><span><strong>REGEX \d\d-\d\d-</strong>2016</span> Valida conteúdo que contém DATA cujo ano é 2016.</li>
-    <li class="example"><span><strong>REGEX (\S{2,})\\1</strong></span> Valida conteúdo que contém repetição de sequência de dois ou mais caracteres diferentes de espaço em branco &#x2012 identificaria AGOGO, CARRARA, MEIMEI, etc.</li>
+    <li class="example"><span><strong>REGEX (\S{2,})\\1</strong></span> Valida conteúdo que contém repetição de sequência de dois ou mais caracteres diferentes de espaço em branco<br>&#x2012 identificaria AGOGO, CARRARA, MEIMEI, etc.</li>
   </ul>
 </div>
 EOT;

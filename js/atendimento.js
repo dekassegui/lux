@@ -32,8 +32,8 @@ $(document).ready(
             selectOtherMonths: true,
             beforeShow: function (input, object) {
                 var $input = $(input).data("preserved", input.value);
-                var t = $input.tooltip("instance");
-                if (t) t.close();
+                var instance = $input.tooltip("instance");
+                instance && instance.close();
               },
             onClose: function (dateText, instance) {
                 var oldValue = $(this).data("preserved");
@@ -69,29 +69,29 @@ $(document).ready(
 
     var FIELDS_PARENT = $("section > div").has("#fields");
 
+    var WIN = $(window.opera ? "html" : "html, body");
+
     /*
      * Gestor de rolagem da WINDOW e da tangibilidade do formulário.
     */
     var SCROLLER = (
       function () {
 
-        var h = $("header h1");
-        var b = false;                          // status da tangibilidade
+        var h1 = $("header h1");
+
+        var b = false;  // status da tangibilidade a priori
 
         function updateTip() {
-          const par = [ { "action":"restaurar", "cor":"forestgreen" },
-                        { "action":"ocultar", "cor":"darkblue" } ];
-          h.tooltip("close");
-          h.attr("title",
+          const par = [ { "action": "restaurar", "cor": "forestgreen" },
+                        { "action": "ocultar",   "cor": "darkblue" } ];
+          h1.tooltip("close").attr("title",
             "clique aqui para <b>" + par[+(b=!b)].action + " o formulário</b>")
             .css({ "color": par[+b].cor });
         }
 
-        var w = $(window.opera ? "html" : "html, body");
-
-        var t = $('<button id="GoTop">Go Top!</button>').click(
+        var topBtn = $('<button id="GoTop">Go Top!</button>').click(
           function () {
-            w.animate({ scrollTop: 0 }, 2000, "easeOutExpo");
+            WIN.animate({ scrollTop: 0 }, 2000, "easeOutExpo");
           }).insertAfter( $("textarea") );
 
         var self = this;
@@ -99,24 +99,26 @@ $(document).ready(
         this.slideOptions = { duration: 1000, easing: "swing" };
 
         this.scroll = function (full) {
-          t.click();
+          topBtn.click();
           if (full) {
             FIELDS_PARENT.slideToggle(self.slideOptions);
             updateTip.apply(this);
           }
         };
 
-        var letterSpacing = { onEnter: h.css("letter-spacing") };
+        var letterSpacing = (function () {
+            this.ON_ENTER = h1.css("letter-spacing");
+            this.ON_EXIT = (5 * parseFloat(this.ON_ENTER)) + "px";
+            return this;
+          })();
 
-        letterSpacing.onExit = (5 * parseFloat(letterSpacing.onEnter)) + "px";
-
-        h.tooltip(TOOLTIP_OPTIONS).click(function () { self.scroll(true); })
+        h1.tooltip(TOOLTIP_OPTIONS).click(function () { self.scroll(true); })
           .hover(
             function () {
-              h.animate({ "letter-spacing": letterSpacing.onExit });
+              h1.animate({ "letter-spacing": letterSpacing.ON_EXIT });
             },
             function () {
-              h.animate({ "letter-spacing": letterSpacing.onEnter });
+              h1.animate({ "letter-spacing": letterSpacing.ON_ENTER });
             });
 
         updateTip();
@@ -283,8 +285,7 @@ $(document).ready(
           DOCAREA.css({
               "top": TOP,
               "left": LEFT + "px",
-              "width": ($(window.opera ? "html" : "html, body").outerWidth()
-                - LEFT - 15) + "px",
+              "width": (WIN.outerWidth() - LEFT - 15) + "px",
               "height": (newBtn.hasClass("working") ? MIN_HEIGHT : MAX_HEIGHT)
             });
         }).resize( /* POSICIONAMENTO INICIAL */ );
@@ -336,7 +337,7 @@ $(document).ready(
             // restaura a visibilidade do DOCAREA conforme valor serializado
             // no final da sessão anterior à corrente
             if (localStorage.getItem(
-                DOCAREA_PREFIX + StyleManager.dayOfWeek()) !== "0") {
+                  DOCAREA_PREFIX + StyleManager.dayOfWeek()) !== "0") {
               DOCAREA.fadeIn(2500);
               updateTEACHERtooltip(true);
             } else {
@@ -359,7 +360,21 @@ $(document).ready(
                   });
                 }
               }
-            });
+            }).children("h3").each(
+              function (index, el) {
+                var $el = $(el);
+                $el.click(function () { $el.toggleClass("distak", false); })
+                  .hover(
+                    function ( /* mouse enter */ ) {
+                      $el.hasClass("ui-accordion-header-collapsed")
+                        && $el.toggleClass("distak", true);
+                    },
+                    function ( /* mouse exit */ ) {
+                      $el.hasClass("ui-accordion-header-collapsed")
+                        && $el.toggleClass("distak", false);
+                    }
+                  );
+              });
 
           });
 
