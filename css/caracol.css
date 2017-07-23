@@ -5,7 +5,7 @@ body {
   background-position: left bottom;
   background-size: 112%;
 }
-label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount, .alive
+label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount
 {
   color: darkorchid;
   text-shadow: -1px -1px 1px #fff, 1px 1px 1px #888;

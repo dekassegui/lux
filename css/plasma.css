@@ -6,7 +6,7 @@ body {
   background-position: center center, center 50%;
   background-size: 100%, 100% 100%;
 }
-label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount, .alive  {
+label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount  {
   color: #069;
   text-shadow: -1px -1px 1px lightcyan, 1px 1px 1px #aaa;
 }

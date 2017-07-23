@@ -134,7 +134,7 @@ EOT;
   <p>Operadores insubstituíveis em certas ocasiões: <code>IN</code> <code>IS</code> <code>NOT</code> <code>SONDX</code><br>Exemplos:</p>
   <ul>
     <li class="example"><span><strong>NOT</strong> <i>restrição</i></span>&#x2012; NEGAÇÃO LÓGICA de qualquer restrição com qualquer operador.</li>
-    <li class="example"><span><strong>IS</strong> <i>texto procurado</i></span> &#x2012; Equivalente ao operador <code>==</code> desde que ambos operandos não sejam NULL, senão invalida a restrição evitando ABSURDO LÓGICO, pois não existe comparação de valor, conhecido ou não, com outro valor desconhecido.</li>
+    <li class="example"><span><strong>IS</strong> <i>PARÂMETRO</i></span> &#x2012; Equivalente ao operador <code>==</code> que admite NULL como valor de algum ou de ambos operandos.</li>
     <li class="example"><span><strong>IN</strong> Miramês Ramatiz Meimei</span> Valida conteúdo que contém ao menos um dentre; <b>Miramês</b>, <b>Ramatiz</b> e <b>Meimei</b> &#x2012; checa no conteúdo, a existência de alguma palavra declarada após o operador.</li>
     <li class="example"><span><strong>SONDX</strong> RICHARD</span> Valida conteúdo que contém palavra que soa semelhante ao parâmetro &#x2012; funciona como <code>SONAT</code>, mas usa fonemas do Inglês.</li>
   </ul>
@@ -156,12 +156,12 @@ EOT;
       echo <<<EOT
 <h3>&#xF0DA; Pesquisas - REGEX</h3>
 <div>
-  <p>Poderoso operador via <b>Expressões Regulares</b> PCRE do PHP, para  pesquisas complexas com única expressão.<br>Exemplos:</p>
+  <p>Poderoso operador via <b>Expressões Regulares</b> para  pesquisas complexas, conforme PCRE do PHP.<br>Exemplos:</p>
   <ul>
     <li class="example"><span><strong>REGEX</strong> <strong>(</strong>SOBRE<strong>)?</strong>VIDA</span> Valida conteúdo que contém a palavra VIDA opcionalmente prefixada por SOBRE.</li>
     <li class="example"><span><strong>REGEX</strong> <strong>^</strong>DIVALDO<strong>\s+</strong>FRANCO<strong>$</strong></span> Valida conteúdo que inicia com DIVALDO e termina com FRANCO, separado por um ou mais espaços em branco.</li>
     <li class="example"><span><strong>IREGEX</strong> <strong>(</strong>miramez<strong>|</strong>joanna<strong>|</strong>ramatis<strong>)</strong></span> Valida conteúdo, ignorando MAIÚSCULAS e minúsculas, que contém MIRAMEZ <i>ou</i> JOANNA <i>ou</i> RAMATIS.</li>
-    <li class="example"><span><strong>REGEX \d\d-\d\d-</strong>2016</span> Valida conteúdo que contém DATA cujo ano é 2016.</li>
+    <li class="example"><span><strong>REGEX \d\d-\d\d-</strong>2016</span> Valida conteúdo que contém DATA no formato DIA-MÊS-ANO com todos os componentes separados por hífen, DIA e MÊS grafados com dois dígitos, no ANO 2016.</li>
     <li class="example"><span><strong>REGEX (\S{2,})\\1</strong></span> Valida conteúdo que contém repetição de sequência de dois ou mais caracteres diferentes de espaço em branco<br>&#x2012 identificaria AGOGO, CARRARA, MEIMEI, etc.</li>
   </ul>
 </div>

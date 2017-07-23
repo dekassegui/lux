@@ -8,6 +8,15 @@
   letter-spacing: .0625em !important;
   background-color: transparent !important;
   border: none !important;
+  -webkit-transition: background-color 1.25s, color 1s;
+  -webkit-transition-timing-function: ease-in-out;
+  transition: background-color 1.25s, color 1s;
+  transition-timing-function: ease-in-out;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
 }
 .ui-accordion-header-active {
   color: white !important;
@@ -141,9 +150,11 @@
   width: 1em;
   font-size: 2em;
   line-height: 1;
-  font-weight: 600;
+  font-weight: 400;
   text-align: right;
-  color: #AAD;
+  color: #99c;
+  /* text-shadow: -1px -1px 1px #333;
+  transform: skew(-6deg); */
   content: counter(li-counter);
   counter-increment: li-counter;
 }

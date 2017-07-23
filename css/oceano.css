@@ -17,16 +17,7 @@ label {
 input#amount {
   color: lightcyan;
 }
-.alive {
-  color: lightcyan;
-}
-.alive:hover {
-  color: cyan;
-}
-.alive:active {
-  color: white;
-}
-label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount, .alive
+label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount
 {
   text-shadow: 1px 1px 1px #111;
 }

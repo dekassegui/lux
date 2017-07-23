@@ -25,16 +25,7 @@ label, footer p, section > div:first-child > p span, body:not([id]) section > p,
 input#amount {
   color: paleturquoise;
 }
-.alive {
-  color: paleturquoise;
-}
-.alive:hover {
-  color: turquoise;
-}
-.alive:active {
-  color: cyan;
-}
-label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount, .alive {
+label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount {
   text-shadow: 1px 1px 1px #404040;
 }
 label {

@@ -5,22 +5,13 @@ body {
   background-position: right top;
   background-size: 125%;
 }
-label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount, .alive
+label, footer p, section > div:first-child > p span, body:not([id]) section > p, input#counter:disabled, input#amount
 {
   color: orangered;
   text-shadow: -1px -1px 1px #fff, 1px 1px 1px #888;
 }
 label {
   transform: skew(-7deg);
-}
-.alive {
-  color: crimson;
-}
-.alive:hover {
-  color: red;
-}
-.alive:active {
-  color: deeppink;
 }
 input[type="text"], input[type="tel"], input[type="email"] {
   background-color: lightcyan;

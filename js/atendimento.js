@@ -79,7 +79,7 @@ $(document).ready(
 
         var h1 = $("header h1");
 
-        var b = false;  // status da tangibilidade a priori
+        var b = false;  // status a priori
 
         function updateTip() {
           const par = [ { "action": "restaurar", "cor": "forestgreen" },
@@ -106,19 +106,24 @@ $(document).ready(
           }
         };
 
+        // container dos parâmetros da animação do HEADING h1
         var letterSpacing = (function () {
-            this.ON_ENTER = h1.css("letter-spacing");
-            this.ON_EXIT = (5 * parseFloat(this.ON_ENTER)) + "px";
+            this.MOUSE_EXIT = h1.css("letter-spacing");
+            this.MOUSE_ENTER = (5 * parseFloat(this.MOUSE_EXIT)) + "px";
             return this;
           })();
 
         h1.tooltip(TOOLTIP_OPTIONS).click(function () { self.scroll(true); })
           .hover(
+            /*
+             * animação do HEADING nos subeventos MOUSE_ENTER e MOUSE_EXIT
+             * para evidenciar possível acionamento do gestor de rolagem
+            */
             function () {
-              h1.animate({ "letter-spacing": letterSpacing.ON_EXIT });
+              h1.animate({ "letter-spacing": letterSpacing.MOUSE_ENTER });
             },
             function () {
-              h1.animate({ "letter-spacing": letterSpacing.ON_ENTER });
+              h1.animate({ "letter-spacing": letterSpacing.MOUSE_EXIT });
             });
 
         updateTip();
@@ -155,8 +160,8 @@ $(document).ready(
 
     var actionButtons = [saveBtn, cancelBtn];
 
-    // gestor/montador de elementos do tipo LABEL adaptados como BUTTON
-    // para acionar a atualização e criação de registros de empréstimos
+    // gestor de elementos do tipo LABEL adaptados como BUTTON para
+    // acionar a atualização e criação de registros de empréstimos
     var FAKE_BUTTONS = (
       function () {
 
@@ -166,25 +171,34 @@ $(document).ready(
           return i>=0;
         }
 
-        var lde = $('label[for="data_emprestimo"]').addClass("alive").click(
-          function (ev) {
-            if (busy()) return;
-            ev.preventDefault();
-            newBtn.click();
-          }).attr("title", "clique aqui para <b>registrar</b> <strong>Empréstimo</strong><br>&#x2012; <b>equivale a clicar no botão <span>\uf067&nbsp;Novo</span></b>").tooltip(TOOLTIP_OPTIONS);
+        var lde = $('label[for="data_emprestimo"]')
+          .click(
+            function (ev) {
+              if (busy()) return;
+              ev.preventDefault();
+              newBtn.click();
+            }).attr("title", "clique aqui para <b>registrar</b> <strong>Empréstimo</strong><br>&#x2012; <b>equivale a clicar no botão <span>\uf067&nbsp;Novo</span></b>").tooltip(TOOLTIP_OPTIONS);
 
-        var ldd = $('label[for="data_devolucao"]').addClass("alive").click(
-          function () {
-            if (busy()) return;
-            updateBtn.click();
-          }).attr("title", "clique aqui para <b>atualizar o registro de empréstimo apresentado, iniciando pela</b> <strong>Data de Devolução</strong><br>&#x2012; <b>equivale a clicar no botão <span>\uf040&nbsp;Atualizar</span> e depois no campo de edição da</b> <strong>Data de Devolução</strong>").tooltip(TOOLTIP_OPTIONS);
+        var ldd = $('label[for="data_devolucao"]')
+          .click(
+            function () {
+              if (busy()) return;
+              updateBtn.click();
+            }).attr("title", "clique aqui para <b>atualizar o registro de empréstimo apresentado, iniciando pela</b> <strong>Data de Devolução</strong><br>&#x2012; <b>equivale a clicar no botão <span>\uf040&nbsp;Atualizar</span> e depois no campo de edição da</b> <strong>Data de Devolução</strong>").tooltip(TOOLTIP_OPTIONS);
 
+        $('label[for^="data_"]').each(
+          function (index, el) {
+            var $el = $(el);
+            $el.html("<span>&nbsp;</span>" + $el.text());
+          });
+
+        // habilita tooltips e visualização dos ícones que são
+        // background images dos únicos LABEL child element
         this.set = function (bool) {
           var action =  bool ? "enable" : "disable";
-          [lde, ldd].forEach(
-            function (el) {
-              el.toggleClass("alive", bool).tooltip(action);
-            });
+          [lde, ldd].forEach(function (el) {
+            el.tooltip(action).children().fadeToggle({duration:"slow"}, bool);
+          });
         };
 
         return this;
@@ -345,7 +359,7 @@ $(document).ready(
               updateTEACHERtooltip(false);
             }
 
-            // configura "accordion" para rolar heading ativado para o topo
+            // configura "accordion" para rolar headings ativados para o topo
             DOCAREA.accordion({ collapsible: true, header: "h3", active: 0,
               heightStyle: "content", icons: null, animate: {
                 duration: 1000, easing: "easeInOutSine", down: 1500 },
@@ -361,15 +375,16 @@ $(document).ready(
                 }
               }
             }).children("h3").each(
+              // atrela a cada heading funções responsivas a eventos do mouse
               function (index, el) {
                 var $el = $(el);
                 $el.click(function () { $el.toggleClass("distak", false); })
                   .hover(
-                    function ( /* mouse enter */ ) {
+                    function ( /* MOUSE ENTER */ ) {
                       $el.hasClass("ui-accordion-header-collapsed")
                         && $el.toggleClass("distak", true);
                     },
-                    function ( /* mouse exit */ ) {
+                    function ( /* MOUSE EXIT */ ) {
                       $el.hasClass("ui-accordion-header-collapsed")
                         && $el.toggleClass("distak", false);
                     }
@@ -605,7 +620,8 @@ $(document).ready(
                 if (index == 1) {
                   FAKE_BUTTONS.set(false);
                   SCROLLER.scroll(false);
-                  fields[2].val("NULL");
+                  // fields[2].val("NULL");
+                  fields[2].attr("placeholder", "sugestão: NULL");
                   DATA_DEVOLUCAO_TIP.enable();
                   fields[4].focus( /* INPUT#obra */ );
                   SPINNER.stop();
@@ -705,6 +721,7 @@ $(document).ready(
                 // atualiza o formulário com array reorganizado
                 r[0] = r.splice(3, 1)[0];
                 setValues(r);
+                fields[2].removeAttr("placeholder");
                 setReadonly(true);
                 // restaura status dos botões
                 searchBtn.removeClass("working");
@@ -805,6 +822,7 @@ $(document).ready(
           }
         } else if (searchBtn.hasClass("working")) {
           DATA_DEVOLUCAO_TIP.disable();
+          fields[2].removeAttr("placeholder");
         }
         update();
         commandButtons.forEach(
