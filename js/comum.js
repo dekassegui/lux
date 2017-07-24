@@ -8,7 +8,7 @@ const TOOLTIP_OPTIONS = {
   },
   track: true,
   position: { my: "left+20 top+20", at: "right bottom" },
-  show: { effect: "fade", duration: 500, delay: 1500 },
+  show: { effect: "fade", duration: 500, delay: 1000 },
   hide: { effect: "fade", duration: 500 },
 };
 
