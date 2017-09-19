@@ -13,6 +13,7 @@
     <li>Clique no campo <span class="field">Devolução</span> para selecionar a data no calendário que aparecerá abaixo do campo.</li>
     <li>Clique no botão <span class="botao">&#xf00c;&nbsp;Salvar</span> para confirmar a atualização ou clique no botão <span class="botao">&#xf00d;&nbsp;Cancelar</span> em caso contrário.<p><b>Nota</b>: Se o procedimento for mal sucedido, o motivo será informado na janela de diálogo.</p></li>
   </ol>
+  <p><strong>Importante</strong>: Na <b>renovação</b>, atualize o campo <span class="field">Empréstimo</span> e após a confirmação, a nova data de devolução será recalculada e apresentada no campo <span class="field">Comentário</span>.</p>
 </div>
 EOT;
 
