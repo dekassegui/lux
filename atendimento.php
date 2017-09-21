@@ -157,7 +157,54 @@ EOT
       $exemplar = chk($_GET['exemplar']);
       // preparação do sql conforme tipo de requisição
       if ($_GET['action'] == 'UPDATE') {
-        $sql = <<<EOT
+        // contagem do número de registros atrasados
+        $n = $db->querySingle(<<<EOT
+  SELECT count() FROM emprestimos
+  WHERE leitor IS (SELECT code FROM leitores WHERE nome IS $leitor)
+        AND data_limite < (SELECT date('now', 'localtime'))
+EOT
+        );
+        // estabelece a sequência de atualização conforme número de registros
+        // atrasados
+        if ($n > 1) {
+          $sql = <<<EOT
+  -- exclui o trigger
+  DROP TRIGGER KASHITENAI;
+  -- redeclara o trigger sem a primeira restrição original
+  CREATE TRIGGER KASHITENAI BEFORE INSERT ON emprestimos
+  BEGIN
+    SELECT CASE
+    WHEN EXISTS(
+        SELECT 1 FROM emprestimos
+        WHERE data_devolucao ISNULL AND leitor IS new.leitor
+          AND obra IS new.obra
+      )
+      THEN raise(ABORT, "O leitor não pode emprestar mais de um exemplar da mesma obra")
+    WHEN EXISTS(
+        SELECT 1 FROM emprestimos
+        WHERE data_devolucao ISNULL
+          AND obra IS new.obra AND exemplar IS new.exemplar
+      )
+      THEN raise(ABORT, "O exemplar requisitado já está emprestado")
+    WHEN (
+        SELECT count(1) >= pendencias
+        FROM config, emprestimos
+        WHERE data_devolucao ISNULL AND leitor IS new.leitor
+      )
+      THEN raise(ABORT, "O leitor não pode exceder a quantidade máxima de empréstimos pendentes")
+    WHEN (
+        SELECT (M > 0) AND (N > 0) AND (M == N)
+        FROM (
+            SELECT count(1) AS M FROM acervo WHERE obra IS new.obra
+          ), (
+            SELECT count(1) AS N FROM emprestimos
+            WHERE data_devolucao ISNULL AND obra IS new.obra
+          )
+      )
+      THEN raise(ABORT, "Todos os exemplares da obra estão emprestados")
+    END;
+  END;
+  -- atualiza o registro sob restrições restantes
   PRAGMA foreign_keys = ON;
   PRAGMA recursive_triggers = ON;
   UPDATE emprestimos_facil SET
@@ -169,6 +216,20 @@ EOT
     exemplar=$exemplar
   WHERE rowid == {$_GET['recnumber']};
 EOT;
+        } else {
+          $sql = <<<EOT
+  PRAGMA foreign_keys = ON;
+  PRAGMA recursive_triggers = ON;
+  UPDATE emprestimos_facil SET
+    bibliotecario=$bibliotecario,
+    data_emprestimo=$data_emprestimo,
+    data_devolucao=$data_devolucao,
+    leitor=$leitor,
+    obra=$obra,
+    exemplar=$exemplar
+  WHERE rowid == {$_GET['recnumber']};
+EOT;
+        }
       } else {
         $sql = <<<EOT
   PRAGMA foreign_keys = ON;
