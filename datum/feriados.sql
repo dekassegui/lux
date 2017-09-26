@@ -37,51 +37,28 @@ CREATE TABLE feriados_moveis (
 
   nome_feriado  TEXT
                 NOT NULL
-                COLLATE NOCASE
-);
+                COLLATE NOCASE,
 
---
--- Validação prévia à inserção na tabela "feriados_moveis", compromissada
--- com cálculos de datas implementados no trigger "COMPUTUS".
---
-CREATE TRIGGER VALIDATE_FERIADOS_MOVEIS BEFORE INSERT ON feriados_moveis
-BEGIN
-  SELECT CASE
-  --
   -- checa se o valor de "data_feriado" segue um dos padrões esperados:
   -- apenas ANO com 4 dígitos (inicio do cálculo) ou DATA conforme ISO-8601
-  --
-  WHEN NOT (new.data_feriado GLOB "[0-9][0-9][0-9][0-9]"
-      OR new.data_feriado GLOB "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]")
-    THEN raise(ABORT, "Formato ilegal da coluna 'data_feriado'.")
-  --
+  CONSTRAINT chk_date_format CHECK(
+      data_feriado GLOB "[0-9][0-9][0-9][0-9]"
+      OR data_feriado GLOB "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]")
+    ON CONFLICT ABORT,
+
   -- checa se o ANO de "data_feriado" está contido no calendário Gregoriano
-  --
-  WHEN cast(substr(new.data_feriado, 1, 4) AS INTEGER) < 1583
-    THEN raise(ABORT, "Ano de 'data_feriado' < 1583.")
-  --
+  CONSTRAINT chk_calendar CHECK(
+      CAST(substr(data_feriado, 1, 4) AS INTEGER) >= 1583)
+    ON CONFLICT ABORT,
+
   -- checa se "nome_feriado" é um dentre: "Páscoa", "Carnaval", "Paixão"
   -- ou "Corpus Christi", indiferente ao uso de maiúsculas/minúsculas
-  --
-  WHEN upper(new.nome_feriado) NOT IN (
-      "CARNAVAL", "CORPUS CHRISTI", "PáSCOA", "PÁSCOA", "PAIXãO", "PAIXÃO")
-    THEN raise(ABORT, "Valor ilegal da coluna 'nome_feriado'.")
-  --
-  -- checa se o feriado já está registrado com outra data no ANO
-  --
-  WHEN (length(new.data_feriado) == 10)   --> dd-mm-YYYY
-    AND EXISTS(
-      SELECT 1 FROM (
-        SELECT soundex(new.nome_feriado) AS SDX,
-          substr(new.data_feriado, 1, 4) AS ANO
-      ) JOIN feriados_moveis
-      WHERE soundex(nome_feriado) == SDX          --> semelhantes
-        AND substr(data_feriado, 1, 4) IS ANO     --> mesmo ANO
-        AND data_feriado IS NOT new.data_feriado  --> datas diferentes
-    )
-    THEN raise(ABORT, "O feriado/ano já está registrado com outra data.")
-  END;
-END;
+  CONSTRAINT chk_name CHECK(
+      UPPER(nome_feriado) IN (
+        "CARNAVAL", "CORPUS CHRISTI", "PáSCOA", "PÁSCOA", "PAIXãO", "PAIXÃO"))
+    ON CONFLICT ABORT
+);
+
 
 /**
  * Computa a data da Páscoa e dos feriados móveis obtidos em sua função:
@@ -94,9 +71,6 @@ END;
 CREATE TRIGGER COMPUTUS AFTER INSERT ON feriados_moveis
 WHEN new.data_feriado GLOB "[0-9][0-9][0-9][0-9]" --> YYYY
 BEGIN
-
-  DELETE FROM feriados_moveis
-  WHERE substr(data_feriado, 1, 4) == new.data_feriado;
 
   INSERT INTO feriados_moveis VALUES (
     (
@@ -123,6 +97,12 @@ BEGIN
 
 END;
 
+CREATE TRIGGER AFTER_COMPUTUS AFTER INSERT ON feriados_moveis
+WHEN new.data_feriado GLOB "[0-9][0-9][0-9][0-9]" --> YYYY
+BEGIN
+  DELETE FROM feriados_moveis WHERE data_feriado IS new.data_feriado;
+END;
+
 INSERT INTO feriados_moveis SELECT ANO_CORRENTE+N, "Páscoa"
   FROM (
     SELECT strftime("%Y", "now", "localtime") ANO_CORRENTE
@@ -138,41 +118,15 @@ CREATE TABLE feriados_fixos (
 
   nome_feriado  TEXT
                 NOT NULL
-                COLLATE NOCASE
-);
+                COLLATE NOCASE,
 
---
--- Validação prévia à inserção na tabela "feriados_fixos".
---
-CREATE TRIGGER VALIDATE_FERIADOS_FIXOS BEFORE INSERT ON feriados_fixos
-BEGIN
-  SELECT CASE
-  --
   -- checa se o valor de "data_feriado" segue um dos padrões esperados:
-  -- apenas ANO com 4 dígitos (inicio do preenchimento) ou DATA ISO-8601
-  --
-  WHEN NOT (new.data_feriado GLOB "[0-9][0-9][0-9][0-9]"
-      OR new.data_feriado GLOB "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]")
-    THEN raise(ABORT, "Formato ilegal da coluna 'data_feriado'.")
-  --
-  -- checa se o feriado já está registrado com outra data no ano de interesse
-  --
-  WHEN EXISTS(
-      SELECT 1 FROM (
-        SELECT soundex(new.nome_feriado) AS SDX,
-          length(new.nome_feriado) AS LEN,
-          substr(new.data_feriado, 1, 4) AS ANO
-      ) JOIN feriados_fixos
-      WHERE (
-          soundex(nome_feriado) == SDX     --> semelhança !== identidade
-          AND length(nome_feriado) == LEN  --> comprimentos iguais
-        )
-        AND substr(data_feriado, 1, 4) IS ANO     --> mesmo ANO
-        AND data_feriado IS NOT new.data_feriado  --> datas diferentes
-    )
-    THEN raise(ABORT, "O feriado/ano já está registrado com outra data.")
-  END;
-END;
+  -- apenas ANO com 4 dígitos (inicio do cálculo) ou DATA conforme ISO-8601
+  CONSTRAINT chk_date_format CHECK(
+      data_feriado GLOB "[0-9][0-9][0-9][0-9]"
+      OR data_feriado GLOB "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]")
+    ON CONFLICT ABORT
+);
 
 /**
  * Preenche a tabela dos feriados fixos com os registros dos 10 feriados
