@@ -59,7 +59,6 @@ CREATE TABLE feriados_moveis (
     ON CONFLICT ABORT
 );
 
-
 /**
  * Computa a data da Páscoa e dos feriados móveis obtidos em sua função:
  * Carnaval, Paixão, e Corpus Christi, de qualquer ano arbitrário no
