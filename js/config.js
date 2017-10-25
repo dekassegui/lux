@@ -208,6 +208,8 @@ $(document).ready(function () {
 
   loadConfig();
 
+  $.get(uri + "?action=UPDATE_DAYOFFS");
+
   SPINNER.stop();
 
 });

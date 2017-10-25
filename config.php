@@ -56,6 +56,13 @@
       echo join(PHP_EOL, $buffer);
       break;
 
+    case 'UPDATE_DAYOFFS':
+
+      $ano_corrente = date('Y');
+      $db->querySingle("INSERT INTO _feriados SELECT ano, null FROM (SELECT $ano_corrente AS ano UNION SELECT $ano_corrente+1 AS ano)");
+
+      break;
+
   }
 
 ?>
