@@ -23,15 +23,12 @@ if [[ $(sqlite3 $dbfile "$sql") == 1 ]]; then
   declare -a entries
   # cria o sufixo dos nomes de arquivos :: nixtime
   sufix=$(date +'%s')
-  # loop de backup dos DBs
-  for prefix in lux util; do
-    # inclui no início do array o nome do arquivo resultante da concatenação
-    entries=( "$prefix-sqlite-dump-$sufix.sql" "${entries[@]}" )
-    # cria o arquivo de backup
-    sqlite3 datum/$prefix.sqlite '.dump' > ${entries[0]}
-  done
+  # monta o nome do arquivo de backup :: item de zipfile
+  entry="lux-sqlite-dump-$sufix.sql"
+  # cria o arquivo de backup
+  sqlite3 datum/lux.sqlite '.dump' > $entry
   # atualiza ou cria o zipfile dos arquivos de backup
-  zip -m -q db-backups.zip ${entries[@]}
+  zip -m -q db-backups.zip $entry
   # exclusão dos registros de empréstimos com data de devolucao preenchida
   echo 'n43maria' | sudo -S sqlite3 $dbfile '.read datum/dumper.sql'
   echo 'DB ajustado'
