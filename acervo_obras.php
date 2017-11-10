@@ -14,10 +14,14 @@
   switch ($_GET['action']) {
 
     case 'GETALL':
+      // usa "toupper" - função "emprestada" do PHP - para que a sequência de
+      // options HTML elements esteja alfabeticamente em ordem crescente,
+      // indiferente ao letter case no DB, pois tais elements serão processados
+      // numa busca binária via javascript :: restrição para desempenho ótimo
       $sql =<<<EOT
-   SELECT DISTINCT obra, titulo
+   SELECT DISTINCT obra, toupper(titulo) AS title
    FROM disponiveis_acervo JOIN obras ON obra IS code
-   ORDER BY titulo ASC;
+   ORDER BY title ASC;
 EOT;
       break;
 
