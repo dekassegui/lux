@@ -121,6 +121,8 @@ label[for^="data_"]:hover, label[for^="data_"]:hover span { cursor: pointer; }
   background-image: none;
 }
 
+input.atrasado { color: #e00 !important; }
+
 /* ajustes exclusivos para Webkit */
 @media (-webkit-min-device-pixel-ratio:0) {
   label {

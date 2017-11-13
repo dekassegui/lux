@@ -18,11 +18,11 @@ $(document).ready(
 
     $(window).on({ "unload": function () { StyleManager.save(); } });
 
+    function zeroPad(x) { return (x < 10 ? "0" : "") + x; }
+
     // atrela calendário aos INPUTs de datas
     ["#data_emprestimo", "#data_devolucao"].forEach(
       function (element) {
-
-        function zeroPad(x) { return (x < 10 ? "0" : "") + x; }
 
         $(element).datepicker({
             showAnim: "fade",
@@ -422,6 +422,15 @@ $(document).ready(
       var f = (array === undefined) ? function (input) { input[0].value = ""; }
           : function (input, index) {
               input[0].value = (array[index] == "NULL") ? "" : array[index];
+              if (index == 8) {
+                input.removeClass('atrasado');
+                if (!array[2]) {
+                  var hoje = new Date().toISOString().substring(0, 10);
+                  var limite = array[8]
+                    .replace(/.+(\d\d)-(\d\d)-(\d{4})\.$/, '$3-$2-$1');
+                  if (limite < hoje) input.addClass('atrasado');
+                }
+              }
             };
       fields.forEach(f);
     }
