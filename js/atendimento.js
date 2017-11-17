@@ -425,7 +425,9 @@ $(document).ready(
               if (index == 8) {
                 input.removeClass('atrasado');
                 if (!array[2]) {
-                  var hoje = new Date().toISOString().substring(0, 10);
+                  var date = new Date();
+                  var hoje = date.getFullYear() + "-"
+                    + zeroPad(date.getMonth()+1) + "-" + zeroPad(date.getDate());
                   var limite = array[8]
                     .replace(/.+(\d\d)-(\d\d)-(\d{4})\.$/, '$3-$2-$1');
                   if (limite < hoje) input.addClass('atrasado');
