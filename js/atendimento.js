@@ -423,13 +423,16 @@ $(document).ready(
           : function (input, index) {
               input[0].value = (array[index] == "NULL") ? "" : array[index];
               if (index == 8) {
-                let atrasado = false;
+                let atrasado = false; // status a priori
                 if (!array[2]) {
                   let date = new Date();
                   let hoje = date.getFullYear() + "-" + zeroPad(date.getMonth()+1) + "-" + zeroPad(date.getDate());
-                  let limite = array[8].replace(/.+(\d\d)-(\d\d)-(\d{4})\.$/, '$3-$2-$1');
-                  atrasado = (limite < hoje);
+                  // extrai a data limite e a formata no padrão ISO-8601
+                  let data_limite = array[8].substr(-5, 4) + array[8].substr(-9, 4) + array[8].substr(-11, 2);
+                  // checa se a data limite é anterior à data corrente
+                  atrasado = (data_limite < hoje);
                 }
+                // alterna a classe CSS do input do comentário
                 input.toggleClass('atrasado', atrasado);
               }
             };
