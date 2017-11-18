@@ -423,15 +423,14 @@ $(document).ready(
           : function (input, index) {
               input[0].value = (array[index] == "NULL") ? "" : array[index];
               if (index == 8) {
-                input.removeClass('atrasado');
+                let atrasado = false;
                 if (!array[2]) {
-                  var date = new Date();
-                  var hoje = date.getFullYear() + "-"
-                    + zeroPad(date.getMonth()+1) + "-" + zeroPad(date.getDate());
-                  var limite = array[8]
-                    .replace(/.+(\d\d)-(\d\d)-(\d{4})\.$/, '$3-$2-$1');
-                  if (limite < hoje) input.addClass('atrasado');
+                  let date = new Date();
+                  let hoje = date.getFullYear() + "-" + zeroPad(date.getMonth()+1) + "-" + zeroPad(date.getDate());
+                  let limite = array[8].replace(/.+(\d\d)-(\d\d)-(\d{4})\.$/, '$3-$2-$1');
+                  atrasado = (limite < hoje);
                 }
+                input.toggleClass('atrasado', atrasado);
               }
             };
       fields.forEach(f);
