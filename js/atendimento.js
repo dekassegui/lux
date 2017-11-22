@@ -425,12 +425,12 @@ $(document).ready(
               if (index == 8) {
                 let atrasado = false; // status a priori
                 if (!array[2]) {
-                  let date = new Date();
-                  let hoje = date.getFullYear() + "-" + zeroPad(date.getMonth()+1) + "-" + zeroPad(date.getDate());
-                  // extrai a data limite e a formata no padrão ISO-8601
-                  let data_limite = array[8].substr(-5, 4) + array[8].substr(-9, 4) + array[8].substr(-11, 2);
+                  // "nixtime" do último milésimo da data_limite
+                  let data_limite = new Date(array[8].substr(-5, 4),
+                    parseInt(array[8].substr(-8, 2))-1,
+                    array[8].substr(-11, 2), 23, 59, 59, 999).getTime();
                   // checa se a data limite é anterior à data corrente
-                  atrasado = (data_limite < hoje);
+                  atrasado = (data_limite < Date.now());
                 }
                 // alterna a classe CSS do input do comentário
                 input.toggleClass('atrasado', atrasado);
