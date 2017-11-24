@@ -22,6 +22,8 @@
       } else {
         return 'Erro: O <b>Telefone</b>  ou <b>e-Mail</b> do leitor não foi preenchido.';
       }
+    } else if (strpos($s, 'UNIQUE constraint failed') !== FALSE) {
+      return 'Erro: Código de leitor precisa ser único.';
     }
     return 'Erro: '.$s;
   }

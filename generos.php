@@ -11,6 +11,8 @@
       return "Erro: O campo <b>$fieldname</b> não pode ser NULO.";
     } else if (strpos($s, 'foreign key constraint') !== FALSE) {
       return 'Erro: Algum registro em outra tabela usa informações desse registro.';
+    } else if (strpos($s, 'UNIQUE constraint failed') !== FALSE) {
+      return 'Erro: Código de gênero precisa ser único.';
     }
     return "Erro: $s";
   }
