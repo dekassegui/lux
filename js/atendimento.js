@@ -419,7 +419,11 @@ $(document).ready(
 
     // preenchimento de todos INPUTs dos campos
     function setValues(array) {
-      var f = (array === undefined) ? function (input) { input[0].value = ""; }
+      var f = (array === undefined)
+          ? function (input, index) {
+              input[0].value = "";
+              if (index == 8) input.toggleClass('atrasado', false);
+            }
           : function (input, index) {
               input[0].value = (array[index] == "NULL") ? "" : array[index];
               if (index == 8) {
