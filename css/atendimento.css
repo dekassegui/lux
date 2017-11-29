@@ -121,7 +121,14 @@ label[for^="data_"]:hover, label[for^="data_"]:hover span { cursor: pointer; }
   background-image: none;
 }
 
-input.atrasado { background-color: #e00 !important; color: #fff !important; }
+#comentario.atrasado {
+  background-color: hsl(360, 100%, 50%);
+  color: white;
+}
+#comentario.atrasado:focus {
+  border-color: white;
+  box-shadow: inset 0 0 1px 1px white;
+}
 
 /* ajustes exclusivos para Webkit */
 @media (-webkit-min-device-pixel-ratio:0) {
