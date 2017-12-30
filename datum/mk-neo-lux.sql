@@ -663,6 +663,12 @@ CREATE VIEW atrasados AS
     emprestimos JOIN leitores ON emprestimos.leitor == leitores.code
     JOIN obras_facil ON emprestimos.obra == obras_facil.code
   WHERE data_devolucao ISNULL AND atraso > 0 ORDER BY atraso ASC;
+CREATE VIEW feriados AS
+  SELECT data_feriado, nome_feriado
+  FROM (SELECT weekdays FROM config) CROSS JOIN
+    (SELECT strftime("%w", data_feriado) AS w, * FROM _feriados)
+  WHERE (weekdays >> w) & 1
+  ORDER BY data_feriado;
 CREATE TRIGGER KASHITENAI BEFORE INSERT ON emprestimos
 BEGIN
   SELECT CASE
@@ -702,7 +708,7 @@ BEGIN
     THEN raise(ABORT, "Todos os exemplares da obra estão emprestados")
   END;
 END;
-CREATE TRIGGER _feriados_t0 BEFORE INSERT ON _feriados
+CREATE TRIGGER computus BEFORE INSERT ON _feriados
 WHEN new.data_feriado GLOB "[0-9][0-9][0-9][0-9]" --> ano 4 dígitos
 BEGIN
 
@@ -718,20 +724,24 @@ BEGIN
     "Páscoa"
   );
 
-  INSERT INTO _feriados
-    SELECT date(EASTER, dias), feriado  --> feriados baseados na Páscoa
+  SELECT RAISE(IGNORE);   --> cancela inserção do registro dummy
+
+END
+;
+CREATE TRIGGER after_computus AFTER INSERT ON _feriados
+WHEN new.nome_feriado IS "Páscoa"
+BEGIN
+
+  INSERT INTO _feriados   --> feriados baseados na Páscoa
+    SELECT date(new.data_feriado, dias), feriado
     FROM (
-      SELECT data_feriado AS EASTER
-      FROM _feriados WHERE nome_feriado IS "Páscoa"
-        AND substr(data_feriado, 1, 4) == new.data_feriado
-    ) JOIN (
       SELECT "Carnaval" AS feriado, "-47 days" AS dias
       UNION SELECT "Paixão" AS feriado, "-2 days" AS dias
       UNION SELECT "Corpus Christi" AS feriado, "+60 days" AS dias
     );
 
-  INSERT INTO _feriados
-    SELECT new.data_feriado || sufixo, feriado  --> feriados nacionais
+  INSERT INTO _feriados   --> feriados nacionais
+    SELECT substr(new.data_feriado, 1, 4) || sufixo, feriado
     FROM (
       SELECT "-01-01" AS sufixo, "Ano Novo" AS feriado
       UNION SELECT "-04-21" AS sufixo, "Tiradentes" AS feriado
@@ -741,18 +751,11 @@ BEGIN
       UNION SELECT "-11-02" AS sufixo, "Finados" AS feriado
       UNION SELECT "-11-15" AS sufixo, "Proclamação da República" AS feriado
       UNION SELECT "-11-20" AS sufixo, "Dia da Consciência Negra" AS feriado
+      UNION SELECT "-11-28" AS sufixo, "Dia do Servidor Público" AS feriado
       UNION SELECT "-12-08" AS sufixo, "Nossa Senhora da Conceição" AS feriado
       UNION SELECT "-12-25" AS sufixo, "Natal" AS feriado
     );
 
-  SELECT RAISE(IGNORE);   --> cancela inserção de registro dummy
-
 END
 ;
-CREATE VIEW feriados AS
-  SELECT data_feriado, nome_feriado
-  FROM (SELECT weekdays FROM config) CROSS JOIN
-    (SELECT strftime("%w", data_feriado) AS w, * FROM _feriados)
-  WHERE (weekdays >> w) & 1
-  ORDER BY data_feriado;
 COMMIT;

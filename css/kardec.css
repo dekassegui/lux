@@ -52,3 +52,7 @@ input[type="text"].help:focus {
   background-color: transparent !important;
   text-shadow: 1px 0px 1px #999 !important;
 }
+#comentario.atrasado:focus {
+  border-color: orange;
+  box-shadow: inset 0 0 1px 1px yellow;
+}
