@@ -222,6 +222,9 @@ CREATE TABLE _feriados (
                 NOT NULL
                 COLLATE NOCASE,
 
+  CONSTRAINT legal_date CHECK(
+    date(strftime("%s", data_feriado), "unixepoch") == data_feriado),
+
   CONSTRAINT unicity UNIQUE(data_feriado, nome_feriado) ON CONFLICT IGNORE
 );
 CREATE INDEX acervo_obra_ndx ON acervo(obra);
@@ -732,7 +735,7 @@ CREATE TRIGGER after_computus AFTER INSERT ON _feriados
 WHEN new.nome_feriado IS "Páscoa"
 BEGIN
 
-  INSERT INTO _feriados   --> feriados baseados na Páscoa
+  INSERT INTO _feriados   --> feriados móveis :: baseados na Páscoa
     SELECT date(new.data_feriado, dias), feriado
     FROM (
       SELECT "Carnaval" AS feriado, "-47 days" AS dias
@@ -740,7 +743,7 @@ BEGIN
       UNION SELECT "Corpus Christi" AS feriado, "+60 days" AS dias
     );
 
-  INSERT INTO _feriados   --> feriados nacionais
+  INSERT INTO _feriados   --> feriados fixos :: nacionais
     SELECT substr(new.data_feriado, 1, 4) || sufixo, feriado
     FROM (
       SELECT "-01-01" AS sufixo, "Ano Novo" AS feriado
@@ -751,7 +754,8 @@ BEGIN
       UNION SELECT "-11-02" AS sufixo, "Finados" AS feriado
       UNION SELECT "-11-15" AS sufixo, "Proclamação da República" AS feriado
       UNION SELECT "-11-20" AS sufixo, "Dia da Consciência Negra" AS feriado
-      UNION SELECT "-11-28" AS sufixo, "Dia do Servidor Público" AS feriado
+      -- ponto facultativo "a priori"
+      -- UNION SELECT "-11-28" AS sufixo, "Dia do Servidor Público" AS feriado
       UNION SELECT "-12-08" AS sufixo, "Nossa Senhora da Conceição" AS feriado
       UNION SELECT "-12-25" AS sufixo, "Natal" AS feriado
     );
