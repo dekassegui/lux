@@ -51,9 +51,9 @@
   PRAGMA foreign_keys = OFF;
   BEGIN TRANSACTION;
   DROP TABLE IF EXISTS t;
-  CREATE TEMP TABLE t AS SELECT * FROM leitores ORDER BY nome;
+  CREATE TEMP TABLE t AS SELECT * FROM leitores;
   DELETE FROM leitores;
-  INSERT INTO leitores SELECT * FROM t;
+  INSERT INTO leitores SELECT * FROM t ORDER BY UPPER(nome) COLLATE portuguese;
   -- REINDEX leitores_ndx;
   COMMIT;
   PRAGMA foreign_keys = ON;

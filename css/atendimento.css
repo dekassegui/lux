@@ -58,7 +58,7 @@ body > header > * { /* evita seleção de texto ao clicar no canvas */
   user-select: none;
 }
 
-label[for^="data_"] span { /* para animação via jquery */
+/* label[for^="data_"] span { para animação via jquery
   display: inline-block;
   width: 20px;
   margin-right: 2px;
@@ -69,7 +69,7 @@ label[for^="data_"] span { /* para animação via jquery */
 }
 label[for^="data_"]:hover span { background-position-x: -20px; }
 label[for^="data_"]:active span { background-position-x: -40px; }
-label[for^="data_"]:hover, label[for^="data_"]:hover span { cursor: pointer; }
+label[for^="data_"]:hover, label[for^="data_"]:hover span { cursor: pointer; } */
 
 #GoTop {
   float: right;

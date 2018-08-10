@@ -110,7 +110,9 @@
       'ò'=>'o', 'ó'=>'o', 'ô'=>'o', 'õ'=>'o',
       'Ù'=>'U', 'Ú'=>'U',
       'ù'=>'u', 'ú'=>'u',
-      'Ç'=>'C', 'ç'=>'c' );
+      'Ç'=>'C', 'ç'=>'c',
+      'Ñ'=>'n', 'ñ'=>'n'    // usado no espanhol
+    );
     return strcmp(strtr($str1, $letras), strtr($str2, $letras));
   }
 

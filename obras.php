@@ -40,9 +40,10 @@
   PRAGMA foreign_keys = OFF;
   BEGIN TRANSACTION;
   DROP TABLE IF EXISTS t;
-  CREATE TEMP TABLE t AS SELECT * FROM obras ORDER BY titulo;
+  CREATE TEMP TABLE t AS SELECT * FROM obras;
   DELETE FROM obras;
-  INSERT INTO obras SELECT * FROM t;
+  INSERT INTO obras SELECT * FROM t ORDER BY UPPER(titulo) COLLATE
+  portuguese;
   -- REINDEX obras_ndx;
   COMMIT;
   PRAGMA foreign_keys = ON;

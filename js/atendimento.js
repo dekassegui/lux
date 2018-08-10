@@ -40,9 +40,9 @@ $(document).ready(
                 if (this.readOnly) {
                   if (dateText != oldValue) {
                     if (oldValue !== undefined) this.value = oldValue;
-                    var msg = "<p>O campo está disponível <strong>somente para leitura</strong>.</p>\n<p>Clique no botão <b>\uf040&nbsp;Atualizar</b> ";
-                    if (this.id == "data_devolucao") msg += "ou em <b>\uf040&nbsp;Devolução</b>";
-                    msg += " para digitar ou selecionar a data no calendário.</p>"
+                    var msg = "<p>O campo está disponível <strong>somente para leitura</strong>.</p>\n<p>Clique no botão <b>\uf040&nbsp;Atualizar</b> para digitar ou selecionar a data no calendário.</p>";
+                    /* if (this.id == "data_devolucao") msg += "ou em <b>\uf040&nbsp;Devolução</b>";
+                    msg += " para digitar ou selecionar a data no calendário.</p>" */
                     show("\uF06A READ ONLY", msg);
                   }
                 } else {
@@ -162,7 +162,7 @@ $(document).ready(
 
     // gestor de elementos do tipo LABEL adaptados como BUTTON para
     // acionar a atualização e criação de registros de empréstimos
-    var FAKE_BUTTONS = (
+    /* var FAKE_BUTTONS = (
       function () {
 
         function busy() {
@@ -203,7 +203,7 @@ $(document).ready(
 
         return this;
       }
-    )();
+    )(); */
 
     var MURAL = new Mural();
 
@@ -588,7 +588,7 @@ $(document).ready(
             ).done(
               function () {
                 if (index == 1) {
-                  FAKE_BUTTONS.set(false);
+                  // FAKE_BUTTONS.set(false);
                   INFO_FIELDS_TIPS.enable();
                   SCROLLER.scroll(false);
                   SPINNER.stop();
@@ -612,7 +612,7 @@ $(document).ready(
         delBtn.addClass("working");
         saveBtn[0].value = "\uF00C Confirmar";
         disableButtons();
-        FAKE_BUTTONS.set(false);
+        // FAKE_BUTTONS.set(false);
         SCROLLER.scroll(false);
       });
 
@@ -635,7 +635,7 @@ $(document).ready(
             ).done(
               function () {
                 if (index == 1) {
-                  FAKE_BUTTONS.set(false);
+                  // FAKE_BUTTONS.set(false);
                   SCROLLER.scroll(false);
                   // fields[2].val("NULL");
                   fields[2].attr("placeholder", "sugestão: NULL");
@@ -667,7 +667,7 @@ $(document).ready(
             ).done(
               function () {
                 if (index == 1) {
-                  FAKE_BUTTONS.set(false);
+                  // FAKE_BUTTONS.set(false);
                   SCROLLER.scroll(false);
                   INFO_FIELDS_TIPS.enable();
                   fields[0].focus( /* INPUT#bibliotecario */ );
@@ -713,7 +713,7 @@ $(document).ready(
                 });
               setDisabled(actionButtons, true);
               setReadonly(true);
-              FAKE_BUTTONS.set(true);
+              // FAKE_BUTTONS.set(true);
               show("\uF06A Notificação", "<p><b>O empréstimo foi registrado com sucesso.</b>\n\nInforme a <strong>Data Limite</strong> para devolução.</p>");
             }
           };
@@ -748,7 +748,7 @@ $(document).ready(
                 // "desfoca" algum input focado
                 let elm = document.activeElement;
                 if (elm.tagName == "INPUT" && elm.type == "text") elm.blur();
-                FAKE_BUTTONS.set(true);
+                // FAKE_BUTTONS.set(true);
                 DATA_DEVOLUCAO_TIP.disable();
               } else {
                 let buf = "> Sucesso: Localizou " + r.length + " registros:\n";
@@ -787,7 +787,7 @@ $(document).ready(
               setDisabled(actionButtons, true);
               counter[0].disabled = false;
               setReadonly(true);
-              FAKE_BUTTONS.set(true);
+              // FAKE_BUTTONS.set(true);
             }
           };
           par.push("?action=UPDATE&recnumber=", indexRec);
@@ -850,7 +850,7 @@ $(document).ready(
         counter[0].disabled = false;        // habilita edição no input..
         saveBtn[0].value = "\uF00C Salvar"; // restaura o rotulo do botão
         setReadonly(true);                  // desabilita edição dos inputs
-        FAKE_BUTTONS.set(true);
+        // FAKE_BUTTONS.set(true);
       });
 
     infoBtn.click(

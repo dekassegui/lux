@@ -38,12 +38,10 @@
   PRAGMA foreign_keys = OFF;
   BEGIN TRANSACTION;
   DROP TABLE IF EXISTS t;
-  CREATE TEMP TABLE t AS
-    SELECT acervo.*
-    FROM acervo JOIN obras ON acervo.obra == obras.code
-    ORDER BY titulo, exemplar;
+  CREATE TEMP TABLE t AS SELECT * FROM acervo;
   DELETE FROM acervo;
-  INSERT INTO acervo SELECT * FROM t;
+  INSERT INTO acervo SELECT t.* FROM t JOIN obras ON t.obra == obras.code
+    ORDER BY UPPER(obras.titulo) COLLATE portuguese, UPPER(exemplar);
   -- REINDEX acervo_ndx;
   COMMIT;
   PRAGMA foreign_keys = ON;
