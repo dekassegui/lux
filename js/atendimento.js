@@ -41,8 +41,6 @@ $(document).ready(
                   if (dateText != oldValue) {
                     if (oldValue !== undefined) this.value = oldValue;
                     var msg = "<p>O campo está disponível <strong>somente para leitura</strong>.</p>\n<p>Clique no botão <b>\uf040&nbsp;Atualizar</b> para digitar ou selecionar a data no calendário.</p>";
-                    /* if (this.id == "data_devolucao") msg += "ou em <b>\uf040&nbsp;Devolução</b>";
-                    msg += " para digitar ou selecionar a data no calendário.</p>" */
                     show("\uF06A READ ONLY", msg);
                   }
                 } else {
@@ -159,51 +157,6 @@ $(document).ready(
     var commandButtons = [updateBtn, delBtn, searchBtn, newBtn, infoBtn, leitorBtn];
 
     var actionButtons = [saveBtn, cancelBtn];
-
-    // gestor de elementos do tipo LABEL adaptados como BUTTON para
-    // acionar a atualização e criação de registros de empréstimos
-    /* var FAKE_BUTTONS = (
-      function () {
-
-        function busy() {
-          var i=3;
-          while (i>=0 && !commandButtons[i].hasClass("working")) --i;
-          return i>=0;
-        }
-
-        var lde = $('label[for="data_emprestimo"]')
-          .click(
-            function (ev) {
-              if (busy()) return;
-              ev.preventDefault();
-              newBtn.click();
-            }).attr("title", "clique aqui para <b>registrar</b> <strong>Empréstimo</strong><br>&#x2012; <b>equivale a clicar no botão <span>\uf067&nbsp;Novo</span></b>").tooltip(TOOLTIP_OPTIONS);
-
-        var ldd = $('label[for="data_devolucao"]')
-          .click(
-            function () {
-              if (busy()) return;
-              updateBtn.click();
-            }).attr("title", "clique aqui para <b>atualizar o registro de empréstimo apresentado, iniciando pela</b> <strong>Data de Devolução</strong><br>&#x2012; <b>equivale a clicar no botão <span>\uf040&nbsp;Atualizar</span> e depois no campo de edição da</b> <strong>Data de Devolução</strong>").tooltip(TOOLTIP_OPTIONS);
-
-        $('label[for^="data_"]').each(
-          function (index, el) {
-            var $el = $(el);
-            $el.html("<span>&nbsp;</span>" + $el.text());
-          });
-
-        // habilita tooltips e visualização dos ícones que são
-        // background images dos únicos LABEL child element
-        this.set = function (bool) {
-          var action =  bool ? "enable" : "disable";
-          [lde, ldd].forEach(function (el) {
-            el.tooltip(action).children().fadeToggle({duration:"slow"}, bool);
-          });
-        };
-
-        return this;
-      }
-    )(); */
 
     var MURAL = new Mural();
 
@@ -588,7 +541,6 @@ $(document).ready(
             ).done(
               function () {
                 if (index == 1) {
-                  // FAKE_BUTTONS.set(false);
                   INFO_FIELDS_TIPS.enable();
                   SCROLLER.scroll(false);
                   SPINNER.stop();
@@ -612,7 +564,6 @@ $(document).ready(
         delBtn.addClass("working");
         saveBtn[0].value = "\uF00C Confirmar";
         disableButtons();
-        // FAKE_BUTTONS.set(false);
         SCROLLER.scroll(false);
       });
 
@@ -635,7 +586,6 @@ $(document).ready(
             ).done(
               function () {
                 if (index == 1) {
-                  // FAKE_BUTTONS.set(false);
                   SCROLLER.scroll(false);
                   // fields[2].val("NULL");
                   fields[2].attr("placeholder", "sugestão: NULL");
@@ -667,7 +617,6 @@ $(document).ready(
             ).done(
               function () {
                 if (index == 1) {
-                  // FAKE_BUTTONS.set(false);
                   SCROLLER.scroll(false);
                   INFO_FIELDS_TIPS.enable();
                   fields[0].focus( /* INPUT#bibliotecario */ );
@@ -713,7 +662,6 @@ $(document).ready(
                 });
               setDisabled(actionButtons, true);
               setReadonly(true);
-              // FAKE_BUTTONS.set(true);
               show("\uF06A Notificação", "<p><b>O empréstimo foi registrado com sucesso.</b>\n\nInforme a <strong>Data Limite</strong> para devolução.</p>");
             }
           };
@@ -748,7 +696,6 @@ $(document).ready(
                 // "desfoca" algum input focado
                 let elm = document.activeElement;
                 if (elm.tagName == "INPUT" && elm.type == "text") elm.blur();
-                // FAKE_BUTTONS.set(true);
                 DATA_DEVOLUCAO_TIP.disable();
               } else {
                 let buf = "> Sucesso: Localizou " + r.length + " registros:\n";
@@ -787,7 +734,6 @@ $(document).ready(
               setDisabled(actionButtons, true);
               counter[0].disabled = false;
               setReadonly(true);
-              // FAKE_BUTTONS.set(true);
             }
           };
           par.push("?action=UPDATE&recnumber=", indexRec);
@@ -850,7 +796,6 @@ $(document).ready(
         counter[0].disabled = false;        // habilita edição no input..
         saveBtn[0].value = "\uF00C Salvar"; // restaura o rotulo do botão
         setReadonly(true);                  // desabilita edição dos inputs
-        // FAKE_BUTTONS.set(true);
       });
 
     infoBtn.click(

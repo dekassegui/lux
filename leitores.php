@@ -81,7 +81,7 @@ EOT;
     case 'INSERT':
     case 'UPDATE':
       $code = chk($_GET['code']);
-      $nome = chk($_GET['nome']);
+      $nome = mb_strtoupper( chk($_GET['nome']) );
       $telefone = chk($_GET['telefone']);
       $email = chk($_GET['email']);
       if ($_GET['action'] == 'UPDATE') {

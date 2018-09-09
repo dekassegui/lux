@@ -71,8 +71,8 @@ EOT;
     case 'INSERT':
     case 'UPDATE':
       $code = chk($_GET['code']);
-      $nome = chk($_GET['nome']);
-      $espirito = chk($_GET['espirito']);
+      $nome = mb_strtoupper( chk($_GET['nome']) );
+      $espirito = mb_strtoupper( chk($_GET['espirito']) );
       if ($_GET['action'] == 'UPDATE') {
         $sql = <<<EOT
   PRAGMA foreign_keys = ON;

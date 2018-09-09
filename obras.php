@@ -75,7 +75,7 @@ EOT
     case 'INSERT':
     case 'UPDATE':
       $code = chk($_GET['code']);
-      $titulo = chk($_GET['titulo']);
+      $titulo = mb_strtoupper( chk($_GET['titulo']) );
       $autor = chk($_GET['autor']);
       $genero = chk($_GET['genero']);
       if ($_GET['action'] == 'UPDATE') {

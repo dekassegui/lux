@@ -58,19 +58,6 @@ body > header > * { /* evita seleção de texto ao clicar no canvas */
   user-select: none;
 }
 
-/* label[for^="data_"] span { para animação via jquery
-  display: inline-block;
-  width: 20px;
-  margin-right: 2px;
-  background-repeat: no-repeat;
-  background-image: url('../img/star-stripe.png');
-  background-size: 60px 20px;
-  background-position: 0px 50%;
-}
-label[for^="data_"]:hover span { background-position-x: -20px; }
-label[for^="data_"]:active span { background-position-x: -40px; }
-label[for^="data_"]:hover, label[for^="data_"]:hover span { cursor: pointer; } */
-
 #GoTop {
   float: right;
   margin-top: 10px;

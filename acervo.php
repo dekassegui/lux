@@ -73,7 +73,7 @@ EOT
     case 'INSERT':
     case 'UPDATE':
       $obra = chk($_GET['obra']);
-      $exemplar = chk($_GET['exemplar']);
+      $exemplar = mb_strtoupper( chk($_GET['exemplar']) );
       $posicao = chk($_GET['posicao']);
       $comentario = chk($_GET['comentario']);
       if ($_GET['action'] == 'UPDATE') {

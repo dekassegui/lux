@@ -9,7 +9,7 @@
 <div>
   <ol class="howToList">
     <li>Acesse o registro de empréstimo do livro que está sendo devolvido, clicando no botão <span class="botao">&#xF002;&nbsp;Pesquisar</span> para localizar o registro se necessário.</li>
-    <li>Clique no botão <span class="botao">&#xF040;&nbsp;Atualizar</span> para iniciar o procedimento<!-- ou alternativamente, clique no rótulo <span class="botao">&#xF005;&nbsp;Devolução</span> que antecipará parcialmente o próximo passo -->.</li>
+    <li>Clique no botão <span class="botao">&#xF040;&nbsp;Atualizar</span> para iniciar o procedimento.</li>
     <li>Clique no campo <span class="field">Devolução</span> para selecionar a data no calendário que aparecerá abaixo do campo.</li>
     <li>Clique no botão <span class="botao">&#xf00c;&nbsp;Salvar</span> para confirmar a atualização ou clique no botão <span class="botao">&#xf00d;&nbsp;Cancelar</span> em caso contrário.<p><b>Nota</b>: Se o procedimento for mal sucedido, o motivo será informado na janela de diálogo.</p></li>
   </ol>
@@ -21,7 +21,7 @@ EOT;
 <h3>&#xF0DA; Empréstimo</h3>
 <div>
   <ol class="howToList">
-    <li>Clique no botão <span class="botao">&#xF067;&nbsp;Novo</span><!-- ou alternativamente, clique no rótulo <span class="botao">&#xF005;&nbsp;Empréstimo</span> -->.</li>
+    <li>Clique no botão <span class="botao">&#xF067;&nbsp;Novo</span>.</li>
     <li>Preencha os campos:
       <ul>
         <li><span class="field">Agente</span></li>
